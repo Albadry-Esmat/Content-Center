@@ -27,11 +27,17 @@
 - [x] Fix silent generation failures and ensure fields output, loading, and error feedback render.
 - [x] Fix Fields and Script stage expansion controls and add interaction regression coverage.
 - [x] Validate the repaired generator workflow and synchronize the fix to GitHub dev.
-- [ ] Define SaaS personas, ICP, positioning, packaging, and success metrics.
-- [ ] Define workspace, organization, membership, role, and tenant-isolation requirements.
-- [ ] Define onboarding, project, collaboration, billing, and AI-usage journeys.
-- [ ] Design the multi-tenant backend, database, authentication, authorization, and audit boundaries.
-- [ ] Plan hosted AI provider routing, secrets handling, quotas, cost controls, and abuse prevention.
-- [ ] Define migration from browser-local packs to account/workspace-owned cloud projects.
-- [ ] Convert the SaaS plan into dependency-aware epics, issues, milestones, and release gates.
-- [ ] Identify supporting skills and implementation handoffs for security, payments, observability, and operations.
+- [x] Define SaaS personas, ICP, positioning, packaging, and success metrics.
+- [x] Define workspace, organization, membership, role, and tenant-isolation requirements.
+- [x] Define onboarding, project, collaboration, billing, and AI-usage journeys.
+- [x] Design the multi-tenant backend, database, authentication, authorization, and audit boundaries.
+- [x] Plan hosted AI provider routing, secrets handling, quotas, cost controls, and abuse prevention.
+- [x] Define migration from browser-local packs to account/workspace-owned cloud projects.
+- [x] Convert the SaaS plan into dependency-aware epics, issues, milestones, and release gates.
+- [x] Identify supporting skills and implementation handoffs for security, payments, observability, and operations.
+- [x] Establish the first SaaS slice contract: authenticated user, personal workspace, project, and local-mode fallback.
+- [x] Add backend/database foundation for workspace-scoped projects and memberships.
+- [x] Add authenticated workspace/project frontend flows without breaking the current local generator.
+- [ ] Complete local-pack migration, cloud conflict handling, and recovery actions beyond dual-save protection.
+- [x] Add performance, security, unit, and workflow validation for the SaaS slice.
+- [ ] Synchronize each completed SaaS slice to GitHub dev and verify origin/dev.

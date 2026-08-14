@@ -1,7 +1,7 @@
 // Design philosophy: Editorial Control Room — keep the domain model precise, status-aware, and ready for review.
 
 export type GenerationStage = 'fields' | 'script' | 'montage' | 'grade'
-export type StageStatus = 'idle' | 'running' | 'done' | 'partial' | 'error'
+export type StageStatus = 'idle' | 'running' | 'done' | 'partial' | 'stale' | 'error'
 
 export type PackMeta = {
   topic: string

@@ -1,10 +1,12 @@
 // Design philosophy: Editorial Control Room — persistent navigation and a wide asymmetric workbench.
 
 import { Link, useLocation } from 'wouter'
-import { BarChart3, BookOpen, Clapperboard, FileText, Moon, Settings2, Sparkles, Sun } from 'lucide-react'
+import { BarChart3, BookOpen, Clapperboard, Cloud, FileText, Moon, Settings2, Sparkles, Sun } from 'lucide-react'
+import { useAuth } from '@/_core/hooks/useAuth'
 import { useTheme } from '../contexts/ThemeContext'
 
 const nav = [
+  { href: '/workspace', label: 'Workspace', caption: 'Cloud projects', icon: Cloud },
   { href: '/generator', label: 'Generator', caption: 'Production desk', icon: Sparkles },
   { href: '/system/long', label: 'Long system', caption: 'Authority asset', icon: BookOpen },
   { href: '/system/short', label: 'Short system', caption: 'Discovery pack', icon: Clapperboard },
@@ -14,6 +16,7 @@ const nav = [
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [location] = useLocation()
   const { theme, toggleTheme } = useTheme()
+  const { user, isAuthenticated } = useAuth()
   return (
     <div className="app-shell">
       <aside className="side-rail">
@@ -37,7 +40,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Settings2 size={17} strokeWidth={1.8} />
           <span><strong>Settings</strong><small>Connection & rules</small></span>
         </Link>
-        <div className="rail-status"><span className="status-dot" /> Local-first mode <span className="status-live">READY</span></div>
+        <div className="rail-account"><span className="section-index">ACCOUNT</span><strong>{isAuthenticated ? user?.name || 'Signed in' : 'Local mode'}</strong><small>{isAuthenticated ? 'Cloud workspace available' : 'Sign in to sync projects'}</small></div><div className="rail-status"><span className="status-dot" /> {isAuthenticated ? 'Cloud sync ready' : 'Local-first mode'} <span className="status-live">READY</span></div>
       </aside>
       <main className="main-stage">
         <header className="topbar">

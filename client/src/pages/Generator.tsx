@@ -1,6 +1,6 @@
 // Design philosophy: Editorial Control Room — the generator is a calm production desk with visible state and recovery paths.
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ChevronDown, CircleAlert, Download, FileText, Loader2, Plus, Save, Sparkles } from 'lucide-react'
 import { createCombinedPack, getPart, packReducer, type CombinedPack, type FieldSet, type PartKey } from '../lib/pack-domain'
 import type { GenerationStage } from '../lib/content-types'
@@ -10,6 +10,9 @@ import { countWords } from '../lib/validators'
 import { loadAiConfig } from '../lib/ai-config'
 import { generateFieldsForPart, generateGradeForPart, generateMontageForPart, generateScriptForPart } from '../lib/generation-service'
 import ArtifactEditor from '../components/ArtifactEditor'
+import { useWorkspaceSelection } from '../contexts/WorkspaceContext'
+import { trpc } from '@/lib/trpc'
+import { toast } from 'sonner'
 
 const stages: Array<{ id: GenerationStage; label: string; detail: string }> = [
   { id: 'fields', label: 'Fields', detail: 'Shape the brief' },
@@ -49,10 +52,22 @@ export default function Generator() {
   const [activePart, setActivePart] = useState<PartKey>('long')
   const [running, setRunning] = useState(false)
   const [saved, setSaved] = useState(false)
+  const { workspaceId, projectId } = useWorkspaceSelection()
+  const cloudProject = trpc.workspace.getProject.useQuery({ workspaceId: workspaceId || 'pending', projectId: projectId || 'pending' }, { enabled: Boolean(workspaceId && projectId), retry: false })
+  const saveCloudPack = trpc.workspace.savePack.useMutation()
   const abortRef = useRef<AbortController | null>(null)
   const ready = topic.trim().length > 2
   const part = getPart(pack, activePart)
   const progress = useMemo(() => stages.filter((stage) => part.stageStatus[stage.id] === 'done').length * 25, [part.stageStatus])
+
+  useEffect(() => {
+    const cloudPack = cloudProject.data?.packData
+    if (!cloudPack || typeof cloudPack !== 'object' || !('parts' in cloudPack) || !('meta' in cloudPack)) return
+    const restored = cloudPack as unknown as CombinedPack
+    setPack(restored)
+    setTopic(restored.meta.topic || '')
+    setNotes(restored.meta.notes || '')
+  }, [cloudProject.data?.id])
 
   async function generate(stage = activeStage) {
     if (!ready || running) return
@@ -96,8 +111,17 @@ export default function Generator() {
 
   function cancelGeneration() { abortRef.current?.abort() }
 
-  function handleSave() {
-    saveCombinedPack({ ...pack, meta: { ...pack.meta, topic, notes, updatedAt: new Date().toISOString() } })
+  async function handleSave() {
+    const nextPack = { ...pack, meta: { ...pack.meta, topic, notes, updatedAt: new Date().toISOString() } }
+    saveCombinedPack(nextPack)
+    if (workspaceId && projectId) {
+      try {
+        await saveCloudPack.mutateAsync({ workspaceId, projectId, packData: nextPack as unknown as Record<string, unknown> })
+        toast.success('Saved to cloud project', { description: 'A local backup was also kept in this browser.' })
+      } catch (error) {
+        toast.error('Saved locally only', { description: error instanceof Error ? error.message : 'Cloud sync is unavailable. Retry when the workspace reconnects.' })
+      }
+    }
     setSaved(true)
     window.setTimeout(() => setSaved(false), 2200)
   }
@@ -108,7 +132,7 @@ export default function Generator() {
   }
 
   return <div className="page page-generator">
-    <div className="page-heading generator-heading"><div><span className="section-index">04 / PRODUCTION DESK</span><h1>Build the pack.</h1><p>Start with a topic. The system keeps the brief, the output, and the hand-off connected.</p></div><div className="generator-stamp"><span className="status-dot" /> NO CLOUD UPLOADS<br /><small>LOCAL-FIRST WORKFLOW</small></div></div>
+    <div className="page-heading generator-heading"><div><span className="section-index">04 / PRODUCTION DESK</span><h1>Build the pack.</h1><p>Start with a topic. The system keeps the brief, the output, and the hand-off connected.</p></div><div className="generator-stamp"><span className="status-dot" /> {workspaceId && projectId ? 'CLOUD PROJECT ACTIVE' : 'LOCAL-FIRST MODE'}<br /><small>{workspaceId && projectId ? 'LOCAL BACKUP ENABLED' : 'NO CLOUD UPLOADS'}</small></div></div>
     <div className="generator-grid">
       <section className="compose-panel panel-surface"><div className="panel-title"><span className="section-index">01 / COMPOSE</span><span className="source-tape">DRAFT / {mode.toUpperCase()}</span></div><div className="mode-switch" role="tablist" aria-label="Generation mode">{(['long', 'short', 'combined'] as const).map((value) => <button key={value} className={mode === value ? 'selected' : ''} onClick={() => setMode(value)} role="tab" aria-selected={mode === value}>{value === 'combined' ? '⚡ Combined' : value === 'long' ? '🎬 Long-form' : '📱 Short / Reel'}</button>)}</div><label htmlFor="topic">Video topic <span>required</span></label><input id="topic" dir="auto" className="topic-input" value={topic} onChange={(event) => { setTopic(event.target.value); setPack((current) => packReducer(current, { type: 'set-meta', topic: event.target.value, notes })) }} placeholder="e.g. D365 Plugin Pipeline Execution Stages" /><p className="field-hint">A clear topic gives the model a sharper field breakdown.</p><div className="notes-label"><label htmlFor="notes">Foundation / reference</label><span>{countWords(notes)} words</span></div><textarea id="notes" dir="auto" value={notes} onChange={(event) => { setNotes(event.target.value); setPack((current) => packReducer(current, { type: 'set-meta', topic, notes: event.target.value })) }} placeholder="Paste build notes, a rough draft, or the claims the script must stay true to…" rows={8} /><div className="grounding-note"><CircleAlert size={15} /><span>Grounding is a review aid. Claims still need your judgment before recording.</span></div><div className="compose-button-row"><button className="button button-primary full-button" onClick={() => generate('fields')} disabled={!ready || running}>{running ? <><Loader2 className="spin" size={16} /> Working the brief…</> : <><Sparkles size={16} /> Generate fields</>}</button>{running && <button className="button button-quiet cancel-button" onClick={cancelGeneration}>Cancel</button>}</div><div className="sr-only" aria-live="polite">{running ? `Generating ${activeStage} for ${part.label}` : `${part.label} ${part.stageStatus[activeStage]}`}</div></section>
       <section className="workbench-panel"><div className="stage-rail"><div className="stage-rail-top"><span className="section-index">02 / PIPELINE</span><span className="pipeline-progress">{progress}% mapped</span></div><div className="stage-track"><span style={{ width: `${Math.max(7, progress)}%` }} /></div>{stages.map((stage, index) => { const done = part.stageStatus[stage.id] === 'done'; const active = activeStage === stage.id; return <button className={`stage-item ${active ? 'active' : ''} ${done ? 'done' : ''}`} key={stage.id} onClick={() => setActiveStage(stage.id)}><span className="stage-number">{done ? <Check size={13} /> : `0${index + 1}`}</span><span><b>{stage.label}</b><small>{stage.detail}</small></span><ChevronDown size={15} /></button> })}</div><div className="part-tabs">{pack.parts.map((item) => <button key={item.key} className={activePart === item.key ? 'selected' : ''} onClick={() => setActivePart(item.key)}>{item.key === 'long' ? 'Long' : item.key.replace('short-', '#')}</button>)}</div><ArtifactEditor pack={pack} part={part} activeStage={activeStage} running={running} onAction={(action) => setPack((current) => packReducer(current, action))} onGenerate={() => generate(activeStage)} onExport={exportPack} /><div className="workbench-footer"><button className="text-button" onClick={handleSave}><Save size={15} /> {saved ? 'Saved locally' : 'Save combined pack'}</button><span><span className="status-dot" /> {pack.parts.filter((item) => item.stageStatus.fields === 'done').length}/6 field parts shaped</span></div></section>
