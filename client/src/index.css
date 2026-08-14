@@ -153,6 +153,8 @@ a { color: inherit; text-decoration: none; }
 .stage-track span::after { content: ''; position: absolute; top: -3px; right: 0; width: 36px; height: 8px; border-radius: 50%; background: var(--amber); opacity: .65; filter: blur(4px); animation: progressGlow 1.6s ease-in-out infinite; }
 .stage-item { display: grid; grid-template-columns: 28px 1fr 18px; gap: 11px; align-items: center; width: 100%; padding: 12px 0; color: var(--muted); background: none; text-align: left; cursor: pointer; }
 .stage-item:hover, .stage-item.active { color: var(--text); }
+.stage-item > svg { transition: transform .22s var(--ease-out), color .22s var(--ease-out); }
+.stage-item.active > svg { color: var(--amber); transform: rotate(180deg); }
 .stage-item.active .stage-number, .stage-item.done .stage-number { color: var(--ink); background: var(--amber); }
 .stage-item.active .stage-number { animation: numberPulse 1.8s ease-in-out infinite; }
 .stage-number { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--line); color: var(--muted); font: 600 10px Space Grotesk, sans-serif; }
@@ -207,8 +209,9 @@ a { color: inherit; text-decoration: none; }
 .preview-lines b { font-size: 11px; line-height: 1.5; }
 .empty-preview { display: grid; place-items: center; min-height: 350px; text-align: center; }
 .empty-mark { display: grid; place-items: center; width: 46px; height: 46px; margin-bottom: 20px; border: 1px solid var(--line); color: var(--amber); }
-.empty-preview h2 { margin: 0 0 9px; font: 600 23px Space Grotesk, sans-serif; }
+.empty-preview h2 { margin: 12px 0 9px; font: 600 23px Space Grotesk, sans-serif; }
 .empty-preview p { max-width: 340px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.empty-preview .button { margin-top: 22px; }
 .empty-rule { width: 100px; height: 1px; margin-top: 26px; background: var(--amber); opacity: .55; }
 .workbench-footer { display: flex; justify-content: space-between; align-items: center; padding: 15px 26px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
 .text-button, .icon-button { display: inline-flex; align-items: center; gap: 7px; color: var(--amber-soft); background: none; cursor: pointer; font-size: 10px; }

@@ -19,6 +19,15 @@ describe('combined pack domain', () => {
     expect(next.parts.find((part) => part.key === 'short-2')?.stageStatus.fields).toBe('done')
     expect(next.parts.find((part) => part.key === 'long')?.stageStatus.fields).toBe('idle')
   })
+
+  it('exposes running and error states so the editor can render recovery feedback', () => {
+    const pack = createCombinedPack('Plugin pipeline')
+    const running = packReducer(pack, { type: 'start-stage', stage: 'fields', partKey: 'long' })
+    const failed = packReducer(running, { type: 'stage-error', stage: 'fields', partKey: 'long', message: 'AI request failed' })
+    expect(running.parts[0].stageStatus.fields).toBe('running')
+    expect(failed.parts[0].stageStatus.fields).toBe('error')
+    expect(failed.parts[0].error).toBe('AI request failed')
+  })
 })
 
 describe('AI response handling', () => {
@@ -44,10 +53,13 @@ describe('persistence and export', () => {
 
   it('exports an artifact-oriented markdown hand-off', () => {
     const pack = createCombinedPack('Export test')
+    pack.parts[0].warnings = ['Needs source verification']
     const result = packToMarkdown(pack)
     expect(result).toContain('# ALBADRY CONTENT PACK')
     expect(result).toContain('## 1. Production run-sheet')
     expect(result).toContain('## Long-form')
+    expect(result).toContain('Stage completeness')
+    expect(result).toContain('Needs source verification')
     expect(result.endsWith('\n')).toBe(true)
   })
 })

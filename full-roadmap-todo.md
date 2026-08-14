@@ -23,3 +23,7 @@
 - [x] Add purposeful progress animation for stage generation, navigation, and completion feedback.
 - [x] Refine responsive, keyboard, reduced-motion, and contrast behavior across the main screens.
 - [x] Validate the visual UX changes and synchronize them to GitHub dev.
+- [x] Trace the Generate fields path from click handler through provider response and reducer state.
+- [x] Fix silent generation failures and ensure fields output, loading, and error feedback render.
+- [x] Fix Fields and Script stage expansion controls and add interaction regression coverage.
+- [x] Validate the repaired generator workflow and synchronize the fix to GitHub dev.

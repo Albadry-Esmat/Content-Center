@@ -1,12 +1,15 @@
 // Design philosophy: Editorial Control Room — the generator is a calm production desk with visible state and recovery paths.
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Check, ChevronDown, CircleAlert, Download, FileText, Loader2, Plus, Save, Sparkles } from 'lucide-react'
 import { createCombinedPack, getPart, packReducer, type CombinedPack, type FieldSet, type PartKey } from '../lib/pack-domain'
 import type { GenerationStage } from '../lib/content-types'
 import { saveCombinedPack } from '../lib/content-storage'
 import { packToMarkdown } from '../lib/pack-export'
 import { countWords } from '../lib/validators'
+import { loadAiConfig } from '../lib/ai-config'
+import { generateFieldsForPart, generateGradeForPart, generateMontageForPart, generateScriptForPart } from '../lib/generation-service'
+import ArtifactEditor from '../components/ArtifactEditor'
 
 const stages: Array<{ id: GenerationStage; label: string; detail: string }> = [
   { id: 'fields', label: 'Fields', detail: 'Shape the brief' },
@@ -30,6 +33,13 @@ function simulateStage(pack: CombinedPack, stage: GenerationStage, partKey: Part
   return packReducer(current, { type: 'complete-grade', partKey, grade: { filter: 'Cinematic 2', intensity: 60, exposure: 3, contrast: 12, saturation: 8, temperature: -4, notes: 'Keep screen recordings slightly desaturated so the UI stays true.' } })
 }
 
+function isNetworkFailure(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === 'AbortError') return false
+  if (error instanceof TypeError) return true
+  const message = error instanceof Error ? error.message.toLowerCase() : ''
+  return message.includes('failed to fetch') || message.includes('networkerror') || message.includes('network error') || message.includes('localhost')
+}
+
 export default function Generator() {
   const [mode, setMode] = useState<'long' | 'short' | 'combined'>('combined')
   const [topic, setTopic] = useState('')
@@ -39,21 +49,52 @@ export default function Generator() {
   const [activePart, setActivePart] = useState<PartKey>('long')
   const [running, setRunning] = useState(false)
   const [saved, setSaved] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
   const ready = topic.trim().length > 2
   const part = getPart(pack, activePart)
-  const progress = useMemo(() => stages.findIndex((stage) => stage.id === activeStage) * 25, [activeStage])
+  const progress = useMemo(() => stages.filter((stage) => part.stageStatus[stage.id] === 'done').length * 25, [part.stageStatus])
 
-  function generate(stage = activeStage) {
+  async function generate(stage = activeStage) {
     if (!ready || running) return
     setRunning(true)
+    setActiveStage(stage)
     setPack((current) => packReducer(current, { type: 'set-meta', topic, notes }))
-    window.setTimeout(() => {
-      setPack((current) => simulateStage(current, stage, activePart))
-      setRunning(false)
+    setPack((current) => packReducer(current, { type: 'start-stage', stage, partKey: activePart }))
+    const controller = new AbortController(); abortRef.current = controller
+    try {
+      if (stage === 'fields') {
+        const result = await generateFieldsForPart({ partKey: activePart, topic, notes, rulesVersion: pack.meta.rulesVersion, config: loadAiConfig(), signal: controller.signal })
+        setPack((current) => packReducer(current, { type: 'complete-fields', partKey: activePart, fields: result.fields, warnings: result.warnings }))
+      } else if (stage === 'script') {
+        if (!part.fields) throw new Error('Generate fields for this part before generating its script.')
+        const result = await generateScriptForPart({ partKey: activePart, topic, notes, fields: part.fields, config: loadAiConfig(), signal: controller.signal })
+        setPack((current) => packReducer(current, { type: 'complete-script', partKey: activePart, markdown: result.markdown }))
+      } else if (stage === 'montage') {
+        if (!part.script) throw new Error('Generate a script for this part before generating its montage.')
+        const result = await generateMontageForPart({ partKey: activePart, topic, script: part.script, config: loadAiConfig(), signal: controller.signal })
+        setPack((current) => packReducer(current, { type: 'complete-montage', partKey: activePart, shots: result.shots, warnings: result.warnings }))
+      } else if (stage === 'grade') {
+        if (!part.script) throw new Error('Generate a script for this part before generating its grade.')
+        const result = await generateGradeForPart({ partKey: activePart, topic, script: part.script, config: loadAiConfig(), signal: controller.signal })
+        setPack((current) => packReducer(current, { type: 'complete-grade', partKey: activePart, grade: result }))
+      }
       const next = stages[stages.findIndex((item) => item.id === stage) + 1]
       if (next) setActiveStage(next.id)
-    }, 520)
+    } catch (error) {
+      if (isNetworkFailure(error)) {
+        setPack((current) => {
+          const withMeta = { ...current, meta: { ...current.meta, topic, notes } }
+          const fallback = simulateStage(withMeta, stage, activePart)
+          if (stage === 'fields') return packReducer(fallback, { type: 'complete-fields', partKey: activePart, fields: sampleFields(topic, activePart), warnings: ['Local draft fallback used because the configured AI endpoint could not be reached. Review every claim before recording.'] })
+          return fallback
+        })
+      } else {
+        setPack((current) => packReducer(current, { type: 'stage-error', stage, partKey: activePart, message: error instanceof Error ? error.message : 'Generation failed. Check the connection and retry.' }))
+      }
+    } finally { abortRef.current = null; setRunning(false) }
   }
+
+  function cancelGeneration() { abortRef.current?.abort() }
 
   function handleSave() {
     saveCombinedPack({ ...pack, meta: { ...pack.meta, topic, notes, updatedAt: new Date().toISOString() } })
@@ -69,8 +110,8 @@ export default function Generator() {
   return <div className="page page-generator">
     <div className="page-heading generator-heading"><div><span className="section-index">04 / PRODUCTION DESK</span><h1>Build the pack.</h1><p>Start with a topic. The system keeps the brief, the output, and the hand-off connected.</p></div><div className="generator-stamp"><span className="status-dot" /> NO CLOUD UPLOADS<br /><small>LOCAL-FIRST WORKFLOW</small></div></div>
     <div className="generator-grid">
-      <section className="compose-panel panel-surface"><div className="panel-title"><span className="section-index">01 / COMPOSE</span><span className="source-tape">DRAFT / {mode.toUpperCase()}</span></div><div className="mode-switch" role="tablist" aria-label="Generation mode">{(['long', 'short', 'combined'] as const).map((value) => <button key={value} className={mode === value ? 'selected' : ''} onClick={() => setMode(value)} role="tab" aria-selected={mode === value}>{value === 'combined' ? '⚡ Combined' : value === 'long' ? '🎬 Long-form' : '📱 Short / Reel'}</button>)}</div><label htmlFor="topic">Video topic <span>required</span></label><input id="topic" className="topic-input" value={topic} onChange={(event) => { setTopic(event.target.value); setPack((current) => packReducer(current, { type: 'set-meta', topic: event.target.value, notes })) }} placeholder="e.g. D365 Plugin Pipeline Execution Stages" /><p className="field-hint">A clear topic gives the model a sharper field breakdown.</p><div className="notes-label"><label htmlFor="notes">Foundation / reference</label><span>{countWords(notes)} words</span></div><textarea id="notes" value={notes} onChange={(event) => { setNotes(event.target.value); setPack((current) => packReducer(current, { type: 'set-meta', topic, notes: event.target.value })) }} placeholder="Paste build notes, a rough draft, or the claims the script must stay true to…" rows={8} /><div className="grounding-note"><CircleAlert size={15} /><span>Grounding is a review aid. Claims still need your judgment before recording.</span></div><button className="button button-primary full-button" onClick={() => generate('fields')} disabled={!ready || running}>{running ? <><Loader2 className="spin" size={16} /> Shaping the brief…</> : <><Sparkles size={16} /> Generate fields</>}</button></section>
-      <section className="workbench-panel"><div className="stage-rail"><div className="stage-rail-top"><span className="section-index">02 / PIPELINE</span><span className="pipeline-progress">{progress}% mapped</span></div><div className="stage-track"><span style={{ width: `${Math.max(7, progress)}%` }} /></div>{stages.map((stage, index) => { const done = part.stageStatus[stage.id] === 'done'; const active = activeStage === stage.id; return <button className={`stage-item ${active ? 'active' : ''} ${done ? 'done' : ''}`} key={stage.id} onClick={() => setActiveStage(stage.id)}><span className="stage-number">{done ? <Check size={13} /> : `0${index + 1}`}</span><span><b>{stage.label}</b><small>{stage.detail}</small></span><ChevronDown size={15} /></button> })}</div><div className="part-tabs">{pack.parts.map((item) => <button key={item.key} className={activePart === item.key ? 'selected' : ''} onClick={() => setActivePart(item.key)}>{item.key === 'long' ? 'Long' : item.key.replace('short-', '#')}</button>)}</div><div className="preview-panel"><div className="preview-toolbar"><span className="section-index">03 / PREVIEW</span><span className="source-tape">{part.label} / {part.stageStatus[activeStage].toUpperCase()}</span></div>{part.fields || part.script || part.montage || part.grade ? <div className="preview-content"><div className="preview-badge"><Check size={14} /> {part.label} / {part.stageStatus[activeStage]}</div><h2>{part.fields?.title || topic || 'Your next technical story'}</h2>{part.fields && <p className="preview-copy">{part.fields.promise}</p>}{part.script && <pre className="script-preview">{part.script.markdown}</pre>}{part.montage && <div className="montage-preview">{part.montage.map((shot) => <div key={`${shot.tStart}-${shot.tEnd}`}><b>{shot.tStart}—{shot.tEnd}</b><span>{shot.shot} / {shot.onScreen}</span></div>)}</div>}{part.grade && <div className="grade-preview"><span>{part.grade.filter} @ {part.grade.intensity}%</span><span>Exposure {part.grade.exposure} · Contrast {part.grade.contrast}</span></div>}<div className="preview-actions"><button className="button button-quiet" onClick={() => generate(activeStage)} disabled={running}><Sparkles size={15} /> {part.stageStatus[activeStage] === 'done' ? 'Regenerate part' : 'Generate stage'}</button><button className="button button-quiet" onClick={exportPack}><Download size={15} /> Export .md</button></div></div> : <div className="empty-preview"><div className="empty-mark"><Plus size={20} /></div><h2>The workbench is ready.</h2><p>Generate fields to turn the topic into an editable brief. Your preview will appear here, stage by stage.</p><span className="empty-rule" /></div>}</div><div className="workbench-footer"><button className="text-button" onClick={handleSave}><Save size={15} /> {saved ? 'Saved locally' : 'Save combined pack'}</button><span><span className="status-dot" /> {pack.parts.filter((item) => item.stageStatus.fields === 'done').length}/6 field parts shaped</span></div></section>
+      <section className="compose-panel panel-surface"><div className="panel-title"><span className="section-index">01 / COMPOSE</span><span className="source-tape">DRAFT / {mode.toUpperCase()}</span></div><div className="mode-switch" role="tablist" aria-label="Generation mode">{(['long', 'short', 'combined'] as const).map((value) => <button key={value} className={mode === value ? 'selected' : ''} onClick={() => setMode(value)} role="tab" aria-selected={mode === value}>{value === 'combined' ? '⚡ Combined' : value === 'long' ? '🎬 Long-form' : '📱 Short / Reel'}</button>)}</div><label htmlFor="topic">Video topic <span>required</span></label><input id="topic" dir="auto" className="topic-input" value={topic} onChange={(event) => { setTopic(event.target.value); setPack((current) => packReducer(current, { type: 'set-meta', topic: event.target.value, notes })) }} placeholder="e.g. D365 Plugin Pipeline Execution Stages" /><p className="field-hint">A clear topic gives the model a sharper field breakdown.</p><div className="notes-label"><label htmlFor="notes">Foundation / reference</label><span>{countWords(notes)} words</span></div><textarea id="notes" dir="auto" value={notes} onChange={(event) => { setNotes(event.target.value); setPack((current) => packReducer(current, { type: 'set-meta', topic, notes: event.target.value })) }} placeholder="Paste build notes, a rough draft, or the claims the script must stay true to…" rows={8} /><div className="grounding-note"><CircleAlert size={15} /><span>Grounding is a review aid. Claims still need your judgment before recording.</span></div><div className="compose-button-row"><button className="button button-primary full-button" onClick={() => generate('fields')} disabled={!ready || running}>{running ? <><Loader2 className="spin" size={16} /> Working the brief…</> : <><Sparkles size={16} /> Generate fields</>}</button>{running && <button className="button button-quiet cancel-button" onClick={cancelGeneration}>Cancel</button>}</div><div className="sr-only" aria-live="polite">{running ? `Generating ${activeStage} for ${part.label}` : `${part.label} ${part.stageStatus[activeStage]}`}</div></section>
+      <section className="workbench-panel"><div className="stage-rail"><div className="stage-rail-top"><span className="section-index">02 / PIPELINE</span><span className="pipeline-progress">{progress}% mapped</span></div><div className="stage-track"><span style={{ width: `${Math.max(7, progress)}%` }} /></div>{stages.map((stage, index) => { const done = part.stageStatus[stage.id] === 'done'; const active = activeStage === stage.id; return <button className={`stage-item ${active ? 'active' : ''} ${done ? 'done' : ''}`} key={stage.id} onClick={() => setActiveStage(stage.id)}><span className="stage-number">{done ? <Check size={13} /> : `0${index + 1}`}</span><span><b>{stage.label}</b><small>{stage.detail}</small></span><ChevronDown size={15} /></button> })}</div><div className="part-tabs">{pack.parts.map((item) => <button key={item.key} className={activePart === item.key ? 'selected' : ''} onClick={() => setActivePart(item.key)}>{item.key === 'long' ? 'Long' : item.key.replace('short-', '#')}</button>)}</div><ArtifactEditor pack={pack} part={part} activeStage={activeStage} running={running} onAction={(action) => setPack((current) => packReducer(current, action))} onGenerate={() => generate(activeStage)} onExport={exportPack} /><div className="workbench-footer"><button className="text-button" onClick={handleSave}><Save size={15} /> {saved ? 'Saved locally' : 'Save combined pack'}</button><span><span className="status-dot" /> {pack.parts.filter((item) => item.stageStatus.fields === 'done').length}/6 field parts shaped</span></div></section>
     </div>
   </div>
 }

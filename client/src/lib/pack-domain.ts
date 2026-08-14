@@ -30,6 +30,7 @@ export type PartState = {
   montage?: MontageShot[]
   grade?: GradeArtifact
   error?: string
+  warnings?: string[]
 }
 
 export type CombinedPack = {
@@ -43,10 +44,14 @@ export type CombinedPack = {
 export type PackAction =
   | { type: 'set-meta'; topic: string; notes: string }
   | { type: 'start-stage'; stage: GenerationStage; partKey: PartKey }
-  | { type: 'complete-fields'; partKey: PartKey; fields: FieldSet }
+  | { type: 'complete-fields'; partKey: PartKey; fields: FieldSet; warnings?: string[] }
   | { type: 'complete-script'; partKey: PartKey; markdown: string }
-  | { type: 'complete-montage'; partKey: PartKey; shots: MontageShot[] }
+  | { type: 'complete-montage'; partKey: PartKey; shots: MontageShot[]; warnings?: string[] }
   | { type: 'complete-grade'; partKey: PartKey; grade: GradeArtifact }
+  | { type: 'update-field'; partKey: PartKey; field: keyof FieldSet; value: string }
+  | { type: 'update-script'; partKey: PartKey; markdown: string }
+  | { type: 'update-montage'; partKey: PartKey; index: number; shot: Partial<MontageShot> }
+  | { type: 'update-grade'; partKey: PartKey; grade: Partial<GradeArtifact> }
   | { type: 'stage-error'; stage: GenerationStage; partKey: PartKey; message: string }
   | { type: 'toggle-run-sheet'; index: number }
 
@@ -69,14 +74,24 @@ function updatePart(pack: CombinedPack, partKey: PartKey, update: (part: PartSta
   return { ...pack, meta: { ...pack.meta, updatedAt: new Date().toISOString() }, parts: pack.parts.map((part) => part.key === partKey ? update(part) : part) }
 }
 
+function markDownstreamStale(status: Record<GenerationStage, StageStatus>, from: GenerationStage): Record<GenerationStage, StageStatus> {
+  const order: GenerationStage[] = ['fields', 'script', 'montage', 'grade']
+  const start = order.indexOf(from) + 1
+  return { ...status, ...Object.fromEntries(order.slice(start).map((stage) => [stage, status[stage] === 'idle' ? 'idle' : 'stale'])) }
+}
+
 export function packReducer(pack: CombinedPack, action: PackAction): CombinedPack {
   switch (action.type) {
     case 'set-meta': return { ...pack, meta: { ...pack.meta, topic: action.topic, notes: action.notes, updatedAt: new Date().toISOString() } }
     case 'start-stage': return updatePart(pack, action.partKey, (part) => ({ ...part, error: undefined, stageStatus: { ...part.stageStatus, [action.stage]: 'running' } }))
-    case 'complete-fields': return updatePart(pack, action.partKey, (part) => ({ ...part, fields: action.fields, stageStatus: { ...part.stageStatus, fields: 'done' }, error: undefined }))
+    case 'complete-fields': return updatePart(pack, action.partKey, (part) => ({ ...part, fields: action.fields, warnings: action.warnings, stageStatus: { ...part.stageStatus, fields: 'done' }, error: undefined }))
     case 'complete-script': return updatePart(pack, action.partKey, (part) => ({ ...part, script: { markdown: action.markdown, wordCount: action.markdown.trim() ? action.markdown.trim().split(/\s+/).length : 0 }, stageStatus: { ...part.stageStatus, script: 'done' }, error: undefined }))
-    case 'complete-montage': return updatePart(pack, action.partKey, (part) => ({ ...part, montage: action.shots, stageStatus: { ...part.stageStatus, montage: 'done' }, error: undefined }))
+    case 'complete-montage': return updatePart(pack, action.partKey, (part) => ({ ...part, montage: action.shots, warnings: action.warnings, stageStatus: { ...part.stageStatus, montage: 'done' }, error: undefined }))
     case 'complete-grade': return updatePart(pack, action.partKey, (part) => ({ ...part, grade: action.grade, stageStatus: { ...part.stageStatus, grade: 'done' }, error: undefined }))
+    case 'update-field': return updatePart(pack, action.partKey, (part) => ({ ...part, fields: { ...(part.fields || { title: '', promise: '', audience: '', hook: '', story: '', insight: '', proof: '', payoff: '', cta: '' }), [action.field]: action.value }, stageStatus: markDownstreamStale({ ...part.stageStatus, fields: 'done' }, 'fields') }))
+    case 'update-script': return updatePart(pack, action.partKey, (part) => ({ ...part, script: { markdown: action.markdown, wordCount: action.markdown.trim() ? action.markdown.trim().split(/\s+/).length : 0 }, stageStatus: markDownstreamStale({ ...part.stageStatus, script: 'done' }, 'script') }))
+    case 'update-montage': return updatePart(pack, action.partKey, (part) => ({ ...part, montage: (part.montage || []).map((shot, index) => index === action.index ? { ...shot, ...action.shot } : shot), stageStatus: { ...part.stageStatus, montage: 'done' } }))
+    case 'update-grade': return updatePart(pack, action.partKey, (part) => ({ ...part, grade: { ...(part.grade || { filter: '', intensity: 0, exposure: 0, contrast: 0, saturation: 0, temperature: 0, notes: '' }), ...action.grade }, stageStatus: { ...part.stageStatus, grade: 'done' } }))
     case 'stage-error': return updatePart(pack, action.partKey, (part) => ({ ...part, error: action.message, stageStatus: { ...part.stageStatus, [action.stage]: 'error' } }))
     case 'toggle-run-sheet': return { ...pack, meta: { ...pack.meta, updatedAt: new Date().toISOString() }, runSheet: pack.runSheet.map((item, index) => index === action.index ? { ...item, done: !item.done } : item) }
   }
