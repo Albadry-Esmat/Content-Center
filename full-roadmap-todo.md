@@ -27,3 +27,11 @@
 - [x] Fix silent generation failures and ensure fields output, loading, and error feedback render.
 - [x] Fix Fields and Script stage expansion controls and add interaction regression coverage.
 - [x] Validate the repaired generator workflow and synchronize the fix to GitHub dev.
+- [ ] Define SaaS personas, ICP, positioning, packaging, and success metrics.
+- [ ] Define workspace, organization, membership, role, and tenant-isolation requirements.
+- [ ] Define onboarding, project, collaboration, billing, and AI-usage journeys.
+- [ ] Design the multi-tenant backend, database, authentication, authorization, and audit boundaries.
+- [ ] Plan hosted AI provider routing, secrets handling, quotas, cost controls, and abuse prevention.
+- [ ] Define migration from browser-local packs to account/workspace-owned cloud projects.
+- [ ] Convert the SaaS plan into dependency-aware epics, issues, milestones, and release gates.
+- [ ] Identify supporting skills and implementation handoffs for security, payments, observability, and operations.
