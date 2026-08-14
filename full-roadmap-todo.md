@@ -18,3 +18,4 @@
 - [ ] Compare the AI Connection fix against GitHub origin/dev.
 - [ ] Synchronize and push the missing AI Connection fix to GitHub dev.
 - [ ] Verify the resulting remote commit and branch state.
+- [ ] After every future change, run validation, commit the change, push GitHub dev, and verify origin/dev before reporting completion.
