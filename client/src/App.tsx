@@ -6,9 +6,10 @@ import Generator from './pages/Generator'
 import Saved from './pages/Saved'
 import Settings from './pages/Settings'
 import SystemPage from './pages/SystemPage'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 export default function App() {
-  return <AppShell><Switch>
+  return <ThemeProvider defaultTheme="dark" switchable><AppShell><Switch>
     <Route path="/"><Dashboard /></Route>
     <Route path="/generator"><Generator /></Route>
     <Route path="/system/long"><SystemPage kind="long" /></Route>
@@ -16,5 +17,5 @@ export default function App() {
     <Route path="/saved"><Saved /></Route>
     <Route path="/settings"><Settings /></Route>
     <Route><Redirect to="/" /></Route>
-  </Switch></AppShell>
+  </Switch></AppShell></ThemeProvider>
 }

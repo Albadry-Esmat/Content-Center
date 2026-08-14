@@ -22,9 +22,11 @@ export function ThemeProvider({
   switchable = false,
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return defaultTheme;
     if (switchable) {
-      const stored = localStorage.getItem("theme");
-      return (stored as Theme) || defaultTheme;
+      const stored = window.localStorage.getItem("theme");
+      if (stored === "light" || stored === "dark") return stored;
+      return window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : defaultTheme;
     }
     return defaultTheme;
   });
@@ -38,7 +40,7 @@ export function ThemeProvider({
     }
 
     if (switchable) {
-      localStorage.setItem("theme", theme);
+      window.localStorage.setItem("theme", theme);
     }
   }, [theme, switchable]);
 

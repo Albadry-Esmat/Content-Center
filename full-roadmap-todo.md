@@ -19,3 +19,7 @@
 - [ ] Synchronize and push the missing AI Connection fix to GitHub dev.
 - [ ] Verify the resulting remote commit and branch state.
 - [ ] After every future change, run validation, commit the change, push GitHub dev, and verify origin/dev before reporting completion.
+- [x] Add persisted light/dark theme state with an accessible toggle and system preference fallback.
+- [x] Add purposeful progress animation for stage generation, navigation, and completion feedback.
+- [x] Refine responsive, keyboard, reduced-motion, and contrast behavior across the main screens.
+- [x] Validate the visual UX changes and synchronize them to GitHub dev.
