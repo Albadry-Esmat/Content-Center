@@ -1,0 +1,20 @@
+# Full enhancement roadmap execution
+
+- [x] Establish the full implementation baseline and working branch.
+- [x] Implement real provider-backed generation for fields.
+- [x] Implement async stage orchestration, cancellation, retry, and evidence validation.
+- [x] Build editable fields, scripts, montage, grade, and run-sheet artifacts.
+- [x] Harden local persistence, import, backup, and production export.
+- [ ] Add browser workflow, regression, and security tests.
+- [ ] Migrate the stabilized runtime to Next.js App Router; facade exists, release gate is blocked by `/404` prerender error.
+- [ ] Complete accessibility, Arabic-first QA, and responsive hardening.
+- [x] Evaluate the optional hosted provider boundary; implementation deferred pending server-side architecture approval.
+- [x] Evaluate accounts, cloud sync, and collaboration; implementation deferred pending backend/security approval.
+- [x] Protect non-goals, update documentation, and close the roadmap.
+- [ ] Run final validation, checkpoints, and report completion.
+- [ ] Reproduce the AI Connection test flow and trace missing success/error feedback.
+- [ ] Add explicit loading, success, failure, timeout, and empty-configuration notifications for the connection test.
+- [ ] Validate the connection test through the UI and add regression coverage for all outcome paths.
+- [ ] Compare the AI Connection fix against GitHub origin/dev.
+- [ ] Synchronize and push the missing AI Connection fix to GitHub dev.
+- [ ] Verify the resulting remote commit and branch state.
