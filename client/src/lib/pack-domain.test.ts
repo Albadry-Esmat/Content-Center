@@ -38,6 +38,19 @@ describe('combined pack domain', () => {
     expect(fallback.parts[0].stageStatus.fields).toBe('done')
     expect(fallback.parts[0].stageFeedback?.fields).toMatchObject({ kind: 'fallback', message: 'Local draft fallback used. Review before use.' })
   })
+
+  it('marks dependent artifacts stale when an AI regeneration changes an upstream artifact', () => {
+    const initial = createCombinedPack('Plugin pipeline')
+    const fields = { title: 'Title', promise: 'Promise', audience: 'Audience', hook: 'Hook', story: 'Story', insight: 'Insight', proof: 'Proof', payoff: 'Payoff', cta: 'CTA' }
+    const scripted = packReducer(packReducer(initial, { type: 'complete-fields', partKey: 'long', fields }), { type: 'complete-script', partKey: 'long', markdown: 'Original script' })
+    const completed = packReducer(packReducer(scripted, { type: 'complete-montage', partKey: 'long', shots: [] }), { type: 'complete-grade', partKey: 'long', grade: { filter: 'Neutral', intensity: 50, exposure: 0, contrast: 0, saturation: 0, temperature: 0, notes: '' } })
+
+    const regeneratedFields = packReducer(completed, { type: 'complete-fields', partKey: 'long', fields: { ...fields, hook: 'A new hook' } })
+    expect(regeneratedFields.parts[0].stageStatus).toMatchObject({ fields: 'done', script: 'stale', montage: 'stale', grade: 'stale' })
+
+    const regeneratedScript = packReducer(completed, { type: 'complete-script', partKey: 'long', markdown: 'Replacement script' })
+    expect(regeneratedScript.parts[0].stageStatus).toMatchObject({ fields: 'done', script: 'done', montage: 'stale', grade: 'stale' })
+  })
 })
 
 describe('AI response handling', () => {

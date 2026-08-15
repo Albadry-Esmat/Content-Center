@@ -1,7 +1,7 @@
 // Design philosophy: settings make creator preferences explicit, portable, and reversible without exposing secrets.
 
 import { useState } from 'react'
-import { AlignLeft, AlignRight, Check, CircleAlert, CircleCheck, KeyRound, Languages, Loader2, Quote, ShieldCheck, SlidersHorizontal } from 'lucide-react'
+import { AlignLeft, AlignRight, Check, CircleAlert, CircleCheck, Languages, Loader2, Quote, ShieldCheck, SlidersHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
 import StageSequence from '../components/StageSequence'
 import { DEFAULT_AI_CONFIG, loadAiConfig, saveAiConfig } from '../lib/ai-config'
@@ -10,14 +10,13 @@ import { testAiConnection, type ConnectionTestResult } from '../lib/connection-t
 const languageSuggestions = ['English', 'Arabic', 'Arabic (Egyptian)', 'French', 'Spanish', 'Portuguese', 'German']
 
 export default function Settings() {
-  const [persistKey, setPersistKey] = useState(false)
   const [config, setConfig] = useState(() => typeof window === 'undefined' ? DEFAULT_AI_CONFIG : loadAiConfig())
   const [saved, setSaved] = useState(false)
   const [testing, setTesting] = useState(false)
   const [connectionResult, setConnectionResult] = useState<ConnectionTestResult | null>(null)
   function update<K extends keyof typeof config>(key: K, value: (typeof config)[K]) { setConfig((current) => ({ ...current, [key]: value })) }
   function persist() {
-    saveAiConfig({ ...config, persistKey })
+    saveAiConfig(config)
     setSaved(true)
     toast.success('Workspace preferences saved', { description: 'They stay in this browser and shape future generation.' })
     window.setTimeout(() => setSaved(false), 1800)
@@ -31,9 +30,9 @@ export default function Settings() {
   }
 
   return <div className="page page-settings">
-    <div className="source-strip"><span className="source-tape">WORKSPACE PREFERENCES / TRUST BOUNDARY</span><span>LOCAL-FIRST · CREDENTIAL STATE / {persistKey ? 'PERSISTED BY CHOICE' : 'NOT PERSISTED'} · CREATOR PROFILE / READY</span></div>
+    <div className="source-strip"><span className="source-tape">WORKSPACE PREFERENCES / TRUST BOUNDARY</span><span>LOCAL-FIRST · BROWSER CREDENTIALS / NOT STORED · CREATOR PROFILE / READY</span></div>
     <StageSequence active="fields" />
-    <div className="page-heading"><div><span className="section-index">06 / SETTINGS & PREFERENCES</span><h1>Set the working style.</h1><p>Shape how every future brief and script reads while keeping provider credentials under your control.</p></div><div className="settings-shield"><ShieldCheck size={18} /><span>Preference scope<br /><b>This browser</b></span></div></div>
+    <div className="page-heading"><div><span className="section-index">06 / SETTINGS & PREFERENCES</span><h1>Set the working style.</h1><p>Shape how every future brief and script reads without keeping provider credentials in this browser.</p></div><div className="settings-shield"><ShieldCheck size={18} /><span>Preference scope<br /><b>This browser</b></span></div></div>
     <div className="settings-grid">
       <section className="settings-card">
         <div className="card-header"><span className="section-index">GENERATION PROFILE</span><Languages size={16} /></div>
@@ -47,20 +46,18 @@ export default function Settings() {
         </div></fieldset>
         <label htmlFor="brand-phrases">Brand phrases <span className="field-hint">optional</span></label>
         <textarea id="brand-phrases" value={config.brandPhrases} onChange={(event) => update('brandPhrases', event.target.value)} rows={4} placeholder="e.g. Make every idea count; Practical clarity, not noise" />
-        <p className="field-hint">Separate phrases with commas or new lines. They are optional cues—not compulsory copy—and are never stored with your API key.</p>
+        <p className="field-hint">Separate phrases with commas or new lines. They are optional cues—not compulsory copy—and remain independent from provider credentials.</p>
         <div className="profile-summary"><Quote size={16} /><span><b>{config.scriptLanguage || 'Language not selected'} · {config.textDirection.toUpperCase()}</b><small>{config.brandPhrases.trim() ? 'Brand phrases will be available to the model.' : 'No brand phrases configured.'}</small></span></div>
         <div className="connection-actions"><button className="button button-primary" onClick={persist}><Check size={15} /> {saved ? 'Preferences saved' : 'Save preferences'}</button></div>
       </section>
       <section className="settings-card">
-        <div className="card-header"><span className="section-index">AI CONNECTION</span><KeyRound size={16} /></div>
-        <p className="settings-intro">Use a browser-local OpenAI-compatible endpoint today. A hosted team proxy can be added later without changing your writing profile.</p>
+        <div className="card-header"><span className="section-index">AI CONNECTION</span><ShieldCheck size={16} /></div>
+        <p className="settings-intro">Use an unauthenticated browser-local OpenAI-compatible endpoint today. Authenticated providers belong behind a server-side team proxy, so credentials are never stored or sent from this browser.</p>
         <label htmlFor="base-url">OpenAI-compatible base URL</label><input id="base-url" value={config.baseUrl} onChange={(event) => update('baseUrl', event.target.value)} />
         <label htmlFor="model">Model</label><input id="model" value={config.model} onChange={(event) => update('model', event.target.value)} />
-        <label htmlFor="api-key">API key <span className="field-hint">optional for local endpoints</span></label><input id="api-key" type="password" value={config.apiKey} onChange={(event) => update('apiKey', event.target.value)} placeholder="Never commit this value" />
-        <div className="setting-toggle"><button className={`toggle ${persistKey ? 'on' : ''}`} onClick={() => setPersistKey(!persistKey)} aria-pressed={persistKey}><span /></button><span><b>Persist API key locally</b><small>Off by default. Never commit or share this value.</small></span></div>
         <div className="connection-actions"><button className="button button-quiet" onClick={testConnection} disabled={testing}>{testing ? <><Loader2 className="spin" size={15} /> Testing connection…</> : <><CircleCheck size={15} /> Test connection</>}</button><button className="button button-quiet" onClick={persist}><Check size={15} /> Save all settings</button></div>
         {connectionResult && <div className={`connection-result ${connectionResult.ok ? 'success' : 'error'}`} role={connectionResult.ok ? 'status' : 'alert'} aria-live="polite">{connectionResult.ok ? <CircleCheck size={16} /> : <CircleAlert size={16} />}<span><b>{connectionResult.message}</b><small>{connectionResult.warning || connectionResult.detail}</small></span></div>}
-        <div className="security-note"><ShieldCheck size={16} /><span><b>Trust boundary</b> Your notes, drafts, and profile stay in the browser unless you actively use a cloud project or configure a remote endpoint.</span></div>
+        <div className="security-note"><ShieldCheck size={16} /><span><b>Trust boundary</b> Your notes, drafts, and profile stay in this browser unless you actively use a cloud project. This local connection supports endpoints that do not require browser-held credentials.</span></div>
       </section>
     </div>
   </div>

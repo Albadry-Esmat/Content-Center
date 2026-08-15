@@ -3,7 +3,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { testAiConnection } from './connection-test'
 
-const config = { baseUrl: 'http://localhost:1234', model: 'local-model', apiKey: '' }
+const config = { baseUrl: 'http://localhost:1234', model: 'local-model' }
 
 describe('AI connection test', () => {
   it('reports a live endpoint and warns when the requested model is absent', async () => {

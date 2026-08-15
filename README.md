@@ -19,7 +19,7 @@ The validated managed runtime is **React 19 + Vite + TypeScript**. The implement
 | Markdown export | Implemented with run-sheet, metadata, completeness, warnings, and artifact tables |
 | Security validation | Implemented with `pnpm security` |
 | Accessibility hardening | Implemented with visible focus, live generation status, labels, and `dir="auto"` fields |
-| Next.js App Router facade | Staged under `app/`; not yet the release runtime |
+| Legacy App Router scaffold | Retained only as migration history; it is not part of the runnable product |
 | Hosted AI proxy and collaboration | Evaluated and deferred pending backend/security approval |
 
 ## Product flow
@@ -78,7 +78,7 @@ pnpm check
 pnpm build
 ```
 
-The staged Next.js facade can be inspected with `pnpm next:dev` and validated with `pnpm next:build` while the App Router migration gate is being resolved. The current blocker is documented in `APP_ROUTER_MIGRATION_STATUS.md`; the Vite runtime remains the validated release path until the Next build is clean.
+The supported runtime is the Vite/Express stack shown above. The retained `app/` directory is not wired into the package scripts or production build and must not be treated as a runnable alternative. A future framework migration requires an explicit architecture decision and a clean, separately validated cutover plan.
 
 ## Routes
 
@@ -93,16 +93,16 @@ The staged Next.js facade can be inspected with `pnpm next:dev` and validated wi
 
 ## Architecture
 
-Pure domain logic lives in `client/src/lib/pack-domain.ts`, `ai-parser.ts`, `generation-service.ts`, `content-storage.ts`, and `pack-export.ts`. UI components consume the typed reducer rather than mutating artifacts directly. Browser-only state remains in Client Components during the Next.js transition.
+Pure domain logic lives in `client/src/lib/pack-domain.ts`, `ai-parser.ts`, `generation-service.ts`, `content-storage.ts`, and `pack-export.ts`. UI components consume the typed reducer rather than mutating artifacts directly. Browser-only state is intentionally limited to local-first preferences and local pack persistence.
 
 The intended provider modes are:
 
 | Mode | Current position |
 |---|---|
-| Browser-local provider | Supported direction; preserves the local-first trust boundary |
+| Browser-local provider | Supported for unauthenticated endpoints such as a local model server; browser-held API keys are not supported |
 | Hosted provider proxy | Deferred until a server-side secret, rate-limit, privacy, and observability model is approved |
 
-Never commit provider credentials or use `NEXT_PUBLIC_` variables for secrets. The legacy HTML source contained a hard-coded AI key; it must be treated as compromised and rotated rather than restored.
+Never commit provider credentials or use public environment variables for secrets. Content Center now strips legacy browser-stored provider keys during configuration loading and does not send authorization headers from the browser. Authenticated providers require a server-side proxy with appropriate secret, privacy, rate-limit, and audit controls. The legacy HTML source contained a hard-coded AI key; it must be treated as compromised and rotated rather than restored.
 
 ## Persistence and export
 
@@ -110,9 +110,9 @@ Combined packs are stored under the versioned `albadry_combined_packs_v2` localS
 
 ## Testing and migration status
 
-The current unit suite covers pack creation, reducer isolation, parser warnings, montage timecode validation, grade clamping, persistence serialization, generation-service behavior, and Markdown export. The next test layer is browser workflow coverage for compose → generate → edit → save → reload → export.
+The current unit suite covers pack creation, reducer isolation, regeneration invalidation, parser warnings, montage timecode validation, grade clamping, persistence serialization, local-provider request safety, generation-service behavior, and Markdown export. The next test layer is browser workflow coverage for compose → generate → edit → save → reload → export.
 
-The App Router migration is intentionally incremental. `app/` contains route segments and a shared shell, while `app/LegacyClient.tsx` isolates legacy Vite screens. The Next build currently reaches compilation and type validation but fails during framework-generated `/404` prerender with a document-boundary error. This is tracked openly and must be resolved before making Next.js canonical.
+The legacy App Router scaffold is excluded from the supported runtime. It should either be removed once its historical value has expired or replaced by a separately funded, end-to-end framework migration; it must not drift alongside the active Vite application.
 
 See `ENHANCEMENT_ROADMAP.md`, `APP_ROUTER_MIGRATION_STATUS.md`, `HOSTED_MODE_DECISION.md`, and `COLLABORATION_DECISION.md` for the current release gates and deferred architecture decisions.
 

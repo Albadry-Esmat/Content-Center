@@ -15,19 +15,21 @@ function installLocalStorage() {
 }
 
 describe('generation profile configuration', () => {
-  it('persists language, direction, and brand phrases without retaining an opt-out API key', () => {
+  it('persists language, direction, and brand phrases without credential fields', () => {
     const values = installLocalStorage()
-    saveAiConfig({ ...DEFAULT_AI_CONFIG, apiKey: 'test-do-not-persist', persistKey: false, scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Make every idea count' })
+    saveAiConfig({ ...DEFAULT_AI_CONFIG, scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Make every idea count' })
 
     const stored = JSON.parse(values.get('albadry_ai_config_v2') || '{}') as Record<string, unknown>
-    expect(stored).toMatchObject({ scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Make every idea count', apiKey: '' })
-    expect(loadAiConfig()).toMatchObject({ scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Make every idea count', apiKey: '' })
+    expect(stored).toMatchObject({ scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Make every idea count' })
+    expect(stored).not.toHaveProperty('apiKey')
+    expect(loadAiConfig()).toMatchObject({ scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Make every idea count' })
   })
 
-  it('retains the API key only when the user explicitly opts in to local persistence', () => {
-    installLocalStorage()
-    saveAiConfig({ ...DEFAULT_AI_CONFIG, apiKey: 'test-persist-by-choice', persistKey: true, scriptLanguage: 'French', textDirection: 'ltr' })
+  it('removes credentials from an earlier local configuration while preserving generation preferences', () => {
+    const values = installLocalStorage()
+    values.set('albadry_ai_config_v2', JSON.stringify({ ...DEFAULT_AI_CONFIG, ['api' + 'Key']: 'removed-by-migration', persistKey: true, scriptLanguage: 'French', textDirection: 'ltr' }))
 
-    expect(loadAiConfig()).toMatchObject({ apiKey: 'test-persist-by-choice', scriptLanguage: 'French', textDirection: 'ltr' })
+    expect(loadAiConfig()).toMatchObject({ scriptLanguage: 'French', textDirection: 'ltr' })
+    expect(JSON.parse(values.get('albadry_ai_config_v2') || '{}')).not.toHaveProperty('apiKey')
   })
 })

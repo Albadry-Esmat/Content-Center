@@ -17,7 +17,7 @@ function modelsUrl(baseUrl: string): string {
   return /\/v1$/i.test(trimmed) ? `${trimmed}/models` : `${trimmed}/v1/models`
 }
 
-export async function testAiConnection(config: Pick<AiConfig, 'baseUrl' | 'model' | 'apiKey'>, fetchImpl: FetchLike = fetch): Promise<ConnectionTestResult> {
+export async function testAiConnection(config: Pick<AiConfig, 'baseUrl' | 'model'>, fetchImpl: FetchLike = fetch): Promise<ConnectionTestResult> {
   if (!config.baseUrl.trim()) return { ok: false, message: 'Add a base URL before testing the connection.', detail: 'The endpoint is empty.' }
   if (!config.model.trim()) return { ok: false, message: 'Add a model name before testing the connection.', detail: 'The model field is empty.' }
 
@@ -28,9 +28,9 @@ export async function testAiConnection(config: Pick<AiConfig, 'baseUrl' | 'model
   const timeout = globalThis.setTimeout(() => controller.abort(), 8000)
   const started = performance.now()
   try {
-    const response = await fetchImpl(url, { method: 'GET', headers: config.apiKey.trim() ? { Authorization: `Bearer ${config.apiKey.trim()}` } : undefined, signal: controller.signal })
+    const response = await fetchImpl(url, { method: 'GET', signal: controller.signal })
     const latencyMs = Math.round(performance.now() - started)
-    if (!response.ok) return { ok: false, message: `Connection refused with HTTP ${response.status}.`, detail: 'Check the endpoint, model server, and credentials.', latencyMs }
+    if (!response.ok) return { ok: false, message: `Connection refused with HTTP ${response.status}.`, detail: 'Check the endpoint and local model server.', latencyMs }
     const payload = await response.json().catch(() => null) as { data?: Array<{ id?: string }> } | null
     const models = payload?.data?.map((model) => model.id).filter(Boolean) as string[] | undefined
     const warning = models?.length && !models.includes(config.model.trim()) ? `The endpoint responded, but “${config.model.trim()}” was not listed in /models.` : undefined

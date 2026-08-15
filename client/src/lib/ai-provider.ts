@@ -6,7 +6,6 @@ export type ChatCompletionRequest = {
   messages: Array<{ role: 'system' | 'user'; content: string }>
   temperature: number
   maxTokens: number
-  apiKey?: string
 }
 
 export type AiProvider = {
@@ -22,7 +21,6 @@ export function createBrowserProvider(): AiProvider {
         signal,
         headers: {
           'Content-Type': 'application/json',
-          ...(request.apiKey ? { Authorization: `Bearer ${request.apiKey}` } : {}),
         },
         body: JSON.stringify({
           model: request.model,

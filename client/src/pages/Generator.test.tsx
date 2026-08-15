@@ -12,15 +12,19 @@ const mocks = vi.hoisted(() => ({
   restoreVersion: vi.fn(),
   toastMessage: vi.fn(),
   invalidate: vi.fn().mockResolvedValue(undefined),
+  isAuthenticated: true,
+  getProjectQuery: vi.fn(() => ({ data: null })),
+  packVersionsQuery: vi.fn(() => ({ data: mocks.versions, isLoading: false })),
+  generationRunsQuery: vi.fn(() => ({ data: mocks.runs, isLoading: false })),
 }))
 
 vi.mock('@/lib/trpc', () => ({
   trpc: {
     workspace: {
-      getProject: { useQuery: () => ({ data: null }) },
+      getProject: { useQuery: mocks.getProjectQuery },
       savePack: { useMutation: () => ({ mutateAsync: vi.fn() }) },
-      listPackVersions: { useQuery: () => ({ data: mocks.versions, isLoading: false }) },
-      listGenerationRuns: { useQuery: () => ({ data: mocks.runs, isLoading: false }) },
+      listPackVersions: { useQuery: mocks.packVersionsQuery },
+      listGenerationRuns: { useQuery: mocks.generationRunsQuery },
       saveGenerationRun: { useMutation: () => ({ mutateAsync: mocks.saveRun }) },
       restorePackVersion: { useMutation: () => ({ mutateAsync: mocks.restoreVersion, isPending: false, variables: undefined }) },
     },
@@ -29,6 +33,7 @@ vi.mock('@/lib/trpc', () => ({
 }))
 
 vi.mock('../contexts/WorkspaceContext', () => ({ useWorkspaceSelection: () => ({ workspaceId: 'ws_history', projectId: 'prj_history' }) }))
+vi.mock('@/_core/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: mocks.isAuthenticated }) }))
 vi.mock('sonner', () => ({ toast: { message: mocks.toastMessage, success: vi.fn(), error: vi.fn(), warning: vi.fn() } }))
 vi.mock('../components/ArtifactEditor', () => ({ default: () => <div data-testid="artifact-editor" /> }))
 vi.mock('../components/GenerationProgressHeader', () => ({ default: () => <div data-testid="progress-header" /> }))
@@ -37,7 +42,7 @@ vi.mock('../components/GenerationRunPanel', () => ({ default: ({ run }: { run: {
 import Generator from './Generator'
 
 describe('Generator cloud reload recovery', () => {
-  afterEach(() => { cleanup(); mocks.runs = []; mocks.versions = []; vi.clearAllMocks() })
+  afterEach(() => { cleanup(); mocks.runs = []; mocks.versions = []; mocks.isAuthenticated = true; vi.clearAllMocks() })
 
   it('restores a persisted running cloud snapshot and surfaces resumable cancelled tasks', async () => {
     const pack = createCombinedPack('Reloaded cloud pack')
@@ -64,5 +69,16 @@ describe('Generator cloud reload recovery', () => {
     screen.getByRole('button', { name: /Restore/i }).click()
     await waitFor(() => expect(mocks.restoreVersion).toHaveBeenCalledWith({ workspaceId: 'ws_history', projectId: 'prj_history', versionId: 'ver_1' }))
     await waitFor(() => expect((screen.getByLabelText(/Video topic/i) as HTMLInputElement).value).toBe('Restored from history'))
+  })
+
+  it('stays local-first when a stale cloud selection exists without an authenticated session', () => {
+    mocks.isAuthenticated = false
+
+    render(<Generator />)
+
+    expect(screen.getByText('LOCAL-FIRST MODE')).toBeTruthy()
+    expect(mocks.getProjectQuery).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining({ enabled: false }))
+    expect(mocks.packVersionsQuery).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining({ enabled: false }))
+    expect(mocks.generationRunsQuery).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining({ enabled: false }))
   })
 })
