@@ -1,3 +1,4 @@
+import React from 'react'
 import { Clock3, History, RotateCcw, Save, Server, TriangleAlert } from 'lucide-react'
 
 type PackVersion = { id: string; revision: number; source: 'manual_save' | 'restore' | 'run_completion'; createdAt: Date; authorName: string | null }

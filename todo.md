@@ -33,3 +33,5 @@
 - [x] Add generator-level coverage for restoring a cloud pack snapshot and converting interrupted tasks to resumable recovery state.
 - [x] Add a Generator-focused cloud reload test that verifies queried run data restores the pack snapshot and converts active tasks to resumable recovery state.
 - [ ] Add persistence, authorization, restore, and UI regression coverage; validate and synchronize the durable-history slice to GitHub dev.
+- [x] Add workspace router coverage for immutable save, version listing, and restore procedures.
+- [x] Add Generator history-panel coverage for rendering cloud versions and runs and restoring a selected version.
