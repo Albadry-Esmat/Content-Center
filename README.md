@@ -39,6 +39,17 @@ pnpm install
 pnpm dev
 ```
 
+### Local macOS startup recovery
+
+If `pnpm dev` reports `ERR_MODULE_NOT_FOUND` for a package such as `dotenv`, the local `node_modules` directory is incomplete or stale; the committed dependency manifest and lockfile already declare the package. Restore the exact dependency tree without changing project files:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+The development server selects the next available port when port `3000` is occupied; use the localhost URL printed in the terminal. A missing `OAUTH_SERVER_URL` produces an OAuth configuration warning, but it is distinct from a dependency-installation failure. Configure the required Manus OAuth environment variables before testing authenticated cloud workspaces; local-first editing remains available without a cloud session.
+
 The current preview is served by Vite. The production build is:
 
 ```bash

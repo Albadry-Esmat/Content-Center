@@ -35,3 +35,5 @@
 - [x] Add persistence, authorization, restore, and UI regression coverage; validate and synchronize the durable-history slice to GitHub dev.
 - [x] Add workspace router coverage for immutable save, version listing, and restore procedures.
 - [x] Add Generator history-panel coverage for rendering cloud versions and runs and restoring a selected version.
+- [x] Diagnose and resolve the local macOS dotenv module resolution failure, then document reproducible startup recovery steps.
+- [x] Add concise local macOS startup troubleshooting for dependency installation, port fallback, and OAuth environment configuration.
