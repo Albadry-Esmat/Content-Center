@@ -18,3 +18,7 @@
 - [x] Pass generation preferences through prompts and apply the selected direction to editable script content.
 - [x] Generalize landing and settings copy, color hierarchy, feedback states, and motion for a creator-team SaaS product.
 - [x] Add regression coverage for preference persistence and prompt behavior, then validate and synchronize the enhancement to GitHub dev.
+- [ ] Define and implement a visible generation-status model for the pack, each deliverable, and every pipeline stage.
+- [ ] Make pipeline stage selection, prerequisites, artifacts, and editing actions explicit and actionable.
+- [ ] Add clear notification, error, retry, cancellation, and recovery UX for single-stage and combined-pack generation.
+- [ ] Validate the generation-progress experience with workflow tests, accessibility checks, screenshots, and GitHub dev synchronization.
