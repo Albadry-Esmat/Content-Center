@@ -17,4 +17,4 @@
 - [x] Add persisted script-language, RTL/LTR direction, and optional brand-phrase generation preferences.
 - [x] Pass generation preferences through prompts and apply the selected direction to editable script content.
 - [x] Generalize landing and settings copy, color hierarchy, feedback states, and motion for a creator-team SaaS product.
-- [ ] Add regression coverage for preference persistence and prompt behavior, then validate and synchronize the enhancement to GitHub dev.
+- [x] Add regression coverage for preference persistence and prompt behavior, then validate and synchronize the enhancement to GitHub dev.
