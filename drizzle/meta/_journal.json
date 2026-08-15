@@ -8,6 +8,20 @@
       "when": 1786720933961,
       "tag": "0000_unique_darkhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1786799491451,
+      "tag": "0001_famous_whistler",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786799938699,
+      "tag": "0002_shiny_the_captain",
+      "breakpoints": true
     }
   ]
 }

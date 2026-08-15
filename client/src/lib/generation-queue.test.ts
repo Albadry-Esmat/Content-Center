@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { runSequentialQueue } from './generation-queue'
+import { recoverInterruptedRun, runSequentialQueue } from './generation-queue'
 import type { GenerationTask } from './generation-progress'
 
 const tasks: GenerationTask[] = [
@@ -39,5 +39,13 @@ describe('sequential generation queue', () => {
 
     expect(failed).toMatchObject({ status: 'partial', tasks: [expect.objectContaining({ id: 'short-1:fields', outcome: 'failed' })] })
     expect(retry).toMatchObject({ status: 'complete', tasks: [expect.objectContaining({ id: 'short-1:fields', outcome: 'succeeded' })] })
+  })
+
+  it('converts an interrupted browser-side queue into clear resumable recovery state', () => {
+    const recovered = recoverInterruptedRun({ id: 'run-5', status: 'running', startedAt: 10, tasks: [{ ...tasks[0], outcome: 'succeeded' }, { ...tasks[1], outcome: 'running' }, { ...tasks[2], outcome: 'queued' }] }, () => 20)
+
+    expect(recovered.status).toBe('cancelled')
+    expect(recovered.tasks.map((task) => task.outcome)).toEqual(['succeeded', 'cancelled', 'cancelled'])
+    expect(recovered.tasks[1].message).toContain('Interrupted')
   })
 })

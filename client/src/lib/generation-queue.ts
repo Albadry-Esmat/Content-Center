@@ -45,3 +45,13 @@ export async function runSequentialQueue({ id, tasks, signal, worker, onUpdate, 
   const status = signal.aborted ? 'cancelled' : taskStates.some((task) => task.outcome === 'failed') ? 'partial' : 'complete'
   return publish(status, now())
 }
+
+export function recoverInterruptedRun(run: GenerationRun, now = Date.now): GenerationRun {
+  if (run.status !== 'running') return run
+  return {
+    ...run,
+    status: 'cancelled',
+    finishedAt: now(),
+    tasks: run.tasks.map((task) => task.outcome === 'queued' || task.outcome === 'running' ? { ...task, outcome: 'cancelled', finishedAt: now(), message: 'Interrupted when this browser session ended. Restart this stage when ready.' } : task),
+  }
+}

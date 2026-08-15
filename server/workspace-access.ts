@@ -4,6 +4,7 @@ import type { WorkspaceRole } from "../drizzle/schema";
 
 export const EDITOR_ROLES: WorkspaceRole[] = ["owner", "admin", "editor"];
 export const MANAGER_ROLES: WorkspaceRole[] = ["owner", "admin"];
+export const PROJECT_READ_ROLES: WorkspaceRole[] = ["owner", "admin", "editor", "reviewer", "viewer"];
 
 export function hasWorkspaceRole(role: WorkspaceRole, allowedRoles: readonly WorkspaceRole[]): boolean {
   return allowedRoles.includes(role);

@@ -1,0 +1,1 @@
+ALTER TABLE `project_generation_runs` ADD `packData` json;

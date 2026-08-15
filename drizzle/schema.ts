@@ -59,7 +59,39 @@ export const projects = mysqlTable("projects", {
   workspaceIdx: index("projects_workspace_idx").on(table.workspaceId),
 }));
 
+export const projectPackVersions = mysqlTable("project_pack_versions", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  workspaceId: varchar("workspaceId", { length: 36 }).notNull(),
+  projectId: varchar("projectId", { length: 36 }).notNull(),
+  revision: int("revision").notNull(),
+  source: mysqlEnum("source", ["manual_save", "restore", "run_completion"]).notNull().default("manual_save"),
+  packData: json("packData").$type<Record<string, unknown>>().notNull(),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({
+  projectRevisionUnique: uniqueIndex("project_pack_versions_project_revision_unique").on(table.projectId, table.revision),
+  workspaceProjectCreatedIdx: index("project_pack_versions_workspace_project_created_idx").on(table.workspaceId, table.projectId, table.createdAt),
+}));
+
+export const projectGenerationRuns = mysqlTable("project_generation_runs", {
+  id: varchar("id", { length: 80 }).primaryKey(),
+  workspaceId: varchar("workspaceId", { length: 36 }).notNull(),
+  projectId: varchar("projectId", { length: 36 }).notNull(),
+  status: mysqlEnum("status", ["running", "complete", "partial", "cancelled"]).notNull().default("running"),
+  tasks: json("tasks").$type<Record<string, unknown>[]>().notNull(),
+  packData: json("packData").$type<Record<string, unknown> | null>(),
+  startedAt: timestamp("startedAt").notNull(),
+  finishedAt: timestamp("finishedAt"),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({
+  workspaceProjectStartedIdx: index("project_generation_runs_workspace_project_started_idx").on(table.workspaceId, table.projectId, table.startedAt),
+}));
+
 export type Workspace = typeof workspaces.$inferSelect;
 export type WorkspaceMembership = typeof workspaceMemberships.$inferSelect;
 export type WorkspaceRole = NonNullable<WorkspaceMembership["role"]>;
 export type Project = typeof projects.$inferSelect;
+export type ProjectPackVersion = typeof projectPackVersions.$inferSelect;
+export type ProjectGenerationRun = typeof projectGenerationRuns.$inferSelect;

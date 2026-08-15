@@ -1,9 +1,9 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, projects, users, workspaceMemberships, workspaces, type WorkspaceRole } from "../drizzle/schema";
+import { InsertUser, projectGenerationRuns, projectPackVersions, projects, users, workspaceMemberships, workspaces, type WorkspaceRole } from "../drizzle/schema";
 import { nanoid } from "nanoid";
 import { ENV } from './_core/env';
-import { hasWorkspaceRole } from "./workspace-access";
+import { EDITOR_ROLES, PROJECT_READ_ROLES, hasWorkspaceRole } from "./workspace-access";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -139,7 +139,7 @@ export async function requireWorkspaceRole(userId: number, workspaceId: string, 
 }
 
 export async function listProjectsForWorkspace(userId: number, workspaceId: string) {
-  await requireWorkspaceRole(userId, workspaceId, ["owner", "admin", "editor", "reviewer", "viewer"]);
+  await requireWorkspaceRole(userId, workspaceId, PROJECT_READ_ROLES);
   const db = await requireDatabase();
   return db.select({ id: projects.id, title: projects.title, status: projects.status, createdAt: projects.createdAt, updatedAt: projects.updatedAt })
     .from(projects)
@@ -149,7 +149,7 @@ export async function listProjectsForWorkspace(userId: number, workspaceId: stri
 }
 
 export async function createProjectForWorkspace(userId: number, workspaceId: string, title: string) {
-  await requireWorkspaceRole(userId, workspaceId, ["owner", "admin", "editor"]);
+  await requireWorkspaceRole(userId, workspaceId, EDITOR_ROLES);
   const db = await requireDatabase();
   const id = `prj_${nanoid(18)}`;
   await db.insert(projects).values({ id, workspaceId, createdByUserId: userId, title: title.trim() });
@@ -158,16 +158,90 @@ export async function createProjectForWorkspace(userId: number, workspaceId: str
 }
 
 export async function getProjectForWorkspace(userId: number, workspaceId: string, projectId: string) {
-  await requireWorkspaceRole(userId, workspaceId, ["owner", "admin", "editor", "reviewer", "viewer"]);
+  await requireWorkspaceRole(userId, workspaceId, PROJECT_READ_ROLES);
   const db = await requireDatabase();
   const found = await db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.workspaceId, workspaceId))).limit(1);
   return found[0] ?? null;
 }
 
 export async function saveProjectPack(userId: number, workspaceId: string, projectId: string, packData: Record<string, unknown>) {
-  await requireWorkspaceRole(userId, workspaceId, ["owner", "admin", "editor"]);
+  await requireWorkspaceRole(userId, workspaceId, EDITOR_ROLES);
   const db = await requireDatabase();
   const existing = await getProjectForWorkspace(userId, workspaceId, projectId);
   if (!existing) throw new Error("Project not found in this workspace.");
-  await db.update(projects).set({ packData }).where(and(eq(projects.id, projectId), eq(projects.workspaceId, workspaceId)));
+  const latestVersion = await db.select({ revision: projectPackVersions.revision })
+    .from(projectPackVersions)
+    .where(and(eq(projectPackVersions.workspaceId, workspaceId), eq(projectPackVersions.projectId, projectId)))
+    .orderBy(desc(projectPackVersions.revision))
+    .limit(1);
+  const versionId = `ver_${nanoid(18)}`;
+  const revision = (latestVersion[0]?.revision ?? 0) + 1;
+  await db.transaction(async (tx) => {
+    await tx.update(projects).set({ packData }).where(and(eq(projects.id, projectId), eq(projects.workspaceId, workspaceId)));
+    await tx.insert(projectPackVersions).values({ id: versionId, workspaceId, projectId, revision, source: "manual_save", packData, createdByUserId: userId });
+  });
+  return { id: versionId, revision };
+}
+
+export async function listProjectPackVersions(userId: number, workspaceId: string, projectId: string) {
+  await requireWorkspaceRole(userId, workspaceId, PROJECT_READ_ROLES);
+  const db = await requireDatabase();
+  return db.select({ id: projectPackVersions.id, revision: projectPackVersions.revision, source: projectPackVersions.source, createdAt: projectPackVersions.createdAt, authorName: users.name })
+    .from(projectPackVersions)
+    .innerJoin(users, eq(projectPackVersions.createdByUserId, users.id))
+    .where(and(eq(projectPackVersions.workspaceId, workspaceId), eq(projectPackVersions.projectId, projectId)))
+    .orderBy(desc(projectPackVersions.revision))
+    .limit(30);
+}
+
+export async function restoreProjectPackVersion(userId: number, workspaceId: string, projectId: string, versionId: string) {
+  await requireWorkspaceRole(userId, workspaceId, EDITOR_ROLES);
+  const db = await requireDatabase();
+  const version = await db.select({ packData: projectPackVersions.packData })
+    .from(projectPackVersions)
+    .where(and(eq(projectPackVersions.id, versionId), eq(projectPackVersions.workspaceId, workspaceId), eq(projectPackVersions.projectId, projectId)))
+    .limit(1);
+  if (!version[0]) throw new Error("Version not found in this project.");
+  const latestVersion = await db.select({ revision: projectPackVersions.revision })
+    .from(projectPackVersions)
+    .where(and(eq(projectPackVersions.workspaceId, workspaceId), eq(projectPackVersions.projectId, projectId)))
+    .orderBy(desc(projectPackVersions.revision))
+    .limit(1);
+  const revision = (latestVersion[0]?.revision ?? 0) + 1;
+  const restoredVersionId = `ver_${nanoid(18)}`;
+  await db.transaction(async (tx) => {
+    await tx.update(projects).set({ packData: version[0].packData }).where(and(eq(projects.id, projectId), eq(projects.workspaceId, workspaceId)));
+    await tx.insert(projectPackVersions).values({ id: restoredVersionId, workspaceId, projectId, revision, source: "restore", packData: version[0].packData, createdByUserId: userId });
+  });
+  return { id: restoredVersionId, revision, packData: version[0].packData };
+}
+
+type GenerationRunInput = {
+  id: string;
+  status: "running" | "complete" | "partial" | "cancelled";
+  tasks: Record<string, unknown>[];
+  packData?: Record<string, unknown> | null;
+  startedAt: Date;
+  finishedAt?: Date | null;
+};
+
+export async function saveProjectGenerationRun(userId: number, workspaceId: string, projectId: string, run: GenerationRunInput) {
+  await requireWorkspaceRole(userId, workspaceId, EDITOR_ROLES);
+  const db = await requireDatabase();
+  const existingProject = await getProjectForWorkspace(userId, workspaceId, projectId);
+  if (!existingProject) throw new Error("Project not found in this workspace.");
+  await db.insert(projectGenerationRuns).values({ ...run, workspaceId, projectId, createdByUserId: userId }).onDuplicateKeyUpdate({
+    set: { status: run.status, tasks: run.tasks, packData: run.packData ?? null, startedAt: run.startedAt, finishedAt: run.finishedAt ?? null },
+  });
+}
+
+export async function listProjectGenerationRuns(userId: number, workspaceId: string, projectId: string) {
+  await requireWorkspaceRole(userId, workspaceId, PROJECT_READ_ROLES);
+  const db = await requireDatabase();
+  return db.select({ id: projectGenerationRuns.id, status: projectGenerationRuns.status, tasks: projectGenerationRuns.tasks, packData: projectGenerationRuns.packData, startedAt: projectGenerationRuns.startedAt, finishedAt: projectGenerationRuns.finishedAt, createdAt: projectGenerationRuns.createdAt, authorName: users.name })
+    .from(projectGenerationRuns)
+    .innerJoin(users, eq(projectGenerationRuns.createdByUserId, users.id))
+    .where(and(eq(projectGenerationRuns.workspaceId, workspaceId), eq(projectGenerationRuns.projectId, projectId)))
+    .orderBy(desc(projectGenerationRuns.startedAt))
+    .limit(20);
 }

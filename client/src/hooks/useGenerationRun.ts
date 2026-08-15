@@ -13,6 +13,7 @@ export function useGenerationRun(worker: GenerationTaskWorker) {
   workerRef.current = worker
 
   const cancel = useCallback(() => controllerRef.current?.abort(), [])
+  const recover = useCallback((interruptedRun: GenerationRun) => setRun(interruptedRun), [])
 
   const start = useCallback(async (tasks: GenerationTask[]) => {
     if (!tasks.length || controllerRef.current) return
@@ -26,5 +27,5 @@ export function useGenerationRun(worker: GenerationTaskWorker) {
     }
   }, [])
 
-  return { run, isRunning: Boolean(controllerRef.current), start, cancel }
+  return { run, isRunning: Boolean(controllerRef.current), start, cancel, recover }
 }

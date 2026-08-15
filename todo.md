@@ -24,3 +24,12 @@
 - [x] Add explicit combined-mode stage actions beyond fields and inline retry or recovery actions for failed run tasks.
 - [x] Add regression coverage for combined multi-deliverable stage runs, partial failure, cancellation, and retry flows.
 - [x] Validate the generation-progress experience with workflow tests, accessibility checks, screenshots, and GitHub dev synchronization.
+- [x] Add workspace-scoped project generation runs with durable queue outcomes and recovery metadata.
+- [x] Add immutable project pack versions with author, source, revision number, and restore support.
+- [x] Surface recent runs and revision history in the production desk without interrupting local-first mode.
+- [x] Persist active cloud generation queues as they update and recover the latest durable run after refresh or navigation.
+- [x] Add regression coverage for in-progress cloud run persistence and reload recovery.
+- [x] Add workspace API integration coverage for running-status snapshots and recoverable run listing.
+- [x] Add generator-level coverage for restoring a cloud pack snapshot and converting interrupted tasks to resumable recovery state.
+- [x] Add a Generator-focused cloud reload test that verifies queried run data restores the pack snapshot and converts active tasks to resumable recovery state.
+- [ ] Add persistence, authorization, restore, and UI regression coverage; validate and synchronize the durable-history slice to GitHub dev.
