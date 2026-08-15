@@ -50,15 +50,17 @@ pnpm dev
 
 The development server selects the next available port when port `3000` is occupied; use the localhost URL printed in the terminal. A missing `OAUTH_SERVER_URL` produces an OAuth configuration warning, but it is distinct from a dependency-installation failure. Configure the required Manus OAuth environment variables before testing authenticated cloud workspaces; local-first editing remains available without a cloud session.
 
-### Local cloud workspace sign-in
+### Optional cloud workspace sync
 
-Cloud workspace sign-in needs a local `.env` file; Git intentionally excludes it because it contains secrets. Create it locally and obtain the values from the project owner or the Manus project settings:
+No `.env`, account, or OAuth setup is required for the local creator desk. Create, save, restore, and export packs directly in the browser. Cloud workspace sign-in is an optional upgrade for shared projects, cross-device history, and collaboration.
+
+If you choose to enable cloud sync, create a local `.env` file; Git intentionally excludes it because it contains secrets. Obtain the values from the project owner or the Manus project settings:
 
 ```bash
 touch .env
 ```
 
-`VITE_OAUTH_PORTAL_URL` and `VITE_APP_ID` enable the browser sign-in redirect. `OAUTH_SERVER_URL`, `JWT_SECRET`, `DATABASE_URL`, `OWNER_OPEN_ID`, and `OWNER_NAME` are required by the server-side callback, session, and workspace bootstrap paths. Restart `pnpm dev` after changing `.env`. If either browser-safe value is missing, the workspace screen now displays an actionable setup message instead of attempting an invalid redirect.
+`VITE_OAUTH_PORTAL_URL` and `VITE_APP_ID` enable the browser sign-in redirect. `OAUTH_SERVER_URL`, `JWT_SECRET`, `DATABASE_URL`, `OWNER_OPEN_ID`, and `OWNER_NAME` are required by the server-side callback, session, and workspace bootstrap paths. Restart `pnpm dev` after changing `.env`. If either browser-safe value is missing, the workspace screen keeps the local desk available and displays an actionable setup message rather than attempting an invalid redirect.
 
 The current preview is served by Vite. The production build is:
 

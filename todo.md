@@ -37,5 +37,8 @@
 - [x] Add Generator history-panel coverage for rendering cloud versions and runs and restoring a selected version.
 - [x] Diagnose and resolve the local macOS dotenv module resolution failure, then document reproducible startup recovery steps.
 - [x] Add concise local macOS startup troubleshooting for dependency installation, port fallback, and OAuth environment configuration.
-- [ ] Diagnose and resolve local OAuth sign-in configuration so authenticated workspace creation can complete on macOS.
+- [x] Superseded the local OAuth sign-in prerequisite with a local-first workspace design; OAuth configuration is now optional for cloud sync.
 - [x] Add clear local OAuth setup guidance and visible recovery feedback for sign-in or workspace-bootstrap failures.
+- [x] Replace the authentication-gated workspace screen with a local-first project desk that works without OAuth configuration.
+- [x] Make cloud sign-in and workspace sync optional enhancements instead of prerequisites for project creation and pack persistence.
+- [ ] Add local-first workspace/project persistence, navigation, and recovery regression coverage; validate and synchronize the simplification to GitHub dev.
