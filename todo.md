@@ -41,4 +41,4 @@
 - [x] Add clear local OAuth setup guidance and visible recovery feedback for sign-in or workspace-bootstrap failures.
 - [x] Replace the authentication-gated workspace screen with a local-first project desk that works without OAuth configuration.
 - [x] Make cloud sign-in and workspace sync optional enhancements instead of prerequisites for project creation and pack persistence.
-- [ ] Add local-first workspace/project persistence, navigation, and recovery regression coverage; validate and synchronize the simplification to GitHub dev.
+- [x] Add local-first workspace/project persistence, navigation, and recovery regression coverage; validate and synchronize the simplification to GitHub dev.
