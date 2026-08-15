@@ -23,4 +23,4 @@
 - [x] Add clear notification, error, retry, cancellation, and recovery UX for single-stage and combined-pack generation.
 - [x] Add explicit combined-mode stage actions beyond fields and inline retry or recovery actions for failed run tasks.
 - [x] Add regression coverage for combined multi-deliverable stage runs, partial failure, cancellation, and retry flows.
-- [ ] Validate the generation-progress experience with workflow tests, accessibility checks, screenshots, and GitHub dev synchronization.
+- [x] Validate the generation-progress experience with workflow tests, accessibility checks, screenshots, and GitHub dev synchronization.
