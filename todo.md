@@ -37,3 +37,5 @@
 - [x] Add Generator history-panel coverage for rendering cloud versions and runs and restoring a selected version.
 - [x] Diagnose and resolve the local macOS dotenv module resolution failure, then document reproducible startup recovery steps.
 - [x] Add concise local macOS startup troubleshooting for dependency installation, port fallback, and OAuth environment configuration.
+- [ ] Diagnose and resolve local OAuth sign-in configuration so authenticated workspace creation can complete on macOS.
+- [x] Add clear local OAuth setup guidance and visible recovery feedback for sign-in or workspace-bootstrap failures.
