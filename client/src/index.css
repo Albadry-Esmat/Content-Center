@@ -150,25 +150,61 @@ a { color: inherit; text-decoration: none; }
 .full-button { width: 100%; margin-top: 18px; }
 .compose-button-row { display: flex; align-items: end; gap: 8px; }
 .cancel-button { margin-top: 18px; }
+.pack-progress { display: grid; gap: 13px; margin: -14px 0 22px; padding: 16px 18px; border: 1px solid var(--line); background: var(--card-bg); }
+.pack-progress-heading, .pack-progress-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pack-progress-heading > div { display: grid; gap: 5px; }
+.pack-progress-heading strong { color: var(--text); font: 600 14px Space Grotesk, sans-serif; }
+.pack-progress-state { display: inline-flex; align-items: center; gap: 7px; padding: 7px 9px; color: var(--steel); background: var(--steel-wash); font: 600 9px Space Grotesk, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+.pack-progress-state.running { color: var(--amber-soft); background: var(--wash); }
+.pack-progress-state.attention { color: var(--danger); background: color-mix(in srgb, var(--danger) 9%, transparent); }
+.pack-progress-track { height: 4px; overflow: hidden; background: var(--line); }
+.pack-progress-track span { display: block; height: 100%; background: var(--amber); transition: width .32s var(--ease-out); }
+.pack-progress-meta { justify-content: flex-start; flex-wrap: wrap; color: var(--muted); font-size: 10px; }
+.pack-progress-meta > span { display: inline-flex; align-items: center; gap: 5px; }
+.pack-progress-meta svg { color: var(--amber); }
+.pack-progress-meta .text-button { margin-left: auto; }
 .workbench-panel { border: 1px solid var(--line); background: var(--card-bg); box-shadow: 0 18px 48px color-mix(in srgb, var(--ink) 12%, transparent); }
 .stage-rail { padding: 25px 26px 12px; border-bottom: 1px solid var(--line); }
 .stage-track { height: 2px; margin: 17px 0 5px; background: var(--line); }
 .stage-track span { position: relative; display: block; height: 2px; background: var(--amber); transition: width .55s var(--ease-out); }
 .stage-track span::after { content: ''; position: absolute; top: -3px; right: 0; width: 36px; height: 8px; border-radius: 50%; background: var(--amber); opacity: .65; filter: blur(4px); animation: progressGlow 1.6s ease-in-out infinite; }
-.stage-item { display: grid; grid-template-columns: 28px 1fr 18px; gap: 11px; align-items: center; width: 100%; padding: 12px 0; color: var(--muted); background: none; text-align: left; cursor: pointer; }
+.stage-item { display: grid; grid-template-columns: 28px 1fr; gap: 11px; align-items: center; width: 100%; padding: 12px 0; color: var(--muted); background: none; text-align: left; cursor: pointer; }
 .stage-item:hover, .stage-item.active { color: var(--text); }
-.stage-item > svg { transition: transform .22s var(--ease-out), color .22s var(--ease-out); }
-.stage-item.active > svg { color: var(--amber); transform: rotate(180deg); }
 .stage-item.active .stage-number, .stage-item.done .stage-number { color: var(--ink); background: var(--amber); }
 .stage-item.active .stage-number { animation: numberPulse 1.8s ease-in-out infinite; }
 .stage-number { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--line); color: var(--muted); font: 600 10px Space Grotesk, sans-serif; }
 .stage-item b, .stage-item small { display: block; }
 .stage-item b { font-size: 11px; font-weight: 600; }
 .stage-item small { margin-top: 3px; color: #6c7c8e; font-size: 10px; }
-.stage-item > svg { color: #526171; }
+.stage-item.generating small { color: var(--amber-soft); }
+.stage-item.queued small { color: var(--steel); }
+.stage-item.needs-attention small { color: var(--danger); }
+.stage-item.needs-refresh small, .stage-item.review-required small { color: var(--amber-soft); }
+.stage-context { display: grid; gap: 7px; margin: 0 26px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.stage-context b { color: var(--text); font: 600 13px Space Grotesk, sans-serif; }
+.stage-context p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.stage-context .button { justify-self: start; min-height: 34px; padding: 0 11px; }
+.generation-run-panel { display: grid; gap: 14px; margin: 16px 26px; padding: 16px; border: 1px solid var(--line); background: var(--ink-2); }
+.generation-run-panel.idle { min-height: 112px; align-content: center; border-style: dashed; }
+.run-panel-heading { display: flex; justify-content: space-between; gap: 14px; }
+.run-panel-heading h2 { margin: 6px 0 4px; color: var(--text); font: 600 15px Space Grotesk, sans-serif; }
+.run-panel-heading p { margin: 0; color: var(--muted); font-size: 10px; }
+.generation-run-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.run-task { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: center; padding: 8px; border-left: 2px solid var(--line); background: color-mix(in srgb, var(--ink) 2%, transparent); }
+.run-task-icon { display: grid; place-items: center; color: var(--muted); }
+.run-task b, .run-task small { display: block; }
+.run-task b { color: var(--text); font-size: 10px; }
+.run-task small { margin-top: 3px; color: var(--muted); font-size: 9px; line-height: 1.4; }
+.run-task.running { border-left-color: var(--amber); }
+.run-task.running .run-task-icon, .run-task.succeeded .run-task-icon { color: var(--amber); }
+.run-task.warning, .run-task.fallback { border-left-color: var(--amber-soft); }
+.run-task.warning .run-task-icon, .run-task.fallback .run-task-icon { color: var(--amber-soft); }
+.run-task.failed { border-left-color: var(--danger); }
+.run-task.failed .run-task-icon { color: var(--danger); }
 .part-tabs { display: flex; gap: 6px; padding: 11px 26px; overflow-x: auto; border-bottom: 1px solid var(--line); }
 .part-tabs button { padding: 7px 10px; color: var(--muted); background: transparent; border: 1px solid transparent; cursor: pointer; font: 600 10px Space Grotesk, sans-serif; }
 .part-tabs button.selected { color: var(--amber); border-color: rgba(245,179,66,.35); background: rgba(245,179,66,.06); }
+.part-tabs button small { margin-left: 4px; color: var(--muted); font: 9px Inter, sans-serif; }
 .preview-panel { min-height: 415px; padding: 25px 26px; }
 .preview-badge { display: inline-flex; align-items: center; gap: 6px; margin-top: 28px; color: var(--amber); font: 600 10px Space Grotesk, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .preview-content h2 { max-width: 580px; margin: 20px 0 13px; font: 600 31px/1.05 Space Grotesk, sans-serif; letter-spacing: -.03em; }

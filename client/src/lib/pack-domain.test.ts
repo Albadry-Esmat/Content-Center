@@ -27,6 +27,16 @@ describe('combined pack domain', () => {
     expect(running.parts[0].stageStatus.fields).toBe('running')
     expect(failed.parts[0].stageStatus.fields).toBe('error')
     expect(failed.parts[0].error).toBe('AI request failed')
+    expect(failed.parts[0].stageFeedback?.fields).toMatchObject({ kind: 'error', message: 'AI request failed' })
+  })
+
+  it('preserves explicit local draft fallback provenance after a stage completes', () => {
+    const pack = createCombinedPack('Plugin pipeline')
+    const completed = packReducer(pack, { type: 'complete-fields', partKey: 'long', fields: { title: 'Title', promise: 'Promise', audience: 'Audience', hook: 'Hook', story: 'Story', insight: 'Insight', proof: 'Proof', payoff: 'Payoff', cta: 'CTA' } })
+    const fallback = packReducer(completed, { type: 'stage-fallback', stage: 'fields', partKey: 'long', message: 'Local draft fallback used. Review before use.' })
+
+    expect(fallback.parts[0].stageStatus.fields).toBe('done')
+    expect(fallback.parts[0].stageFeedback?.fields).toMatchObject({ kind: 'fallback', message: 'Local draft fallback used. Review before use.' })
   })
 })
 
