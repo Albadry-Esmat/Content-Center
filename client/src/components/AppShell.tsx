@@ -7,10 +7,10 @@ import { useTheme } from '../contexts/ThemeContext'
 
 const nav = [
   { href: '/workspace', label: 'Workspace', caption: 'Cloud projects', icon: Cloud },
-  { href: '/generator', label: 'Generator', caption: 'Production desk', icon: Sparkles },
-  { href: '/system/long', label: 'Long system', caption: 'Authority asset', icon: BookOpen },
-  { href: '/system/short', label: 'Short system', caption: 'Discovery pack', icon: Clapperboard },
-  { href: '/saved', label: 'Saved packs', caption: 'Local library', icon: FileText },
+  { href: '/generator', label: 'Create', caption: 'Content builder', icon: Sparkles },
+  { href: '/system/long', label: 'Long-form', caption: 'Authority story', icon: BookOpen },
+  { href: '/system/short', label: 'Short-form', caption: 'Social series', icon: Clapperboard },
+  { href: '/saved', label: 'Library', caption: 'Saved packs', icon: FileText },
 ]
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -20,9 +20,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
       <aside className="side-rail">
-        <Link href="/generator" className="brand-lockup" aria-label="Albadry Content Desk home">
+        <Link href="/" className="brand-lockup" aria-label="Content Center home">
           <span className="brand-mark" aria-hidden="true"><span /><span /><span /></span>
-          <span><strong>ALBADRY</strong><small>CONTENT DESK</small></span>
+          <span><strong>CONTENT CENTER</strong><small>CREATOR OPERATIONS</small></span>
         </Link>
         <div className="rail-rule" />
         <p className="rail-kicker">WORKSPACE</p>
@@ -38,14 +38,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="rail-spacer" />
         <Link href="/settings" className={`rail-link ${location === '/settings' ? 'active' : ''}`}>
           <Settings2 size={17} strokeWidth={1.8} />
-          <span><strong>Settings</strong><small>Connection & rules</small></span>
+          <span><strong>Settings</strong><small>Voice & connection</small></span>
         </Link>
         <div className="rail-account"><span className="section-index">ACCOUNT</span><strong>{isAuthenticated ? user?.name || 'Signed in' : 'Local mode'}</strong><small>{isAuthenticated ? 'Cloud workspace available' : 'Sign in to sync projects'}</small></div><div className="rail-status"><span className="status-dot" /> {isAuthenticated ? 'Cloud sync ready' : 'Local-first mode'} <span className="status-live">READY</span></div>
       </aside>
       <main className="main-stage">
         <header className="topbar">
-          <div><span className="eyebrow">ALBADRY / VIDEO CONTENT SYSTEM</span><span className="topbar-title">Private production desk</span></div>
-          <div className="topbar-meta"><span className="activity-chip"><i /> Desk live</span><span><BarChart3 size={14} /> Rules v3.2</span><span className="topbar-divider" /><span>14 AUG 2026</span><button className="theme-switch" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>{theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}<span>{theme === 'dark' ? 'Light' : 'Dark'}</span></button></div>
+          <div><span className="eyebrow">CONTENT CENTER / CREATOR OPERATIONS</span><span className="topbar-title">A shared space for content decisions</span></div>
+          <div className="topbar-meta"><span className="activity-chip"><i /> Workspace live</span><span><BarChart3 size={14} /> Content flow</span><span className="topbar-divider" /><span>{isAuthenticated ? 'Cloud ready' : 'Local-first'}</span><button className="theme-switch" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>{theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}<span>{theme === 'dark' ? 'Light' : 'Dark'}</span></button></div>
         </header>
         {children}
       </main>

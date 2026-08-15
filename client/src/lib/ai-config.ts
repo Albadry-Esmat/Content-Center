@@ -7,6 +7,9 @@ export type AiConfig = {
   maxTokens: number
   persistKey: boolean
   apiKey: string
+  scriptLanguage: string
+  textDirection: 'auto' | 'ltr' | 'rtl'
+  brandPhrases: string
 }
 
 const AI_CONFIG_KEY = 'albadry_ai_config_v2'
@@ -18,6 +21,9 @@ export const DEFAULT_AI_CONFIG: AiConfig = {
   maxTokens: 4096,
   persistKey: false,
   apiKey: '',
+  scriptLanguage: 'English',
+  textDirection: 'auto',
+  brandPhrases: '',
 }
 
 export function loadAiConfig(): AiConfig {

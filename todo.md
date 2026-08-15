@@ -13,3 +13,8 @@
 - [x] Add route-level lazy loading, cacheable vendor chunks, and a repeatable bundle-audit script for the active Vite runtime.
 - [x] Keep repository secret scanning strict while allowing clearly labeled documentation placeholders in the retained behavioral reference.
 - [x] Synchronize the validated SaaS foundation to GitHub dev and verify the remote branch before reporting completion.
+- [x] Replace the missing home-page visual with a durable web asset and verify its rendered state.
+- [x] Add persisted script-language, RTL/LTR direction, and optional brand-phrase generation preferences.
+- [x] Pass generation preferences through prompts and apply the selected direction to editable script content.
+- [x] Generalize landing and settings copy, color hierarchy, feedback states, and motion for a creator-team SaaS product.
+- [ ] Add regression coverage for preference persistence and prompt behavior, then validate and synchronize the enhancement to GitHub dev.
