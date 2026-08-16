@@ -1,7 +1,8 @@
 // Design philosophy: Editorial Control Room — generation is observable, cancelable, and validated before it becomes an artifact.
 
 import { loadAiConfig, type AiConfig } from './ai-config'
-import { createBrowserProvider, type AiProvider } from './ai-provider'
+import { type AiProvider } from './ai-provider'
+import { createProviderForConfig } from './provider-registry'
 import { parseModelJson, validateMontage } from './ai-parser'
 import { buildFieldsPrompt, buildScriptPrompt } from './prompt-builders'
 import type { CampaignConfig } from './campaign-config'
@@ -24,7 +25,7 @@ function normaliseFields(input: unknown): { fields: FieldSet; warnings: string[]
 
 export async function generateFieldsForPart(input: { partKey: PartKey; topic: string; notes: string; rulesVersion: string; campaign?: CampaignConfig; config?: AiConfig; provider?: AiProvider; signal?: AbortSignal }) {
   const config = input.config || loadAiConfig()
-  const provider = input.provider || createBrowserProvider()
+  const provider = input.provider || createProviderForConfig(config)
   const controller = new AbortController()
   const timeout = globalThis.setTimeout(() => controller.abort(), 120_000)
   const relayAbort = () => controller.abort()
@@ -43,7 +44,7 @@ export async function generateFieldsForPart(input: { partKey: PartKey; topic: st
 
 export async function generateScriptForPart(input: { partKey: PartKey; topic: string; notes: string; fields: FieldSet; campaign?: CampaignConfig; config?: AiConfig; provider?: AiProvider; signal?: AbortSignal }): Promise<ScriptArtifact> {
   const config = input.config || loadAiConfig()
-  const provider = input.provider || createBrowserProvider()
+  const provider = input.provider || createProviderForConfig(config)
   const controller = new AbortController(); const timeout = globalThis.setTimeout(() => controller.abort(), 120_000)
   const relayAbort = () => controller.abort(); input.signal?.addEventListener('abort', relayAbort, { once: true })
   try {
@@ -54,7 +55,7 @@ export async function generateScriptForPart(input: { partKey: PartKey; topic: st
 }
 
 export async function generateMontageForPart(input: { partKey: PartKey; topic: string; script: ScriptArtifact; config?: AiConfig; provider?: AiProvider; signal?: AbortSignal }): Promise<{ shots: MontageShot[]; warnings: string[] }> {
-  const config = input.config || loadAiConfig(); const provider = input.provider || createBrowserProvider()
+  const config = input.config || loadAiConfig(); const provider = input.provider || createProviderForConfig(config)
   const controller = new AbortController(); const timeout = globalThis.setTimeout(() => controller.abort(), 120_000)
   const relayAbort = () => controller.abort(); input.signal?.addEventListener('abort', relayAbort, { once: true })
   try {
@@ -67,7 +68,7 @@ export async function generateMontageForPart(input: { partKey: PartKey; topic: s
 }
 
 export async function generateGradeForPart(input: { partKey: PartKey; topic: string; script: ScriptArtifact; config?: AiConfig; provider?: AiProvider; signal?: AbortSignal }): Promise<GradeArtifact> {
-  const config = input.config || loadAiConfig(); const provider = input.provider || createBrowserProvider()
+  const config = input.config || loadAiConfig(); const provider = input.provider || createProviderForConfig(config)
   const controller = new AbortController(); const timeout = globalThis.setTimeout(() => controller.abort(), 120_000)
   const relayAbort = () => controller.abort(); input.signal?.addEventListener('abort', relayAbort, { once: true })
   try {

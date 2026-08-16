@@ -2,6 +2,7 @@
 
 import type { GenerationStage, StageStatus } from './content-types'
 import { createDefaultCampaignConfig, type CampaignConfig } from './campaign-config'
+import type { GenerationProvenance } from './generation-provenance'
 
 export type PartKey = 'long' | `short-${number}`
 
@@ -34,6 +35,7 @@ export type PartState = {
   error?: string
   warnings?: string[]
   stageFeedback?: Partial<Record<GenerationStage, StageFeedback>>
+  provenance?: Partial<Record<GenerationStage, GenerationProvenance>>
 }
 
 export type CombinedPack = {
@@ -49,16 +51,16 @@ export type PackAction =
   | { type: 'set-meta'; topic: string; notes: string }
   | { type: 'update-campaign'; campaign: Partial<CampaignConfig> }
   | { type: 'start-stage'; stage: GenerationStage; partKey: PartKey }
-  | { type: 'complete-fields'; partKey: PartKey; fields: FieldSet; warnings?: string[] }
-  | { type: 'complete-script'; partKey: PartKey; markdown: string }
-  | { type: 'complete-montage'; partKey: PartKey; shots: MontageShot[]; warnings?: string[] }
-  | { type: 'complete-grade'; partKey: PartKey; grade: GradeArtifact }
+  | { type: 'complete-fields'; partKey: PartKey; fields: FieldSet; warnings?: string[]; provenance?: GenerationProvenance }
+  | { type: 'complete-script'; partKey: PartKey; markdown: string; provenance?: GenerationProvenance }
+  | { type: 'complete-montage'; partKey: PartKey; shots: MontageShot[]; warnings?: string[]; provenance?: GenerationProvenance }
+  | { type: 'complete-grade'; partKey: PartKey; grade: GradeArtifact; provenance?: GenerationProvenance }
   | { type: 'update-field'; partKey: PartKey; field: keyof FieldSet; value: string }
   | { type: 'update-script'; partKey: PartKey; markdown: string }
   | { type: 'update-montage'; partKey: PartKey; index: number; shot: Partial<MontageShot> }
   | { type: 'update-grade'; partKey: PartKey; grade: Partial<GradeArtifact> }
   | { type: 'stage-error'; stage: GenerationStage; partKey: PartKey; message: string }
-  | { type: 'stage-fallback'; stage: GenerationStage; partKey: PartKey; message: string }
+  | { type: 'stage-fallback'; stage: GenerationStage; partKey: PartKey; message: string; provenance?: GenerationProvenance }
   | { type: 'toggle-run-sheet'; index: number }
 
 export function partKeyLabel(key: PartKey): string { return key === 'long' ? 'Long-form' : `Short ${key.replace('short-', '#')}` }
@@ -111,16 +113,16 @@ export function packReducer(pack: CombinedPack, action: PackAction): CombinedPac
     case 'set-meta': return { ...pack, meta: { ...pack.meta, topic: action.topic, notes: action.notes, updatedAt: new Date().toISOString() } }
     case 'update-campaign': return { ...pack, campaign: createDefaultCampaignConfig({ ...pack.campaign, ...action.campaign }), meta: { ...pack.meta, updatedAt: new Date().toISOString() } }
     case 'start-stage': return updatePart(pack, action.partKey, (part) => ({ ...part, error: undefined, stageFeedback: { ...part.stageFeedback, [action.stage]: undefined }, stageStatus: { ...part.stageStatus, [action.stage]: 'running' } }))
-    case 'complete-fields': return updatePart(pack, action.partKey, (part) => ({ ...part, fields: action.fields, warnings: action.warnings, stageFeedback: { ...part.stageFeedback, fields: { kind: action.warnings?.length ? 'warning' : 'success', message: action.warnings?.join(' '), createdAt: new Date().toISOString() } }, stageStatus: markDownstreamStale({ ...part.stageStatus, fields: 'done' }, 'fields'), error: undefined }))
-    case 'complete-script': return updatePart(pack, action.partKey, (part) => ({ ...part, script: { markdown: action.markdown, wordCount: action.markdown.trim() ? action.markdown.trim().split(/\s+/).length : 0 }, stageFeedback: { ...part.stageFeedback, script: { kind: 'success', createdAt: new Date().toISOString() } }, stageStatus: markDownstreamStale({ ...part.stageStatus, script: 'done' }, 'script'), error: undefined }))
-    case 'complete-montage': return updatePart(pack, action.partKey, (part) => ({ ...part, montage: action.shots, warnings: action.warnings, stageFeedback: { ...part.stageFeedback, montage: { kind: action.warnings?.length ? 'warning' : 'success', message: action.warnings?.join(' '), createdAt: new Date().toISOString() } }, stageStatus: { ...part.stageStatus, montage: 'done' }, error: undefined }))
-    case 'complete-grade': return updatePart(pack, action.partKey, (part) => ({ ...part, grade: action.grade, stageFeedback: { ...part.stageFeedback, grade: { kind: 'success', createdAt: new Date().toISOString() } }, stageStatus: { ...part.stageStatus, grade: 'done' }, error: undefined }))
+    case 'complete-fields': return updatePart(pack, action.partKey, (part) => ({ ...part, fields: action.fields, warnings: action.warnings, provenance: { ...part.provenance, fields: action.provenance }, stageFeedback: { ...part.stageFeedback, fields: { kind: action.warnings?.length ? 'warning' : 'success', message: action.warnings?.join(' '), createdAt: new Date().toISOString() } }, stageStatus: markDownstreamStale({ ...part.stageStatus, fields: 'done' }, 'fields'), error: undefined }))
+    case 'complete-script': return updatePart(pack, action.partKey, (part) => ({ ...part, script: { markdown: action.markdown, wordCount: action.markdown.trim() ? action.markdown.trim().split(/\s+/).length : 0 }, provenance: { ...part.provenance, script: action.provenance }, stageFeedback: { ...part.stageFeedback, script: { kind: 'success', createdAt: new Date().toISOString() } }, stageStatus: markDownstreamStale({ ...part.stageStatus, script: 'done' }, 'script'), error: undefined }))
+    case 'complete-montage': return updatePart(pack, action.partKey, (part) => ({ ...part, montage: action.shots, warnings: action.warnings, provenance: { ...part.provenance, montage: action.provenance }, stageFeedback: { ...part.stageFeedback, montage: { kind: action.warnings?.length ? 'warning' : 'success', message: action.warnings?.join(' '), createdAt: new Date().toISOString() } }, stageStatus: { ...part.stageStatus, montage: 'done' }, error: undefined }))
+    case 'complete-grade': return updatePart(pack, action.partKey, (part) => ({ ...part, grade: action.grade, provenance: { ...part.provenance, grade: action.provenance }, stageFeedback: { ...part.stageFeedback, grade: { kind: 'success', createdAt: new Date().toISOString() } }, stageStatus: { ...part.stageStatus, grade: 'done' }, error: undefined }))
     case 'update-field': return updatePart(pack, action.partKey, (part) => ({ ...part, fields: { ...(part.fields || { title: '', promise: '', audience: '', hook: '', story: '', insight: '', proof: '', payoff: '', cta: '' }), [action.field]: action.value }, stageStatus: markDownstreamStale({ ...part.stageStatus, fields: 'done' }, 'fields') }))
     case 'update-script': return updatePart(pack, action.partKey, (part) => ({ ...part, script: { markdown: action.markdown, wordCount: action.markdown.trim() ? action.markdown.trim().split(/\s+/).length : 0 }, stageStatus: markDownstreamStale({ ...part.stageStatus, script: 'done' }, 'script') }))
     case 'update-montage': return updatePart(pack, action.partKey, (part) => ({ ...part, montage: (part.montage || []).map((shot, index) => index === action.index ? { ...shot, ...action.shot } : shot), stageStatus: { ...part.stageStatus, montage: 'done' } }))
     case 'update-grade': return updatePart(pack, action.partKey, (part) => ({ ...part, grade: { ...(part.grade || { filter: '', intensity: 0, exposure: 0, contrast: 0, saturation: 0, temperature: 0, notes: '' }), ...action.grade }, stageStatus: { ...part.stageStatus, grade: 'done' } }))
     case 'stage-error': return updatePart(pack, action.partKey, (part) => ({ ...part, error: action.message, stageFeedback: { ...part.stageFeedback, [action.stage]: { kind: 'error', message: action.message, createdAt: new Date().toISOString() } }, stageStatus: { ...part.stageStatus, [action.stage]: 'error' } }))
-    case 'stage-fallback': return updatePart(pack, action.partKey, (part) => ({ ...part, stageFeedback: { ...part.stageFeedback, [action.stage]: { kind: 'fallback', message: action.message, createdAt: new Date().toISOString() } } }))
+    case 'stage-fallback': return updatePart(pack, action.partKey, (part) => ({ ...part, provenance: { ...part.provenance, [action.stage]: action.provenance }, stageFeedback: { ...part.stageFeedback, [action.stage]: { kind: 'fallback', message: action.message, createdAt: new Date().toISOString() } } }))
     case 'toggle-run-sheet': return { ...pack, meta: { ...pack.meta, updatedAt: new Date().toISOString() }, runSheet: pack.runSheet.map((item, index) => index === action.index ? { ...item, done: !item.done } : item) }
   }
 }

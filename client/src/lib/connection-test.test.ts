@@ -20,6 +20,15 @@ describe('AI connection test', () => {
     expect(result.message).toContain('HTTP 401')
   })
 
+  it('refuses known-provider browser routing without making a request', async () => {
+    const fetchImpl = vi.fn()
+    const result = await testAiConnection({ ...config, providerMode: 'known-provider', providerId: 'openai' }, fetchImpl)
+
+    expect(result.ok).toBe(false)
+    expect(result.message).toContain('server-side provider proxy')
+    expect(fetchImpl).not.toHaveBeenCalled()
+  })
+
   it('reports empty configuration before making a request', async () => {
     const fetchImpl = vi.fn()
     const result = await testAiConnection({ ...config, baseUrl: '' }, fetchImpl)

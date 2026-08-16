@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createCombinedPack, packReducer } from './pack-domain'
 import { deserializeCombinedPacks, serializeCombinedPacks } from './content-storage'
 import { clampGrade, parseModelJson, validateMontage } from './ai-parser'
+import { createGenerationProvenance } from './generation-provenance'
 import { packToMarkdown } from './pack-export'
 
 describe('combined pack domain', () => {
@@ -11,6 +12,14 @@ describe('combined pack domain', () => {
     expect(pack.parts.map((part) => part.key)).toEqual(['long', 'short-1', 'short-2', 'short-3', 'short-4', 'short-5', 'short-6', 'short-7'])
     expect(pack.campaign).toMatchObject({ preLaunchCount: 2, postLaunchCount: 5, montageTool: 'capcut', coloringTool: 'davinci-resolve' })
     expect(pack.runSheet).toHaveLength(5)
+  })
+
+  it('stores generation provenance on the completed artifact', () => {
+    const pack = createCombinedPack('Plugin pipeline')
+    const provenance = createGenerationProvenance({ providerId: 'ollama-local', providerMode: 'local', model: 'llama3' })
+    const next = packReducer(pack, { type: 'complete-fields', partKey: 'long', fields: { title: 'Title', promise: 'Promise', audience: 'Audience', hook: 'Hook', story: 'Story', insight: 'Insight', proof: 'Proof', payoff: 'Payoff', cta: 'CTA' }, provenance })
+
+    expect(next.parts[0].provenance?.fields).toMatchObject({ providerId: 'ollama-local', model: 'llama3', source: 'ai' })
   })
 
   it('completes a single stage without touching other parts', () => {

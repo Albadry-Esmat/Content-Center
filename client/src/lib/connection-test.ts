@@ -17,7 +17,8 @@ function modelsUrl(baseUrl: string): string {
   return /\/v1$/i.test(trimmed) ? `${trimmed}/models` : `${trimmed}/v1/models`
 }
 
-export async function testAiConnection(config: Pick<AiConfig, 'baseUrl' | 'model'>, fetchImpl: FetchLike = fetch): Promise<ConnectionTestResult> {
+export async function testAiConnection(config: Pick<AiConfig, 'baseUrl' | 'model'> & Partial<Pick<AiConfig, 'providerMode' | 'providerId'>>, fetchImpl: FetchLike = fetch): Promise<ConnectionTestResult> {
+  if (config.providerMode === 'known-provider') return { ok: false, message: 'Known-provider routing requires a server-side provider proxy.', detail: 'Use a server-side proxy before sending prompts to a hosted provider. No browser credential was used.' }
   if (!config.baseUrl.trim()) return { ok: false, message: 'Add a base URL before testing the connection.', detail: 'The endpoint is empty.' }
   if (!config.model.trim()) return { ok: false, message: 'Add a model name before testing the connection.', detail: 'The model field is empty.' }
 

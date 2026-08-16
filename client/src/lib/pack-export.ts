@@ -19,6 +19,7 @@ export function packToMarkdown(pack: CombinedPack): string {
   pack.parts.forEach((part) => {
     lines.push('', `## ${part.label}`, '')
     if (part.warnings?.length) lines.push('> **Review notes:**', ...part.warnings.map((warning) => `> - ${warning}`), '')
+    if (part.provenance && Object.keys(part.provenance).length) { lines.push('### Generation provenance', ''); Object.entries(part.provenance).forEach(([stage, provenance]) => { if (provenance) lines.push(`- **${stage}:** ${provenance.providerId} · ${provenance.model} · ${provenance.source} · ${provenance.generatedAt}`) }); lines.push('') }
     if (part.fields) lines.push('### Fields', '', `- **Title:** ${part.fields.title}`, `- **Promise:** ${part.fields.promise}`, `- **Audience:** ${part.fields.audience}`, `- **Hook:** ${part.fields.hook}`, `- **Story:** ${part.fields.story}`, `- **Insight:** ${part.fields.insight}`, `- **Proof:** ${part.fields.proof}`, `- **Payoff:** ${part.fields.payoff}`, `- **CTA:** ${part.fields.cta}`, '')
     if (part.script) lines.push('### Script', '', part.script.markdown, '')
     if (part.montage?.length) { lines.push('### Montage', '', '| Start | End | Shot | Camera | On-screen | Note |', '|---|---|---|---|---|---|'); part.montage.forEach((shot) => lines.push(`| ${shot.tStart} | ${shot.tEnd} | ${shot.shot} | ${shot.camera} | ${shot.onScreen} | ${shot.note} |`)) }

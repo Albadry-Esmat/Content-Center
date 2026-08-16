@@ -9,6 +9,7 @@ import { saveCombinedPack } from '../lib/content-storage'
 import { packToMarkdown } from '../lib/pack-export'
 import { countWords } from '../lib/validators'
 import { reviewCampaign } from '../lib/campaign-review'
+import { createGenerationProvenance } from '../lib/generation-provenance'
 import { loadAiConfig } from '../lib/ai-config'
 import { generateFieldsForPart, generateGradeForPart, generateMontageForPart, generateScriptForPart } from '../lib/generation-service'
 import { createGenerationTask, createRunnableStageQueue, createStageQueue, getNextRecommendedTask, getPackProgress, getStageProgress, type GenerationTask } from '../lib/generation-progress'
@@ -110,22 +111,22 @@ export default function Generator() {
     try {
       if (stage === 'fields') {
         const result = await generateFieldsForPart({ partKey, topic, notes, rulesVersion: packRef.current.meta.rulesVersion, campaign: packRef.current.campaign, config, signal })
-        applyPackAction({ type: 'complete-fields', partKey, fields: result.fields, warnings: result.warnings })
+        applyPackAction({ type: 'complete-fields', partKey, fields: result.fields, warnings: result.warnings, provenance: createGenerationProvenance(config) })
         return result.warnings.length ? 'warning' : 'succeeded'
       } else if (stage === 'script') {
         if (!currentPart.fields) throw new Error('Generate fields for this deliverable before generating its script.')
         const result = await generateScriptForPart({ partKey, topic, notes, fields: currentPart.fields, campaign: packRef.current.campaign, config, signal })
-        applyPackAction({ type: 'complete-script', partKey, markdown: result.markdown })
+        applyPackAction({ type: 'complete-script', partKey, markdown: result.markdown, provenance: createGenerationProvenance(config) })
         return 'succeeded'
       } else if (stage === 'montage') {
         if (!currentPart.script) throw new Error('Generate a script for this deliverable before generating its montage.')
         const result = await generateMontageForPart({ partKey, topic, script: currentPart.script, config, signal })
-        applyPackAction({ type: 'complete-montage', partKey, shots: result.shots, warnings: result.warnings })
+        applyPackAction({ type: 'complete-montage', partKey, shots: result.shots, warnings: result.warnings, provenance: createGenerationProvenance(config) })
         return result.warnings.length ? 'warning' : 'succeeded'
       } else if (stage === 'grade') {
         if (!currentPart.script) throw new Error('Generate a script for this deliverable before generating its grade.')
         const result = await generateGradeForPart({ partKey, topic, script: currentPart.script, config, signal })
-        applyPackAction({ type: 'complete-grade', partKey, grade: result })
+        applyPackAction({ type: 'complete-grade', partKey, grade: result, provenance: createGenerationProvenance(config) })
         return 'succeeded'
       }
       throw new Error(`Unsupported generation stage: ${stage}`)
@@ -133,9 +134,10 @@ export default function Generator() {
       if (signal.aborted) throw error
       if (isNetworkFailure(error)) {
         const fallbackMessage = 'Local draft fallback used because the configured AI endpoint could not be reached. Review every claim before recording.'
+        const fallbackProvenance = createGenerationProvenance(config, 'fallback')
         let fallback = simulateStage(packRef.current, stage, partKey)
-        if (stage === 'fields') fallback = packReducer(fallback, { type: 'complete-fields', partKey, fields: sampleFields(topic, partKey), warnings: [fallbackMessage] })
-        fallback = packReducer(fallback, { type: 'stage-fallback', stage, partKey, message: fallbackMessage })
+        if (stage === 'fields') fallback = packReducer(fallback, { type: 'complete-fields', partKey, fields: sampleFields(topic, partKey), warnings: [fallbackMessage], provenance: fallbackProvenance })
+        fallback = packReducer(fallback, { type: 'stage-fallback', stage, partKey, message: fallbackMessage, provenance: fallbackProvenance })
         replacePack(fallback)
         return 'fallback'
       } else {

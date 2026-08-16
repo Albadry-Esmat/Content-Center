@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import StageSequence from '../components/StageSequence'
 import { DEFAULT_AI_CONFIG, loadAiConfig, saveAiConfig } from '../lib/ai-config'
 import { testAiConnection, type ConnectionTestResult } from '../lib/connection-test'
+import { getProviderDescriptor, PROVIDER_CATALOG } from '../lib/provider-registry'
 
 const languageSuggestions = ['English', 'Arabic', 'Arabic (Egyptian)', 'French', 'Spanish', 'Portuguese', 'German']
 
@@ -14,6 +15,7 @@ export default function Settings() {
   const [saved, setSaved] = useState(false)
   const [testing, setTesting] = useState(false)
   const [connectionResult, setConnectionResult] = useState<ConnectionTestResult | null>(null)
+  const provider = getProviderDescriptor(config.providerId)
   function update<K extends keyof typeof config>(key: K, value: (typeof config)[K]) { setConfig((current) => ({ ...current, [key]: value })) }
   function persist() {
     saveAiConfig(config)
@@ -52,8 +54,10 @@ export default function Settings() {
       </section>
       <section className="settings-card">
         <div className="card-header"><span className="section-index">AI CONNECTION</span><ShieldCheck size={16} /></div>
-        <div className="profile-summary"><ShieldCheck size={16} /><span><b>{config.providerMode === 'local' ? 'LOCAL AI / PRIVACY-FIRST' : 'KNOWN PROVIDER / SECURE ROUTING REQUIRED'}</b><small>{config.providerId}</small></span></div>
+        <div className="profile-summary"><ShieldCheck size={16} /><span><b>{config.providerMode === 'local' ? 'LOCAL AI / PRIVACY-FIRST' : 'KNOWN PROVIDER / SECURE ROUTING REQUIRED'}</b><small>{provider.label} · {provider.endpointStyle}</small></span></div>
+        <div className="security-note"><ShieldCheck size={16} /><span><b>{provider.requiresServerProxy ? 'Server proxy required' : 'Browser-safe local endpoint'}</b> {provider.privacyNote}</span></div>
         <p className="settings-intro">Use an unauthenticated browser-local OpenAI-compatible endpoint today. Known providers require a future server-side credential boundary, so credentials are never stored or sent from this browser.</p>
+        <label htmlFor="provider">Provider</label><select id="provider" value={config.providerId} onChange={(event) => { const selected = getProviderDescriptor(event.target.value); setConfig((current) => ({ ...current, providerId: selected.id, providerMode: selected.mode })) }}>{PROVIDER_CATALOG.map((item) => <option key={item.id} value={item.id}>{item.label}{item.requiresServerProxy ? ' · server proxy' : ' · local'}</option>)}</select>
         <label htmlFor="base-url">OpenAI-compatible base URL</label><input id="base-url" value={config.baseUrl} onChange={(event) => update('baseUrl', event.target.value)} />
         <label htmlFor="model">Model</label><input id="model" value={config.model} onChange={(event) => update('model', event.target.value)} />
         <div className="connection-actions"><button className="button button-quiet" onClick={testConnection} disabled={testing}>{testing ? <><Loader2 className="spin" size={15} /> Testing connection…</> : <><CircleCheck size={15} /> Test connection</>}</button><button className="button button-quiet" onClick={persist}><Check size={15} /> Save all settings</button></div>
