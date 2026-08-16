@@ -96,6 +96,8 @@ describe('persistence and export', () => {
     expect(result).toContain('## 1. Production run-sheet')
     expect(result).toContain('## Long-form')
     expect(result).toContain('Stage completeness')
+    expect(result).toContain('## Review gate')
+    expect(result).toContain('Review before publishing')
     expect(result).toContain('Needs source verification')
     expect(result.endsWith('\n')).toBe(true)
   })
