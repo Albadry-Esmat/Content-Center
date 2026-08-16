@@ -12,6 +12,7 @@ export type KnownProviderRequest = {
 }
 export type ProviderProxyEnv = Pick<typeof ENV, 'openaiApiKey' | 'openaiBaseUrl' | 'anthropicApiKey' | 'googleAiApiKey'>
 export type ProviderAvailability = { providerId: KnownProviderId; configured: boolean; credentialBoundary: 'server-only'; detail: string }
+export type ProviderModelsResult = { providerId: KnownProviderId; models: string[]; detail: string }
 
 type FetchLike = typeof fetch
 
@@ -42,6 +43,20 @@ function responseText(providerId: KnownProviderId, payload: unknown): string {
   if (providerId === 'openai') return data.choices?.[0]?.message?.content || ''
   if (providerId === 'anthropic') return data.content?.map((part) => part.text || '').join('') || ''
   return data.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('') || ''
+}
+
+export async function listKnownProviderModels(providerId: KnownProviderId, env: ProviderProxyEnv = ENV, fetchImpl: FetchLike = fetch): Promise<ProviderModelsResult> {
+  if (!isKnownProviderId(providerId)) throw new Error('Provider is not allowlisted for server-side routing.')
+  const availability = providerAvailability(providerId, env)
+  if (!availability.configured) throw new Error(availability.detail)
+  if (providerId === 'anthropic') return { providerId, models: [], detail: 'Anthropic model discovery is not exposed by this proxy yet; enter a supported model ID manually.' }
+  const url = providerId === 'openai' ? `${env.openaiBaseUrl.replace(/\/$/, '')}/v1/models` : `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(env.googleAiApiKey)}`
+  const headers: Record<string, string> = providerId === 'openai' ? { authorization: `Bearer ${env.openaiApiKey}` } : {}
+  const response = await fetchWithBackoff(url, { method: 'GET', headers }, fetchImpl)
+  if (!response.ok) throw new Error(`Provider model discovery failed with HTTP ${response.status}.`)
+  const payload = await response.json() as { data?: Array<{ id?: string }>; models?: Array<{ name?: string }> }
+  const models = providerId === 'openai' ? (payload.data || []).map((model) => model.id).filter(Boolean) as string[] : (payload.models || []).map((model) => model.name?.replace(/^models\//, '')).filter(Boolean) as string[]
+  return { providerId, models, detail: models.length ? `${models.length} models discovered.` : 'The provider responded without model IDs.' }
 }
 
 export async function completeKnownProvider(input: KnownProviderRequest, env: ProviderProxyEnv = ENV, fetchImpl: FetchLike = fetch): Promise<{ content: string; providerId: KnownProviderId; model: string }> {

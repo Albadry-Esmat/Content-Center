@@ -31,6 +31,15 @@ describe('known-provider proxy', () => {
     expect(JSON.parse(String(requestInit.body))).toMatchObject({ model: 'gpt-test', max_tokens: 256, temperature: 0.4 })
   })
 
+  it('normalizes OpenAI model IDs from server-side discovery', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: [{ id: 'gpt-a' }, { id: 'gpt-b' }] }), { status: 200 }))
+
+    const result = await (await import('./provider-proxy')).listKnownProviderModels('openai', configuredEnv, fetchImpl)
+
+    expect(result).toMatchObject({ providerId: 'openai', models: ['gpt-a', 'gpt-b'] })
+    expect(fetchImpl).toHaveBeenCalledWith('https://api.openai.test/v1/models', expect.objectContaining({ method: 'GET' }))
+  })
+
   it('fails before making an upstream request when the server secret is absent', async () => {
     const fetchImpl = vi.fn()
 

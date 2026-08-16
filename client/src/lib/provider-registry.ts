@@ -9,15 +9,16 @@ export type ProviderDescriptor = {
   browserSafe: boolean
   requiresServerProxy: boolean
   privacyNote: string
+  suggestedModels: string[]
 }
 
 export const PROVIDER_CATALOG: ProviderDescriptor[] = [
-  { id: 'openai-compatible-local', label: 'Local OpenAI-compatible endpoint', mode: 'local', endpointStyle: 'openai-compatible', browserSafe: true, requiresServerProxy: false, privacyNote: 'Prompts go directly from this browser to the configured local endpoint.' },
-  { id: 'ollama-local', label: 'Ollama local endpoint', mode: 'local', endpointStyle: 'openai-compatible', browserSafe: true, requiresServerProxy: false, privacyNote: 'Use an OpenAI-compatible Ollama endpoint; no hosted provider credential is stored here.' },
-  { id: 'lm-studio-local', label: 'LM Studio local endpoint', mode: 'local', endpointStyle: 'openai-compatible', browserSafe: true, requiresServerProxy: false, privacyNote: 'Use the local LM Studio server; prompts remain on the configured machine.' },
-  { id: 'openai', label: 'OpenAI', mode: 'known-provider', endpointStyle: 'server-proxy', browserSafe: false, requiresServerProxy: true, privacyNote: 'Requires a server-side proxy so the provider credential never enters the browser.' },
-  { id: 'anthropic', label: 'Anthropic', mode: 'known-provider', endpointStyle: 'server-proxy', browserSafe: false, requiresServerProxy: true, privacyNote: 'Requires a server-side proxy so the provider credential never enters the browser.' },
-  { id: 'google', label: 'Google AI provider', mode: 'known-provider', endpointStyle: 'server-proxy', browserSafe: false, requiresServerProxy: true, privacyNote: 'Requires a server-side proxy so the provider credential never enters the browser.' },
+  { id: 'openai-compatible-local', label: 'Local OpenAI-compatible endpoint', mode: 'local', endpointStyle: 'openai-compatible', browserSafe: true, requiresServerProxy: false, privacyNote: 'Prompts go directly from this browser to the configured local endpoint.', suggestedModels: [] },
+  { id: 'ollama-local', label: 'Ollama local endpoint', mode: 'local', endpointStyle: 'openai-compatible', browserSafe: true, requiresServerProxy: false, privacyNote: 'Use an OpenAI-compatible Ollama endpoint; no hosted provider credential is stored here.', suggestedModels: ['llama3.2', 'qwen2.5', 'mistral'] },
+  { id: 'lm-studio-local', label: 'LM Studio local endpoint', mode: 'local', endpointStyle: 'openai-compatible', browserSafe: true, requiresServerProxy: false, privacyNote: 'Use the local LM Studio server; prompts remain on the configured machine.', suggestedModels: [] },
+  { id: 'openai', label: 'OpenAI', mode: 'known-provider', endpointStyle: 'server-proxy', browserSafe: false, requiresServerProxy: true, privacyNote: 'Requires a server-side proxy so the provider credential never enters the browser.', suggestedModels: ['gpt-4o-mini', 'gpt-4.1-mini'] },
+  { id: 'anthropic', label: 'Anthropic', mode: 'known-provider', endpointStyle: 'server-proxy', browserSafe: false, requiresServerProxy: true, privacyNote: 'Requires a server-side proxy so the provider credential never enters the browser.', suggestedModels: ['claude-3-5-sonnet-latest', 'claude-3-5-haiku-latest'] },
+  { id: 'google', label: 'Google AI provider', mode: 'known-provider', endpointStyle: 'server-proxy', browserSafe: false, requiresServerProxy: true, privacyNote: 'Requires a server-side proxy so the provider credential never enters the browser.', suggestedModels: ['gemini-2.0-flash', 'gemini-2.5-flash'] },
 ]
 
 export function getProviderDescriptor(providerId: string): ProviderDescriptor {
@@ -41,6 +42,14 @@ function createServerProxyProvider(providerId: string): AiProvider {
       return content
     },
   }
+}
+
+export async function discoverKnownProviderModels(providerId: string, fetchImpl: typeof fetch = fetch): Promise<{ models: string[]; detail: string }> {
+  const input = encodeURIComponent(JSON.stringify({ json: { providerId } }))
+  const response = await fetchImpl(`/api/trpc/ai.listModels?input=${input}`, { method: 'GET', credentials: 'include' })
+  if (!response.ok) throw new Error(`Model discovery failed with HTTP ${response.status}.`)
+  const payload = await response.json() as { result?: { data?: { json?: { models?: string[]; detail?: string } } } }
+  return { models: payload.result?.data?.json?.models || [], detail: payload.result?.data?.json?.detail || 'No model discovery detail was returned.' }
 }
 
 export function createProviderForConfig(config: Pick<AiConfig, 'providerMode' | 'providerId'>): AiProvider {

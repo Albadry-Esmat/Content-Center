@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_AI_CONFIG } from './ai-config'
-import { createProviderForConfig, getProviderDescriptor, PROVIDER_CATALOG } from './provider-registry'
+import { createProviderForConfig, discoverKnownProviderModels, getProviderDescriptor, PROVIDER_CATALOG } from './provider-registry'
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -9,6 +9,15 @@ describe('provider registry', () => {
     const descriptor = getProviderDescriptor('ollama-local')
 
     expect(descriptor).toMatchObject({ mode: 'local', browserSafe: true, requiresServerProxy: false, endpointStyle: 'openai-compatible' })
+  })
+
+  it('reads discovered models from the protected server route', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({ result: { data: { json: { models: ['gpt-a'], detail: '1 model discovered.' } } } }), { status: 200 }))
+
+    const result = await discoverKnownProviderModels('openai', fetchImpl)
+
+    expect(result).toEqual({ models: ['gpt-a'], detail: '1 model discovered.' })
+    expect(fetchImpl).toHaveBeenCalledWith(expect.stringContaining('/api/trpc/ai.listModels?input='), expect.objectContaining({ credentials: 'include' }))
   })
 
   it('routes hosted-provider generation through the server proxy transport', async () => {

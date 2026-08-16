@@ -8,6 +8,7 @@ export type ConnectionTestResult = {
   detail?: string
   latencyMs?: number
   warning?: string
+  models?: string[]
 }
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
@@ -35,7 +36,7 @@ export async function testAiConnection(config: Pick<AiConfig, 'baseUrl' | 'model
     const payload = await response.json().catch(() => null) as { data?: Array<{ id?: string }> } | null
     const models = payload?.data?.map((model) => model.id).filter(Boolean) as string[] | undefined
     const warning = models?.length && !models.includes(config.model.trim()) ? `The endpoint responded, but “${config.model.trim()}” was not listed in /models.` : undefined
-    return { ok: true, message: 'AI connection is live.', detail: `${url} responded in ${latencyMs} ms.`, latencyMs, warning }
+    return { ok: true, message: 'AI connection is live.', detail: `${url} responded in ${latencyMs} ms.`, latencyMs, warning, models: models || [] }
   } catch (error) {
     const detail = error instanceof DOMException && error.name === 'AbortError' ? 'The request timed out after 8 seconds.' : error instanceof Error ? error.message : 'The browser could not reach the endpoint.'
     return { ok: false, message: 'AI connection test failed.', detail }

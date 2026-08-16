@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import StageSequence from '../components/StageSequence'
 import { DEFAULT_AI_CONFIG, loadAiConfig, saveAiConfig } from '../lib/ai-config'
 import { testAiConnection, type ConnectionTestResult } from '../lib/connection-test'
-import { getProviderDescriptor, PROVIDER_CATALOG } from '../lib/provider-registry'
+import { discoverKnownProviderModels, getProviderDescriptor, PROVIDER_CATALOG } from '../lib/provider-registry'
 
 const languageSuggestions = ['English', 'Arabic', 'Arabic (Egyptian)', 'French', 'Spanish', 'Portuguese', 'German']
 
@@ -15,7 +15,11 @@ export default function Settings() {
   const [saved, setSaved] = useState(false)
   const [testing, setTesting] = useState(false)
   const [connectionResult, setConnectionResult] = useState<ConnectionTestResult | null>(null)
+  const [discoveredModels, setDiscoveredModels] = useState<string[]>([])
+  const [discoveringModels, setDiscoveringModels] = useState(false)
+  const [modelDiscoveryMessage, setModelDiscoveryMessage] = useState('')
   const provider = getProviderDescriptor(config.providerId)
+  const modelOptions = Array.from(new Set([...provider.suggestedModels, ...discoveredModels]))
   function update<K extends keyof typeof config>(key: K, value: (typeof config)[K]) { setConfig((current) => ({ ...current, [key]: value })) }
   function persist() {
     saveAiConfig(config)
@@ -26,9 +30,23 @@ export default function Settings() {
   async function testConnection() {
     setTesting(true); setConnectionResult(null)
     const result = await testAiConnection(config)
-    setConnectionResult(result); setTesting(false)
+    setConnectionResult(result); setDiscoveredModels(result.models || []); setModelDiscoveryMessage(result.models?.length ? `${result.models.length} local models discovered.` : ''); setTesting(false)
     if (result.ok) toast.success(result.message, { description: result.warning || result.detail })
     else toast.error(result.message, { description: result.detail })
+  }
+  async function discoverModels() {
+    setDiscoveringModels(true); setModelDiscoveryMessage('')
+    try {
+      if (config.providerMode === 'known-provider') {
+        const result = await discoverKnownProviderModels(config.providerId)
+        setDiscoveredModels(result.models); setModelDiscoveryMessage(result.detail)
+      } else {
+        const result = await testAiConnection(config)
+        setDiscoveredModels(result.models || []); setModelDiscoveryMessage(result.models?.length ? `${result.models.length} local models discovered.` : result.detail || 'No models were returned.')
+      }
+    } catch (error) {
+      setModelDiscoveryMessage(error instanceof Error ? error.message : 'Model discovery failed.')
+    } finally { setDiscoveringModels(false) }
   }
 
   return <div className="page page-settings">
@@ -59,8 +77,9 @@ export default function Settings() {
         <p className="settings-intro">Use an unauthenticated browser-local OpenAI-compatible endpoint today. Known providers require a future server-side credential boundary, so credentials are never stored or sent from this browser.</p>
         <label htmlFor="provider">Provider</label><select id="provider" value={config.providerId} onChange={(event) => { const selected = getProviderDescriptor(event.target.value); setConfig((current) => ({ ...current, providerId: selected.id, providerMode: selected.mode })) }}>{PROVIDER_CATALOG.map((item) => <option key={item.id} value={item.id}>{item.label}{item.requiresServerProxy ? ' · server proxy' : ' · local'}</option>)}</select>
         <label htmlFor="base-url">OpenAI-compatible base URL</label><input id="base-url" value={config.baseUrl} onChange={(event) => update('baseUrl', event.target.value)} />
-        <label htmlFor="model">Model</label><input id="model" value={config.model} onChange={(event) => update('model', event.target.value)} />
-        <div className="connection-actions"><button className="button button-quiet" onClick={testConnection} disabled={testing}>{testing ? <><Loader2 className="spin" size={15} /> Testing connection…</> : <><CircleCheck size={15} /> Test connection</>}</button><button className="button button-quiet" onClick={persist}><Check size={15} /> Save all settings</button></div>
+        <label htmlFor="model">Model</label><input id="model" list="model-options" value={config.model} onChange={(event) => update('model', event.target.value)} /><datalist id="model-options">{modelOptions.map((model) => <option key={model} value={model} />)}</datalist>
+        <div className="connection-actions"><button className="button button-quiet" onClick={testConnection} disabled={testing}>{testing ? <><Loader2 className="spin" size={15} /> Testing connection…</> : <><CircleCheck size={15} /> Test connection</>}</button><button className="button button-quiet" onClick={discoverModels} disabled={discoveringModels}>{discoveringModels ? <><Loader2 className="spin" size={15} /> Discovering models…</> : <><SlidersHorizontal size={15} /> Discover models</>}</button><button className="button button-quiet" onClick={persist}><Check size={15} /> Save all settings</button></div>
+        {modelDiscoveryMessage && <p className="field-hint" role="status">{modelDiscoveryMessage}</p>}
         {connectionResult && <div className={`connection-result ${connectionResult.ok ? 'success' : 'error'}`} role={connectionResult.ok ? 'status' : 'alert'} aria-live="polite">{connectionResult.ok ? <CircleCheck size={16} /> : <CircleAlert size={16} />}<span><b>{connectionResult.message}</b><small>{connectionResult.warning || connectionResult.detail}</small></span></div>}
         <div className="security-note"><ShieldCheck size={16} /><span><b>Trust boundary</b> Your notes, drafts, and profile stay in this browser unless you actively use a cloud project. This local connection supports endpoints that do not require browser-held credentials.</span></div>
       </section>
