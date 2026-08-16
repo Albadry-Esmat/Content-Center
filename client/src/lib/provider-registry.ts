@@ -24,12 +24,32 @@ export function getProviderDescriptor(providerId: string): ProviderDescriptor {
   return PROVIDER_CATALOG.find((provider) => provider.id === providerId) || PROVIDER_CATALOG[0]
 }
 
+function createServerProxyProvider(providerId: string): AiProvider {
+  return {
+    async complete(request, signal) {
+      const response = await fetch('/api/trpc/ai.complete?batch=1', {
+        method: 'POST',
+        signal,
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ 0: { json: { providerId, model: request.model, messages: request.messages, temperature: request.temperature, maxTokens: request.maxTokens } } }),
+      })
+      if (!response.ok) throw new Error(`Server provider proxy failed with HTTP ${response.status}.`)
+      const payload = await response.json() as Array<{ result?: { data?: { json?: { content?: string } } } }>
+      const content = payload[0]?.result?.data?.json?.content
+      if (typeof content !== 'string' || !content.trim()) throw new Error('Server provider proxy returned an empty response.')
+      return content
+    },
+  }
+}
+
 export function createProviderForConfig(config: Pick<AiConfig, 'providerMode' | 'providerId'>): AiProvider {
   const descriptor = getProviderDescriptor(config.providerId)
   if (config.providerMode === 'local' && descriptor.mode === 'local') return createBrowserProvider()
+  if (config.providerMode === 'known-provider' && descriptor.mode === 'known-provider') return createServerProxyProvider(descriptor.id)
   return {
     async complete() {
-      throw new Error(`${descriptor.label} requires a server-side provider proxy before it can generate content.`)
+      throw new Error(`${descriptor.label} is not available for the selected provider mode.`)
     },
   }
 }

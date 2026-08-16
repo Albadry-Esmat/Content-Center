@@ -299,15 +299,16 @@ const computeBackoffDelay = (
 
 // Retries non-2xx responses and network errors with exponential backoff, then
 // returns the final Response so callers keep their existing error handling.
-const fetchWithBackoff = async (
+export const fetchWithBackoff = async (
   url: string,
-  init: FetchInit
+  init: FetchInit,
+  fetchImpl: typeof fetch = fetch
 ): Promise<Response> => {
   let lastError: unknown;
 
   for (let attempt = 0; attempt <= RETRY_MAX_RETRIES; attempt++) {
     try {
-      const response = await fetch(url, init);
+      const response = await fetchImpl(url, init)
       if (response.ok || attempt === RETRY_MAX_RETRIES) {
         return response;
       }
