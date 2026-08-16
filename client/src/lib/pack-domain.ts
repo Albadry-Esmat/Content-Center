@@ -1,6 +1,7 @@
 // Design philosophy: Editorial Control Room — every artifact is editable, traceable, and independently recoverable.
 
 import type { GenerationStage, StageStatus } from './content-types'
+import { createDefaultCampaignConfig, type CampaignConfig } from './campaign-config'
 
 export type PartKey = 'long' | `short-${number}`
 
@@ -37,14 +38,16 @@ export type PartState = {
 
 export type CombinedPack = {
   schemaVersion: 2
-  packVersion: 1
+  packVersion: 2
   meta: { id: string; topic: string; notes: string; createdAt: string; updatedAt: string; rulesVersion: string; model: string }
+  campaign: CampaignConfig
   parts: PartState[]
   runSheet: RunSheetItem[]
 }
 
 export type PackAction =
   | { type: 'set-meta'; topic: string; notes: string }
+  | { type: 'update-campaign'; campaign: Partial<CampaignConfig> }
   | { type: 'start-stage'; stage: GenerationStage; partKey: PartKey }
   | { type: 'complete-fields'; partKey: PartKey; fields: FieldSet; warnings?: string[] }
   | { type: 'complete-script'; partKey: PartKey; markdown: string }
@@ -60,16 +63,36 @@ export type PackAction =
 
 export function partKeyLabel(key: PartKey): string { return key === 'long' ? 'Long-form' : `Short ${key.replace('short-', '#')}` }
 
+function emptyPart(key: PartKey): PartState {
+  return { key, label: partKeyLabel(key), stageStatus: { fields: 'idle', script: 'idle', montage: 'idle', grade: 'idle' } }
+}
+
+function campaignPartKeys(campaign: CampaignConfig): PartKey[] {
+  const shortCount = campaign.preLaunchCount + campaign.postLaunchCount
+  return ['long', ...Array.from({ length: shortCount }, (_, index) => `short-${index + 1}` as PartKey)]
+}
+
+export function normalizeCombinedPack(input: unknown): CombinedPack | null {
+  if (!input || typeof input !== 'object') return null
+  const source = input as Partial<CombinedPack>
+  if (source.schemaVersion !== 2 || !source.meta || !Array.isArray(source.parts)) return null
+  const campaign = createDefaultCampaignConfig(source.campaign)
+  const existingParts = new Map(source.parts.map((part) => [part.key, part]))
+  const parts = campaignPartKeys(campaign).map((key) => existingParts.get(key) || emptyPart(key))
+  return { ...source as CombinedPack, packVersion: 2, campaign, parts, runSheet: Array.isArray(source.runSheet) ? source.runSheet : [] }
+}
+
 export function createCombinedPack(topic = '', notes = ''): CombinedPack {
   const now = new Date().toISOString()
-  const partKeys: PartKey[] = ['long', 'short-1', 'short-2', 'short-3', 'short-4', 'short-5']
+  const campaign = createDefaultCampaignConfig()
   const stageStatus = (): Record<GenerationStage, StageStatus> => ({ fields: 'idle', script: 'idle', montage: 'idle', grade: 'idle' })
   return {
     schemaVersion: 2,
-    packVersion: 1,
+    packVersion: 2,
     meta: { id: `pack-${Date.now()}`, topic, notes, createdAt: now, updatedAt: now, rulesVersion: 'v3.2', model: 'Local / not connected' },
-    parts: partKeys.map((key) => ({ key, label: partKeyLabel(key), stageStatus: stageStatus() })),
-    runSheet: ['Capture references', 'Record long-form master', 'Cut five short variations', 'Apply global grade', 'Review subtitles and upload copy'].map((label) => ({ label, done: false })),
+    campaign,
+    parts: campaignPartKeys(campaign).map((key) => ({ key, label: partKeyLabel(key), stageStatus: stageStatus() })),
+    runSheet: ['Capture references', 'Record long-form master', 'Cut pre-launch and post-launch shorts', 'Apply simple color correction', 'Review subtitles and upload copy'].map((label) => ({ label, done: false })),
   }
 }
 
@@ -86,6 +109,7 @@ function markDownstreamStale(status: Record<GenerationStage, StageStatus>, from:
 export function packReducer(pack: CombinedPack, action: PackAction): CombinedPack {
   switch (action.type) {
     case 'set-meta': return { ...pack, meta: { ...pack.meta, topic: action.topic, notes: action.notes, updatedAt: new Date().toISOString() } }
+    case 'update-campaign': return { ...pack, campaign: createDefaultCampaignConfig({ ...pack.campaign, ...action.campaign }), meta: { ...pack.meta, updatedAt: new Date().toISOString() } }
     case 'start-stage': return updatePart(pack, action.partKey, (part) => ({ ...part, error: undefined, stageFeedback: { ...part.stageFeedback, [action.stage]: undefined }, stageStatus: { ...part.stageStatus, [action.stage]: 'running' } }))
     case 'complete-fields': return updatePart(pack, action.partKey, (part) => ({ ...part, fields: action.fields, warnings: action.warnings, stageFeedback: { ...part.stageFeedback, fields: { kind: action.warnings?.length ? 'warning' : 'success', message: action.warnings?.join(' '), createdAt: new Date().toISOString() } }, stageStatus: markDownstreamStale({ ...part.stageStatus, fields: 'done' }, 'fields'), error: undefined }))
     case 'complete-script': return updatePart(pack, action.partKey, (part) => ({ ...part, script: { markdown: action.markdown, wordCount: action.markdown.trim() ? action.markdown.trim().split(/\s+/).length : 0 }, stageFeedback: { ...part.stageFeedback, script: { kind: 'success', createdAt: new Date().toISOString() } }, stageStatus: markDownstreamStale({ ...part.stageStatus, script: 'done' }, 'script'), error: undefined }))

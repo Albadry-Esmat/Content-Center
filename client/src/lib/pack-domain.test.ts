@@ -5,10 +5,11 @@ import { clampGrade, parseModelJson, validateMontage } from './ai-parser'
 import { packToMarkdown } from './pack-export'
 
 describe('combined pack domain', () => {
-  it('creates six independently addressable production parts', () => {
+  it('creates eight independently addressable campaign assets', () => {
     const pack = createCombinedPack('Plugin pipeline')
     expect(pack.schemaVersion).toBe(2)
-    expect(pack.parts.map((part) => part.key)).toEqual(['long', 'short-1', 'short-2', 'short-3', 'short-4', 'short-5'])
+    expect(pack.parts.map((part) => part.key)).toEqual(['long', 'short-1', 'short-2', 'short-3', 'short-4', 'short-5', 'short-6', 'short-7'])
+    expect(pack.campaign).toMatchObject({ preLaunchCount: 2, postLaunchCount: 5, montageTool: 'capcut', coloringTool: 'davinci-resolve' })
     expect(pack.runSheet).toHaveLength(5)
   })
 
@@ -74,11 +75,24 @@ describe('persistence and export', () => {
     expect(deserializeCombinedPacks(raw)).toHaveLength(1)
   })
 
+  it('normalizes an older six-part pack into the current campaign shape', () => {
+    const pack = createCombinedPack('Legacy campaign')
+    const legacy = { ...pack, packVersion: 1, campaign: undefined, parts: pack.parts.slice(0, 6) }
+    const restored = deserializeCombinedPacks(JSON.stringify([legacy]))[0]
+
+    expect(restored.parts).toHaveLength(8)
+    expect(restored.campaign).toMatchObject({ preLaunchCount: 2, postLaunchCount: 5 })
+    expect(restored.parts.at(-1)?.key).toBe('short-7')
+  })
+
   it('exports an artifact-oriented markdown hand-off', () => {
     const pack = createCombinedPack('Export test')
     pack.parts[0].warnings = ['Needs source verification']
     const result = packToMarkdown(pack)
-    expect(result).toContain('# ALBADRY CONTENT PACK')
+    expect(result).toContain('# ALBADRY CONTENT CAMPAIGN')
+    expect(result).toContain('2 pre-launch shorts')
+    expect(result).toContain('CapCut (simple)')
+    expect(result).toContain('DaVinci Resolve (simple)')
     expect(result).toContain('## 1. Production run-sheet')
     expect(result).toContain('## Long-form')
     expect(result).toContain('Stage completeness')

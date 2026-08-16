@@ -1,16 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_AI_CONFIG } from './ai-config'
+import { createDefaultCampaignConfig } from './campaign-config'
 import { generateFieldsForPart, generateScriptForPart } from './generation-service'
 import { buildFieldsPrompt } from './prompt-builders'
 
 describe('provider-backed fields generation', () => {
   it('builds grounded, JSON-only instructions for a part', () => {
-    const prompt = buildFieldsPrompt({ partKey: 'short-2', topic: 'Plugin pipeline', notes: 'Use the post-operation example only.', rulesVersion: 'v3.2', preferences: { scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Build with clarity' } })
+    const prompt = buildFieldsPrompt({ partKey: 'short-2', topic: 'Plugin pipeline', notes: 'Use the post-operation example only.', rulesVersion: 'v3.2', campaign: createDefaultCampaignConfig(), preferences: { scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Build with clarity' } })
     expect(prompt.system).toContain('Return ONLY valid JSON')
     expect(prompt.system).toContain('v3.2')
     expect(prompt.system).toContain('Arabic')
     expect(prompt.system).toContain('RTL')
     expect(prompt.system).toContain('Build with clarity')
+    expect(prompt.user).toContain('pre-launch')
+    expect(prompt.user).toContain('promise')
     expect(prompt.user).toContain('post-operation example')
   })
 

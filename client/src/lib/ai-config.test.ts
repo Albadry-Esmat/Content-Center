@@ -15,6 +15,15 @@ function installLocalStorage() {
 }
 
 describe('generation profile configuration', () => {
+  it('defaults to the local provider mode without credential fields', () => {
+    const values = installLocalStorage()
+
+    const config = loadAiConfig()
+
+    expect(config).toMatchObject({ providerMode: 'local', providerId: 'openai-compatible-local' })
+    expect(values.get('albadry_ai_config_v2')).toBeUndefined()
+  })
+
   it('persists language, direction, and brand phrases without credential fields', () => {
     const values = installLocalStorage()
     saveAiConfig({ ...DEFAULT_AI_CONFIG, scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Make every idea count' })
@@ -23,6 +32,12 @@ describe('generation profile configuration', () => {
     expect(stored).toMatchObject({ scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Make every idea count' })
     expect(stored).not.toHaveProperty('apiKey')
     expect(loadAiConfig()).toMatchObject({ scriptLanguage: 'Arabic', textDirection: 'rtl', brandPhrases: 'Make every idea count' })
+  })
+
+  it('normalizes unsupported provider modes to local while preserving the provider identifier', () => {
+    installLocalStorage().set('albadry_ai_config_v2', JSON.stringify({ ...DEFAULT_AI_CONFIG, providerMode: 'unsupported', providerId: 'custom-local' }))
+
+    expect(loadAiConfig()).toMatchObject({ providerMode: 'local', providerId: 'custom-local' })
   })
 
   it('removes credentials from an earlier local configuration while preserving generation preferences', () => {

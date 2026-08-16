@@ -1,6 +1,10 @@
 // Design philosophy: Editorial Control Room — connection settings make the trust boundary visible and reversible.
 
+export type AiProviderMode = 'local' | 'known-provider'
+
 export type AiConfig = {
+  providerMode: AiProviderMode
+  providerId: string
   baseUrl: string
   model: string
   temperature: number
@@ -13,6 +17,8 @@ export type AiConfig = {
 const AI_CONFIG_KEY = 'albadry_ai_config_v2'
 
 export const DEFAULT_AI_CONFIG: AiConfig = {
+  providerMode: 'local',
+  providerId: 'openai-compatible-local',
   baseUrl: 'http://localhost:1234',
   model: 'local-model',
   temperature: 0.6,
@@ -27,6 +33,8 @@ export function loadAiConfig(): AiConfig {
   try {
     const stored = JSON.parse(window.localStorage.getItem(AI_CONFIG_KEY) || '{}') as Record<string, unknown>
     const config: AiConfig = {
+      providerMode: stored.providerMode === 'known-provider' ? 'known-provider' : DEFAULT_AI_CONFIG.providerMode,
+      providerId: typeof stored.providerId === 'string' && stored.providerId.trim() ? stored.providerId : DEFAULT_AI_CONFIG.providerId,
       baseUrl: typeof stored.baseUrl === 'string' ? stored.baseUrl : DEFAULT_AI_CONFIG.baseUrl,
       model: typeof stored.model === 'string' ? stored.model : DEFAULT_AI_CONFIG.model,
       temperature: typeof stored.temperature === 'number' && Number.isFinite(stored.temperature) ? stored.temperature : DEFAULT_AI_CONFIG.temperature,

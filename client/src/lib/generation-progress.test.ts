@@ -5,13 +5,13 @@ import { createCombinedPack, packReducer, type FieldSet } from './pack-domain'
 const fields: FieldSet = { title: 'Title', promise: 'Promise', audience: 'Audience', hook: 'Hook', story: 'Story', insight: 'Insight', proof: 'Proof', payoff: 'Payoff', cta: 'CTA' }
 
 describe('generation progress', () => {
-  it('builds an explicit six-deliverable queue for a combined stage action', () => {
+  it('builds an explicit eight-asset queue for a campaign stage action', () => {
     const pack = createCombinedPack('A topic')
     const queue = createStageQueue(pack, 'fields')
 
-    expect(queue).toHaveLength(6)
+    expect(queue).toHaveLength(8)
     expect(queue[0]).toMatchObject({ partKey: 'long', stage: 'fields', label: 'Long-form · fields' })
-    expect(queue.at(-1)).toMatchObject({ partKey: 'short-5', stage: 'fields' })
+    expect(queue.at(-1)).toMatchObject({ partKey: 'short-7', stage: 'fields' })
   })
 
   it('makes prerequisite blocks explicit instead of leaving later stages silently idle', () => {
@@ -34,7 +34,7 @@ describe('generation progress', () => {
     }
 
     const summary = getPackProgress(pack, run)
-    expect(summary).toMatchObject({ completedSteps: 1, reviewRequired: 1, running: 1, queued: 1, totalSteps: 24 })
+    expect(summary).toMatchObject({ completedSteps: 1, reviewRequired: 1, running: 1, queued: 1, totalSteps: 32 })
     expect(getStageProgress(pack.parts.find((part) => part.key === 'long')!, 'fields', run)).toMatchObject({ status: 'review-required' })
   })
 

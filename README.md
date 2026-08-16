@@ -1,119 +1,149 @@
-# Albadry Content Center
+# Content Center
 
-> A local-first production desk for turning one technical idea into an editable, reviewable content pack.
+> A local-first, open-source production desk for turning one idea into a complete video campaign.
 
-Content Center combines long-form authority content, short-form discovery content, montage planning, grade notes, and editor hand-off into one typed workflow. The original single-file HTML application remains available in the GitHub repository as a behavioral reference while the migrated implementation evolves.
+Content Center helps creators plan one long-form video, related shorts before and after the main release, and simple production guidance for publishing across multiple platforms. The default editing guidance uses **CapCut for simple montage** and **DaVinci Resolve for simple coloring**.
 
-## Current implementation
+The project is designed for creators and beginner editors who want a clear, editable hand-off rather than an opaque block of AI-generated text. Content Center generates campaign structure, scripts, short-form variants, publication timing, simple shot guidance, basic color-correction notes, platform adaptations, and portable exports.
 
-The validated managed runtime is **React 19 + Vite + TypeScript**. The implementation now includes:
-
-| Area | Status |
-|---|---|
-| Editorial Control Room shell | Implemented |
-| Six-part combined pack | Implemented: one long-form part plus five shorts |
-| Staged reducer | Implemented for fields, script, montage, and grade |
-| Provider-backed generation seam | Implemented with typed prompts, parsing warnings, timeout, abort, and retry |
-| Editable artifacts | Implemented for fields, script, montage, grade, and run-sheet |
-| Local persistence | Implemented with schema filtering, bounded writes, backup, restore, and legacy migration |
-| Markdown export | Implemented with run-sheet, metadata, completeness, warnings, and artifact tables |
-| Security validation | Implemented with `pnpm security` |
-| Accessibility hardening | Implemented with visible focus, live generation status, labels, and `dir="auto"` fields |
-| Legacy App Router scaffold | Retained only as migration history; it is not part of the runnable product |
-| Hosted AI proxy and collaboration | Evaluated and deferred pending backend/security approval |
-
-## Product flow
+## Product promise
 
 ```text
-Topic + notes → fields → scripts → montage → grade → run-sheet → Markdown hand-off
+One topic + notes
+  → long-form video
+  → pre-launch shorts
+  → post-launch shorts
+  → platform variants
+  → simple CapCut montage guidance
+  → simple DaVinci Resolve coloring guidance
+  → editable Markdown / JSON hand-off
 ```
 
-The product is deliberately **not** a video renderer or CapCut automation tool. It creates an executable editorial specification that keeps source notes, technical claims, timeline, and verdict connected.
+The default campaign contains one long-form video, two pre-launch shorts, and five post-launch shorts. Every asset is editable, labelled by its publication phase, and connected to the main topic.
+
+## What Content Center is — and is not
+
+| Content Center is | Content Center is not |
+|---|---|
+| A campaign planner and production hand-off tool | A video renderer or non-linear editor |
+| A generator for long videos and related shorts | A CapCut or DaVinci automation tool |
+| A simple montage and coloring guide | An advanced editing or color-grading course |
+| Local-first and portable | A mandatory hosted account or subscription |
+| Open to local AI and supported providers | A place to commit provider credentials |
+| Editable and warning-aware | A factual approval system for AI output |
+
+The initial product deliberately avoids advanced keyframing, masking, motion tracking, complex effect stacks, LUT design, advanced node trees, HDR finishing, auto-publishing, and broad collaboration. The purpose is to help a creator make the next practical production decision, not to replace professional editing software.
+
+## Current runtime
+
+The supported runtime is **React 19 + Vite + TypeScript** with the existing Express server boundary. The retained App Router files are migration history and are not the supported production runtime.
+
+| Area | Current position |
+|---|---|
+| Campaign foundation | The active app has a typed combined-pack model and staged artifact workflow. |
+| Long and short artifacts | Editable fields and production artifacts are supported in the current workflow. |
+| Local persistence | Browser-local saving, backup, restore, and migration support are available. |
+| Local AI | OpenAI-compatible browser-local endpoints are supported without browser-held credentials. |
+| Known providers | Provider adapters and secure server-side routing are planned in staged releases. |
+| Montage and coloring | The next product slice formalizes simple CapCut and DaVinci Resolve presets. |
+| Cloud workspaces | Optional and deferred behind explicit authentication and data-integrity gates. |
 
 ## Getting started
 
 Requirements are Node.js 18+ and pnpm.
 
 ```bash
-pnpm install
-pnpm dev
-```
-
-### Local macOS startup recovery
-
-If `pnpm dev` reports `ERR_MODULE_NOT_FOUND` for a package such as `dotenv`, the local `node_modules` directory is incomplete or stale; the committed dependency manifest and lockfile already declare the package. Restore the exact dependency tree without changing project files:
-
-```bash
 pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-The development server selects the next available port when port `3000` is occupied; use the localhost URL printed in the terminal. A missing `OAUTH_SERVER_URL` produces an OAuth configuration warning, but it is distinct from a dependency-installation failure. Configure the required Manus OAuth environment variables before testing authenticated cloud workspaces; local-first editing remains available without a cloud session.
+The development server selects the next available port when the default port is occupied. Open the localhost URL printed in the terminal.
 
-### Optional cloud workspace sync
-
-No `.env`, account, or OAuth setup is required for the local creator desk. Create, save, restore, and export packs directly in the browser. Cloud workspace sign-in is an optional upgrade for shared projects, cross-device history, and collaboration.
-
-If you choose to enable cloud sync, create a local `.env` file; Git intentionally excludes it because it contains secrets. Obtain the values from the project owner or the Manus project settings:
+The production build and validation commands are:
 
 ```bash
-touch .env
-```
-
-`VITE_OAUTH_PORTAL_URL` and `VITE_APP_ID` enable the browser sign-in redirect. `OAUTH_SERVER_URL`, `JWT_SECRET`, `DATABASE_URL`, `OWNER_OPEN_ID`, and `OWNER_NAME` are required by the server-side callback, session, and workspace bootstrap paths. Restart `pnpm dev` after changing `.env`. If either browser-safe value is missing, the workspace screen keeps the local desk available and displays an actionable setup message rather than attempting an invalid redirect.
-
-The current preview is served by Vite. The production build is:
-
-```bash
-pnpm build
-pnpm start
-```
-
-Validation commands:
-
-```bash
-pnpm security
-pnpm test
 pnpm check
+pnpm test
+pnpm security
 pnpm build
 ```
 
-The supported runtime is the Vite/Express stack shown above. The retained `app/` directory is not wired into the package scripts or production build and must not be treated as a runnable alternative. A future framework migration requires an explicit architecture decision and a clean, separately validated cutover plan.
+A no-provider demo mode is planned so contributors and users can explore the campaign workflow without an AI account or API key.
 
-## Routes
+## AI connection modes
 
-| Route | Purpose |
+### Local AI — first-class mode
+
+Local mode is the privacy-first path. The user can connect an OpenAI-compatible local endpoint such as LM Studio or a compatible local gateway by entering a base URL and model name. Local mode does not require a Content Center account.
+
+A local endpoint is not automatically private: users should verify how their chosen runtime handles requests. Content Center should not claim that all local models have identical context limits, structured-output support, speed, or language quality.
+
+### Known providers — optional mode
+
+Known providers will be added through documented adapters. Provider credentials must never be committed to GitHub, placed in public frontend environment variables, stored in ordinary browser storage, or written to logs or exports. Public hosted-provider support requires a server-side credential boundary, privacy notice, rate controls, sanitized errors, and provider health handling.
+
+The application should show whether a request is local or remote before generation, test the connection with a small request, and preserve clear error messages when a provider is unavailable.
+
+## Default campaign
+
+| Asset | Default quantity | Publication phase |
+|---|---:|---|
+| Long-form video | 1 | Main release |
+| Curiosity short | 1 | Before the main video |
+| Promise short | 1 | Before the main video |
+| Insight short | 1 | After the main video |
+| Mistake short | 1 | After the main video |
+| Quick-tip short | 1 | After the main video |
+| Advanced-context short | 1 | After the main video |
+| Question/community short | 1 | After the main video |
+
+Users will be able to change the number and type of shorts. Pre-launch shorts should create interest without misleading viewers. Post-launch shorts should provide standalone value and may direct viewers to the full video.
+
+## Simple production guidance
+
+### CapCut montage
+
+The default montage preset uses simple actions: hard cuts, removing pauses, short punch-ins, screen recordings, B-roll, readable captions, simple audio ducking, and occasional basic transitions. Each card explains what to record, where to cut, what to show, and what caption or audio cue to use.
+
+The default workflow does not require complex masks, motion tracking, multi-layer effect systems, advanced keyframes, or transition collections.
+
+### DaVinci Resolve coloring
+
+The default coloring preset provides basic correction guidance: exposure, white balance, moderate contrast, restrained saturation, natural skin tone, and readable screen recordings. It explains a simple correction order and uses starting guidance rather than pretending that fixed numeric values work for every camera or lighting condition.
+
+The default workflow does not require advanced node trees, LUT creation, HDR finishing, professional color-management configuration, or cinema-grade color science.
+
+## Platform adaptation
+
+The campaign model is designed to adapt a central idea to selected platforms without rewriting everything manually. Platform presets should remain versioned and editable because platform practices can change.
+
+Initial platform families include YouTube, YouTube Shorts, Instagram Reels, TikTok, LinkedIn, and X-style feeds. A preset may define title and caption style, CTA, aspect-ratio guidance, safe-zone notes, schedule role, and export reminders.
+
+## Privacy and security
+
+Do not commit provider keys, OAuth secrets, database credentials, or private endpoint tokens. Use `.env.example` only as a placeholder reference. Review [SECURITY.md](SECURITY.md) before adding provider functionality.
+
+The local-first mode is intended to work without an account. Optional cloud workspace features must not become a prerequisite for creating, editing, saving, or exporting a local campaign.
+
+## Repository map
+
+| Path | Purpose |
 |---|---|
-| `/` | Control-room overview |
-| `/generator` | Compose, generate, edit, save, and export packs |
-| `/system/long` | Long-form authority system |
-| `/system/short` | Short-form discovery system |
-| `/saved` | Search, delete, restore, and export local packs |
-| `/settings` | Provider, model, rules, and trust-boundary settings |
+| `client/src/lib/pack-domain.ts` | Typed campaign/pack state and reducer behavior. |
+| `client/src/lib/generation-service.ts` | Stage generation orchestration and provider calls. |
+| `client/src/lib/ai-provider.ts` | Browser-local provider seam. |
+| `client/src/lib/ai-parser.ts` | Response parsing and artifact validation helpers. |
+| `client/src/lib/content-storage.ts` | Local persistence, migration, backup, and restore. |
+| `client/src/lib/pack-export.ts` | Markdown hand-off export. |
+| `client/src/pages/Generator.tsx` | Current generator composition and workflow UI. |
+| `server/` | Optional workspace and server-side persistence boundaries. |
+| `scripts/` | Security, accessibility, and build-audit checks. |
+| `ENHANCEMENT_PLAN_SCOPE_ALIGNED.md` | Scope-aligned enhancement and release plan. |
 
-## Architecture
+## Contributing
 
-Pure domain logic lives in `client/src/lib/pack-domain.ts`, `ai-parser.ts`, `generation-service.ts`, `content-storage.ts`, and `pack-export.ts`. UI components consume the typed reducer rather than mutating artifacts directly. Browser-only state is intentionally limited to local-first preferences and local pack persistence.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. New platform or editing-tool presets should be data-driven, documented, and covered by tests. New provider integrations must include privacy behavior, credential handling, normalized errors, and contract fixtures.
 
-The intended provider modes are:
+## License and community status
 
-| Mode | Current position |
-|---|---|
-| Browser-local provider | Supported for unauthenticated endpoints such as a local model server; browser-held API keys are not supported |
-| Hosted provider proxy | Deferred until a server-side secret, rate-limit, privacy, and observability model is approved |
-
-Never commit provider credentials or use public environment variables for secrets. Content Center now strips legacy browser-stored provider keys during configuration loading and does not send authorization headers from the browser. Authenticated providers require a server-side proxy with appropriate secret, privacy, rate-limit, and audit controls. The legacy HTML source contained a hard-coded AI key; it must be treated as compromised and rotated rather than restored.
-
-## Persistence and export
-
-Combined packs are stored under the versioned `albadry_combined_packs_v2` localStorage namespace. The adapter accepts only schema version 2, bounds the library to the most recent 50 packs, supports JSON backup/restore, and can migrate the earlier local pack format. Markdown export preserves production metadata, run-sheet state, artifact sections, stage completeness, and review warnings.
-
-## Testing and migration status
-
-The current unit suite covers pack creation, reducer isolation, regeneration invalidation, parser warnings, montage timecode validation, grade clamping, persistence serialization, local-provider request safety, generation-service behavior, and Markdown export. The next test layer is browser workflow coverage for compose → generate → edit → save → reload → export.
-
-The legacy App Router scaffold is excluded from the supported runtime. It should either be removed once its historical value has expired or replaced by a separately funded, end-to-end framework migration; it must not drift alongside the active Vite application.
-
-See `ENHANCEMENT_ROADMAP.md`, `APP_ROUTER_MIGRATION_STATUS.md`, `HOSTED_MODE_DECISION.md`, and `COLLABORATION_DECISION.md` for the current release gates and deferred architecture decisions.
-
-The product boundary is recorded in `NON_GOALS.md`: Content Center is an editorial specification and hand-off system, not a video renderer, NLE replacement, or auto-publishing bot.
+The repository is being prepared as a public GitHub project. Licensing, contribution expectations, and community policies should be finalized before the first public release. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and [SECURITY.md](SECURITY.md) for the current project policies.

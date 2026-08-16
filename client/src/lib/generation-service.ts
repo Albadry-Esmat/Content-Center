@@ -4,6 +4,7 @@ import { loadAiConfig, type AiConfig } from './ai-config'
 import { createBrowserProvider, type AiProvider } from './ai-provider'
 import { parseModelJson, validateMontage } from './ai-parser'
 import { buildFieldsPrompt, buildScriptPrompt } from './prompt-builders'
+import type { CampaignConfig } from './campaign-config'
 import type { FieldSet, PartKey } from './pack-domain'
 import type { GradeArtifact, MontageShot, ScriptArtifact } from './pack-domain'
 
@@ -21,7 +22,7 @@ function normaliseFields(input: unknown): { fields: FieldSet; warnings: string[]
   return { fields, warnings }
 }
 
-export async function generateFieldsForPart(input: { partKey: PartKey; topic: string; notes: string; rulesVersion: string; config?: AiConfig; provider?: AiProvider; signal?: AbortSignal }) {
+export async function generateFieldsForPart(input: { partKey: PartKey; topic: string; notes: string; rulesVersion: string; campaign?: CampaignConfig; config?: AiConfig; provider?: AiProvider; signal?: AbortSignal }) {
   const config = input.config || loadAiConfig()
   const provider = input.provider || createBrowserProvider()
   const controller = new AbortController()
@@ -40,7 +41,7 @@ export async function generateFieldsForPart(input: { partKey: PartKey; topic: st
   }
 }
 
-export async function generateScriptForPart(input: { partKey: PartKey; topic: string; notes: string; fields: FieldSet; config?: AiConfig; provider?: AiProvider; signal?: AbortSignal }): Promise<ScriptArtifact> {
+export async function generateScriptForPart(input: { partKey: PartKey; topic: string; notes: string; fields: FieldSet; campaign?: CampaignConfig; config?: AiConfig; provider?: AiProvider; signal?: AbortSignal }): Promise<ScriptArtifact> {
   const config = input.config || loadAiConfig()
   const provider = input.provider || createBrowserProvider()
   const controller = new AbortController(); const timeout = globalThis.setTimeout(() => controller.abort(), 120_000)
