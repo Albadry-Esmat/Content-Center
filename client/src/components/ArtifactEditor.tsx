@@ -4,6 +4,7 @@ import { Check, Download, Plus, Sparkles } from 'lucide-react'
 import type { GenerationStage } from '../lib/content-types'
 import { shortSlotDescription } from '../lib/campaign-config'
 import { getColoringGuidance, getMontageGuidance } from '../lib/production-guidance'
+import { getPlatformPresets } from '../lib/platform-presets'
 import type { CombinedPack, FieldSet, PackAction, PartState } from '../lib/pack-domain'
 
 const fieldLabels: Record<keyof FieldSet, string> = { title: 'Title', promise: 'Core promise', audience: 'Audience', hook: 'Hook', story: 'Story', insight: 'Insight', proof: 'Proof', payoff: 'Payoff', cta: 'CTA' }
@@ -20,6 +21,7 @@ export default function ArtifactEditor({ pack, part, activeStage, running, textD
   const shortSlot = part.key === 'long' ? null : shortSlotDescription(Number(part.key.replace('short-', '')), pack.campaign)
   const montageGuidance = getMontageGuidance(pack.campaign.montageTool)
   const coloringGuidance = getColoringGuidance(pack.campaign.coloringTool)
+  const platformPresets = getPlatformPresets(pack.campaign.platforms)
   const blocked = (activeStage === 'script' && !part.fields) || ((activeStage === 'montage' || activeStage === 'grade') && !part.script)
 
   return <div className="preview-panel">
@@ -30,6 +32,7 @@ export default function ArtifactEditor({ pack, part, activeStage, running, textD
       {part.warnings?.length ? <div className="warning-panel"><span className="empty-tape">REVIEW NOTES / {part.warnings.length}</span>{part.warnings.map((warning) => <p key={warning}>{warning}</p>)}</div> : null}
       {part.fields && <div className="field-review-grid">{(Object.keys(fieldLabels) as Array<keyof FieldSet>).map((key) => <label key={key}><span>{fieldLabels[key]}</span><textarea dir={textDirection} aria-label={fieldLabels[key]} rows={key === 'title' || key === 'audience' || key === 'cta' ? 2 : 3} value={part.fields?.[key] || ''} onChange={(event) => onAction({ type: 'update-field', partKey: part.key, field: key, value: event.target.value })} placeholder={`Add ${fieldLabels[key].toLowerCase()}…`} /></label>)}</div>}
       {part.script && <label className="artifact-editor-block"><span className="section-index">SCRIPT / EDITABLE MARKDOWN</span><textarea dir={textDirection} aria-label="Editable script markdown" className="script-editor" value={part.script.markdown} onChange={(event) => onAction({ type: 'update-script', partKey: part.key, markdown: event.target.value })} rows={13} /></label>}
+      {activeStage === 'script' && <div className="platform-guide-card"><span className="section-index">PLATFORM ADAPTATION / {platformPresets.length} SELECTED</span>{platformPresets.map((preset) => <article key={preset.id}><strong>{preset.label}</strong><small>{preset.aspectRatio} · {preset.role}</small><p>{preset.ctaGuidance}</p></article>)}</div>}
       {activeStage === 'montage' && <div className="production-guide-card"><span className="section-index">SIMPLE MONTAGE / {montageGuidance.toolLabel.toUpperCase()}</span><p>{montageGuidance.summary}</p><ol>{montageGuidance.steps.map((step) => <li key={step}>{step}</li>)}</ol><small><b>Keep it simple:</b> {montageGuidance.avoid}</small></div>}
       {activeStage === 'grade' && <div className="production-guide-card"><span className="section-index">SIMPLE COLORING / {coloringGuidance.toolLabel.toUpperCase()}</span><p>{coloringGuidance.summary}</p><ol>{coloringGuidance.steps.map((step) => <li key={step}>{step}</li>)}</ol><small><b>Keep it simple:</b> {coloringGuidance.avoid}</small></div>}
       {part.montage && <div className="artifact-editor-block"><span className="section-index">MONTAGE / SHOT TABLE</span><div className="montage-editor">{part.montage.map((shot, index) => <div className="montage-editor-row" key={`${shot.tStart}-${index}`}><input aria-label="Start timecode" value={shot.tStart} onChange={(event) => onAction({ type: 'update-montage', partKey: part.key, index, shot: { tStart: event.target.value } })} /><input aria-label="End timecode" value={shot.tEnd} onChange={(event) => onAction({ type: 'update-montage', partKey: part.key, index, shot: { tEnd: event.target.value } })} /><input aria-label="Shot type" value={shot.shot} onChange={(event) => onAction({ type: 'update-montage', partKey: part.key, index, shot: { shot: event.target.value } })} /><input aria-label="On-screen direction" value={shot.onScreen} onChange={(event) => onAction({ type: 'update-montage', partKey: part.key, index, shot: { onScreen: event.target.value } })} /></div>)}</div></div>}
