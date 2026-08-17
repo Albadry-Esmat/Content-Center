@@ -8,7 +8,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 |---|---|---|
 | A new user can understand the product promise and non-goals from `README.md`. | README and scope-aligned plan | Complete |
 | README includes public-safe screenshots of the dashboard and demo generator. | `docs/screenshots/` and README preview | Complete |
-| The no-provider demo path works through `/generator?demo=1` and the Dashboard action. | Manual browser check using the public demo fixture | Verify before release |
+| The no-provider demo path works through `/generator?demo=1` and the Dashboard action. | `docs/RELEASE_VERIFICATION.md` and manual browser check | Complete |
 | The public fixture contains no credentials, private notes, or generated factual claims. | `pnpm validate:demo-fixture` | Complete |
 | The default campaign supports one long-form asset, configurable pre-launch shorts, and configurable post-launch shorts. | Campaign configuration and Generator UI | Complete |
 | Default editing guidance remains simple CapCut montage and simple DaVinci Resolve correction. | Preset data and production guidance panels | Complete |
@@ -23,7 +23,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | Remote-provider requests disclose that prompts and notes may leave the device. | Settings/provider status UI and `PROVIDER_SETUP.md` | Complete |
 | Undisclosed vulnerabilities are directed to private reporting rather than public issues. | `SECURITY.md` and issue-template configuration | Complete |
 | Backup and revision conflicts preserve user data rather than silently overwriting changes. | Storage and cloud revision tests | Complete |
-| A release scan and dependency review are run from the release commit. | Maintainer release record | Verify before release |
+| A release scan and dependency review are run from the release commit. | `docs/RELEASE_VERIFICATION.md` and clean-checkout `pnpm verify` | Complete |
 | Optional analytics is disabled by default and cannot emit placeholder URLs. | `client/src/lib/optional-analytics.ts` and regression tests | Complete |
 
 ## Contributor and repository readiness
@@ -42,6 +42,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | The repository includes a public MIT license and validates its required terms. | `LICENSE` and `pnpm validate:license` | Complete |
 | Public support requests have safe troubleshooting and issue-routing guidance. | `SUPPORT.md` and `pnpm validate:support` | Complete |
 | Public history and unreleased release-candidate changes are maintained in a validated changelog. | `CHANGELOG.md` and `pnpm validate:changelog` | Complete |
+| The final clean-checkout verification record is retained with the release evidence. | `docs/RELEASE_VERIFICATION.md` | Complete |
 
 ## Release verification
 

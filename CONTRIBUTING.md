@@ -77,7 +77,7 @@ Before implementing a provider, document whether it is local or remote, how cred
 
 ## Changelog and release notes
 
-User-visible changes should be summarized in [`CHANGELOG.md`](CHANGELOG.md) under `Unreleased` during development. Before a version tag, use [`RELEASE_NOTES_TEMPLATE.md`](RELEASE_NOTES_TEMPLATE.md), run `pnpm verify`, and move only verified entries into a versioned changelog heading.
+User-visible changes should be summarized in [`CHANGELOG.md`](CHANGELOG.md) under `Unreleased` during development. Before a version tag, use [`RELEASE_NOTES_TEMPLATE.md`](RELEASE_NOTES_TEMPLATE.md), repeat the clean-checkout procedure in [`docs/RELEASE_VERIFICATION.md`](docs/RELEASE_VERIFICATION.md), run `pnpm verify`, and move only verified entries into a versioned changelog heading.
 
 ## Reporting issues
 
