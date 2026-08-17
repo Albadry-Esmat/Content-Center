@@ -162,6 +162,7 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 | `fixtures/demo-campaign.json` | Public-safe campaign scenario for demos, screenshots, and contributor tests. |
 | `ENHANCEMENT_PLAN_SCOPE_ALIGNED.md` | Scope-aligned enhancement and release plan. |
 | `PUBLIC_RELEASE_CHECKLIST.md` | Maintainer checklist for the first public GitHub release. |
+| `.github/dependabot.yml` | Weekly npm dependency-update configuration. |
 | `docs/screenshots/` | Public-safe dashboard and demo-generator screenshots for documentation. |
 | `docs/PRESET_AUTHORING.md` | Contributor contract for platform, CapCut, and DaVinci presets. |
 

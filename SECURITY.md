@@ -24,7 +24,7 @@ Remove personal notes, API keys, authorization headers, database URLs, cookies, 
 
 ## Scope
 
-In scope are the active Vite/Express runtime, provider adapters, campaign persistence and export, workspace authorization, dependency configuration, public CI workflows, and documented setup paths. The retained migration scaffolding is not a supported runtime, but unsafe behavior in it should still be reported if it can be reached from the supported build or creates a realistic contributor or deployment risk.
+In scope are the active Vite/Express runtime, provider adapters, campaign persistence and export, workspace authorization, dependency configuration, public CI workflows, and documented setup paths. The retained migration scaffolding is not a supported runtime, but unsafe behavior in it should still be reported if it can be reached from the supported build or creates a realistic contributor or deployment risk. Dependency updates are surfaced through the repository’s weekly Dependabot configuration and must still pass the normal verification gate before merging.
 
 ## Dependency and secret hygiene
 
