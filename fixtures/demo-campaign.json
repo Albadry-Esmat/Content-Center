@@ -1,0 +1,29 @@
+{
+  "fixtureVersion": 1,
+  "title": "One long video into a useful short-form campaign",
+  "topic": "How to turn one long video into a useful short-form campaign",
+  "notes": "Show a beginner-friendly workflow: one practical long-form lesson, two curiosity-building teasers before publication, and five simple follow-up shorts after publication.",
+  "campaign": {
+    "preLaunchCount": 2,
+    "postLaunchCount": 5,
+    "preLaunchObjectives": ["curiosity", "promise"],
+    "postLaunchObjectives": ["insight", "mistake", "quick-tip", "advanced-context", "question"],
+    "platforms": ["youtube", "youtube-shorts", "instagram-reels", "tiktok"],
+    "montageTool": "capcut",
+    "coloringTool": "davinci-resolve"
+  },
+  "privacy": {
+    "safeForPublicRepository": true,
+    "containsPrivateNotes": false,
+    "containsProviderCredentials": false,
+    "containsGeneratedClaims": false
+  },
+  "expectedWorkflow": [
+    "Review and edit the topic and foundation notes.",
+    "Generate or write the long-form brief first.",
+    "Use pre-launch shorts to create curiosity and communicate the promise.",
+    "Use post-launch shorts to extend the lesson with practical follow-ups.",
+    "Review evidence warnings before recording or publishing.",
+    "Use simple CapCut montage and DaVinci Resolve correction guidance."
+  ]
+}

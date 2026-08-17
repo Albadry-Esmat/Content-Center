@@ -44,8 +44,8 @@ The supported runtime is **React 19 + Vite + TypeScript** with the existing Expr
 | Long and short artifacts | Editable fields and production artifacts are supported in the current workflow. |
 | Local persistence | Browser-local saving, backup, restore, and migration support are available. |
 | Local AI | OpenAI-compatible browser-local endpoints are supported without browser-held credentials. |
-| Known providers | Provider adapters and secure server-side routing are planned in staged releases. |
-| Montage and coloring | The next product slice formalizes simple CapCut and DaVinci Resolve presets. |
+| Known providers | Provider adapters, secure server-side routing, status, and model discovery are available in staged releases. |
+| Montage and coloring | Simple CapCut and DaVinci Resolve guidance is available by default. |
 | Cloud workspaces | Optional and deferred behind explicit authentication and data-integrity gates. |
 
 ## Getting started
@@ -68,7 +68,16 @@ pnpm security
 pnpm build
 ```
 
-A no-provider demo mode is planned so contributors and users can explore the campaign workflow without an AI account or API key.
+### Try the public demo
+
+You can explore the campaign workflow without an AI account, API key, or cloud workspace. Start the development server, open the dashboard, and choose **Try demo campaign**, or open `/generator?demo=1` directly. The demo loads a public-safe topic and notes, keeps the default two-before/five-after campaign shape, and does not make a provider request until you choose to generate.
+
+The same scenario is available as a contributor fixture at [`fixtures/demo-campaign.json`](fixtures/demo-campaign.json). Validate it with:
+
+```bash
+pnpm validate:demo-fixture
+```
+
 
 ## AI connection modes
 
@@ -80,7 +89,7 @@ A local endpoint is not automatically private: users should verify how their cho
 
 ### Known providers — optional mode
 
-Known providers will be added through documented adapters. Provider credentials must never be committed to GitHub, placed in public frontend environment variables, stored in ordinary browser storage, or written to logs or exports. Public hosted-provider support requires a server-side credential boundary, privacy notice, rate controls, sanitized errors, and provider health handling.
+Known providers are routed through documented server-side adapters. Provider credentials must never be committed to GitHub, placed in public frontend environment variables, stored in ordinary browser storage, or written to logs or exports. Hosted-provider support uses a protected server boundary, privacy status, rate-aware diagnostics, sanitized errors, and model discovery where the provider exposes it.
 
 The application should show whether a request is local or remote before generation, test the connection with a small request, and preserve clear error messages when a provider is unavailable.
 
@@ -137,7 +146,8 @@ The local-first mode is intended to work without an account. Optional cloud work
 | `client/src/lib/pack-export.ts` | Markdown hand-off export. |
 | `client/src/pages/Generator.tsx` | Current generator composition and workflow UI. |
 | `server/` | Optional workspace and server-side persistence boundaries. |
-| `scripts/` | Security, accessibility, and build-audit checks. |
+| `scripts/` | Security, accessibility, build-audit, and public-fixture checks. |
+| `fixtures/demo-campaign.json` | Public-safe campaign scenario for demos, screenshots, and contributor tests. |
 | `ENHANCEMENT_PLAN_SCOPE_ALIGNED.md` | Scope-aligned enhancement and release plan. |
 
 ## Contributing
@@ -146,4 +156,4 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. New platf
 
 ## License and community status
 
-The repository is being prepared as a public GitHub project. Licensing, contribution expectations, and community policies should be finalized before the first public release. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and [SECURITY.md](SECURITY.md) for the current project policies.
+The repository is intended to be a public GitHub project. Use the public-safe demo fixture when creating screenshots, examples, or issue reproductions. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [CONTRIBUTING.md](CONTRIBUTING.md), and [SECURITY.md](SECURITY.md) for the current project policies.

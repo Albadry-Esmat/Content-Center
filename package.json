@@ -10,6 +10,7 @@
     "check": "tsc --noEmit",
     "test": "vitest run",
     "security": "node scripts/security-scan.mjs",
+    "validate:demo-fixture": "node scripts/validate-demo-fixture.mjs",
     "sanitize:reference-secrets": "node scripts/sanitize-reference-secrets.mjs",
     "a11y:smoke": "node scripts/a11y-smoke.mjs",
     "bundle:audit": "vite build --sourcemap && node scripts/bundle-audit.mjs $(find dist/public/assets -name 'index-*.js.map' -printf '%s %p\\n' | sort -nr | head -1 | cut -d' ' -f2-)",

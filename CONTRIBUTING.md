@@ -10,12 +10,15 @@ Read the [README](README.md) and [scope-aligned enhancement plan](ENHANCEMENT_PL
 
 Requirements are Node.js 18+ and pnpm.
 
+The fastest public-safe path is to load `fixtures/demo-campaign.json` through the dashboard’s **Try demo campaign** action. This scenario is intentionally free of private notes, provider credentials, and generated factual claims, so it can be used in screenshots, manual QA, and issue reproduction.
+
 ```bash
 pnpm install --frozen-lockfile
 pnpm check
 pnpm test
 pnpm security
 pnpm build
+pnpm validate:demo-fixture
 pnpm dev
 ```
 
@@ -54,6 +57,7 @@ Every pull request should include:
 - Updated documentation for user-visible configuration or provider behavior.
 - Screenshots or a short recording for meaningful UI changes.
 - Confirmation that no secrets or private data were added.
+- For demo or fixture changes, confirmation that `pnpm validate:demo-fixture` passes and all public-safety flags remain false.
 
 The required quality checks are:
 
@@ -62,6 +66,7 @@ pnpm check
 pnpm test
 pnpm security
 pnpm build
+pnpm validate:demo-fixture
 ```
 
 ## Adding a platform preset
@@ -78,4 +83,4 @@ Before implementing a provider, document whether it is local or remote, how cred
 
 ## Reporting issues
 
-Use issue templates where available. Include the runtime, browser, provider mode, model, selected platform/tool presets, reproduction steps, expected behavior, actual behavior, and whether a local backup is available. Remove private notes, tokens, and personal data before sharing logs or exports.
+Use issue templates where available. Include the runtime, browser, provider mode, model, selected platform/tool presets, reproduction steps, expected behavior, actual behavior, and whether a local backup is available. Prefer the public demo fixture for reproduction. Remove private notes, tokens, and personal data before sharing logs or exports.
