@@ -11,6 +11,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Versioned Facebook Reels platform preset with simple 9:16 guidance for title, captions, calls to action, safe zones, and phone review before sharing.
 - Versioned CapCut and DaVinci Resolve guidance now includes a beginner review cue and surfaces the preset version in the editor while preserving the simple default boundaries.
 - Campaign Scope UX specification defining grouped information architecture, foundation/reference states, explicit AI actions, accessibility, responsive behavior, and recovery boundaries; its validator is included in `pnpm verify`.
+- Campaign Scope now uses a clearer summary, grouped editing defaults, short timeline, objectives, and platform sections with native progressive disclosure while preserving the existing campaign values and local-first demo behavior.
 
 ## [1.0.0-rc.1] - 2026-08-17
 

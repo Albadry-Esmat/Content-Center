@@ -85,6 +85,12 @@ describe('Generator cloud reload recovery', () => {
     expect(screen.getByRole('complementary', { name: 'Public demo campaign' })).toBeTruthy()
     expect(screen.getByText('Explore without an AI account')).toBeTruthy()
     expect((screen.getByLabelText(/Video topic/i) as HTMLInputElement).value).toBe('How to turn one long video into a useful short-form campaign')
+    expect(screen.getByRole('heading', { name: 'Shape the campaign.' })).toBeTruthy()
+    expect(screen.getByText('Editing defaults')).toBeTruthy()
+    expect(screen.getByText('Short timeline')).toBeTruthy()
+    expect(screen.getByText('Short objectives')).toBeTruthy()
+    expect(screen.getByText('Platforms')).toBeTruthy()
+    expect(screen.getByText('4 platforms')).toBeTruthy()
   })
 
   it('stays local-first when a stale cloud selection exists without an authenticated session', () => {
