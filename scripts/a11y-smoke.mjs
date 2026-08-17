@@ -9,6 +9,8 @@ const checks = [
   ['client/src/components/GenerationRunPanel.tsx', 'aria-label="Cancel generation run"', 'generation cancellation must retain an accessible action label'],
   ['client/src/index.css', '*:focus-visible', 'keyboard focus must remain visible'],
   ['client/src/components/AppShell.tsx', 'aria-label="Primary navigation"', 'primary navigation must be named'],
+  ['client/src/pages/Generator.tsx', 'aria-label="Generation mode"', 'generation mode tabs must have an accessible label'],
+  ['client/src/pages/Generator.tsx', 'aria-label="Public demo campaign"', 'the public demo must expose its no-account guidance to assistive technology'],
 ]
 
 const missing = checks.filter(([file, token]) => !readFileSync(file, 'utf8').includes(token))

@@ -44,6 +44,7 @@ pnpm install --frozen-lockfile
 pnpm check
 pnpm test
 pnpm security
+pnpm a11y:smoke
 pnpm validate:demo-fixture
 pnpm build
 git diff --check

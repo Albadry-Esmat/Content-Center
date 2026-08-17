@@ -16,6 +16,7 @@ Run the checks that apply and record the result below.
 - [ ] `pnpm check`
 - [ ] `pnpm test`
 - [ ] `pnpm security`
+- [ ] `pnpm a11y:smoke`
 - [ ] `pnpm validate:demo-fixture` when fixtures, demos, or public examples change
 - [ ] `pnpm build`
 - [ ] `git diff --check`

@@ -65,6 +65,7 @@ The production build and validation commands are:
 pnpm check
 pnpm test
 pnpm security
+pnpm a11y:smoke
 pnpm build
 ```
 

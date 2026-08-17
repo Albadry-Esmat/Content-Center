@@ -17,6 +17,7 @@ pnpm install --frozen-lockfile
 pnpm check
 pnpm test
 pnpm security
+pnpm a11y:smoke
 pnpm build
 pnpm validate:demo-fixture
 pnpm dev
@@ -65,6 +66,7 @@ The required quality checks are:
 pnpm check
 pnpm test
 pnpm security
+pnpm a11y:smoke
 pnpm build
 pnpm validate:demo-fixture
 ```
