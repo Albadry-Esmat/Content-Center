@@ -33,7 +33,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | `CONTRIBUTING.md` explains local setup, tests, provider boundaries, presets, pull requests, and demo-fixture usage. | Contributor guide | Complete |
 | Bug, provider, platform, UX, and preset issue templates are enabled. | `.github/ISSUE_TEMPLATE/` | Complete |
 | Pull requests use the repository validation and privacy checklist. | `.github/pull_request_template.md` | Complete |
-| CI runs on `main` and capital-D `Dev`. | `.github/workflows/quality.yml` | Complete |
+| CI runs on `main`, capital-D `Dev`, and version tags matching `v*`. | `.github/workflows/quality.yml` | Complete |
 | Dependency updates are surfaced weekly and must pass the normal verification gate. | `.github/dependabot.yml` and `pnpm verify` | Complete |
 | Public release announcements use a consistent scope, privacy, validation, and recovery structure. | `RELEASE_NOTES_TEMPLATE.md` | Complete |
 | Community conduct and security policies are linked from the public repository surface. | `CODE_OF_CONDUCT.md`, `SECURITY.md`, `README.md` | Complete |

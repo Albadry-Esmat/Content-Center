@@ -3,6 +3,7 @@ name: Quality
 on:
   push:
     branches: [main, Dev]
+    tags: ['v*']
   pull_request:
     branches: [main, Dev]
 
