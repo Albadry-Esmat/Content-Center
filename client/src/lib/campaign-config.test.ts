@@ -14,6 +14,13 @@ describe('campaign configuration', () => {
     expect(config.platforms).toContain('youtube')
   })
 
+  it('resizes objective arrays to match configurable counts', () => {
+    const config = createDefaultCampaignConfig({ preLaunchCount: 4, postLaunchCount: 1, preLaunchObjectives: ['curiosity', 'promise'], postLaunchObjectives: ['question', 'insight'] })
+
+    expect(config.preLaunchObjectives).toEqual(['curiosity', 'promise', 'curiosity', 'promise'])
+    expect(config.postLaunchObjectives).toEqual(['question'])
+  })
+
   it('normalizes incomplete saved configuration without discarding valid choices', () => {
     const config = normalizeCampaignConfig({
       preLaunchCount: 99,

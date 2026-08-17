@@ -30,7 +30,7 @@ export const DEFAULT_PLATFORMS: PlatformId[] = ['youtube', 'youtube-shorts', 'in
 export const SUPPORTED_PLATFORMS: PlatformId[] = ['youtube', 'youtube-shorts', 'instagram-reels', 'tiktok', 'linkedin', 'x']
 
 const PLATFORM_IDS: PlatformId[] = SUPPORTED_PLATFORMS
-const SHORT_OBJECTIVES: ShortObjective[] = ['curiosity', 'promise', 'insight', 'mistake', 'quick-tip', 'advanced-context', 'question']
+export const SHORT_OBJECTIVES: ShortObjective[] = ['curiosity', 'promise', 'insight', 'mistake', 'quick-tip', 'advanced-context', 'question']
 
 function isPlatformId(value: unknown): value is PlatformId {
   return typeof value === 'string' && PLATFORM_IDS.includes(value as PlatformId)
@@ -46,8 +46,14 @@ function boundedCount(value: unknown, fallback: number): number {
 
 function objectiveList(value: unknown, fallback: ShortObjective[]): ShortObjective[] {
   if (!Array.isArray(value)) return [...fallback]
-  const unique = value.filter(isShortObjective).filter((item, index, items) => items.indexOf(item) === index)
-  return unique.length ? unique : [...fallback]
+  const valid = value.filter(isShortObjective)
+  return valid.length ? valid : [...fallback]
+}
+
+function fitObjectives(value: unknown, count: number, fallback: ShortObjective[]): ShortObjective[] {
+  if (count === 0) return []
+  const source = objectiveList(value, fallback)
+  return Array.from({ length: count }, (_, index) => source[index % source.length])
 }
 
 function platformList(value: unknown): PlatformId[] {
@@ -61,8 +67,8 @@ export function createDefaultCampaignConfig(overrides: Partial<CampaignConfig> =
     version: 1,
     preLaunchCount: boundedCount(overrides.preLaunchCount, DEFAULT_PRE_LAUNCH_OBJECTIVES.length),
     postLaunchCount: boundedCount(overrides.postLaunchCount, DEFAULT_POST_LAUNCH_OBJECTIVES.length),
-    preLaunchObjectives: objectiveList(overrides.preLaunchObjectives, DEFAULT_PRE_LAUNCH_OBJECTIVES),
-    postLaunchObjectives: objectiveList(overrides.postLaunchObjectives, DEFAULT_POST_LAUNCH_OBJECTIVES),
+    preLaunchObjectives: fitObjectives(overrides.preLaunchObjectives, boundedCount(overrides.preLaunchCount, DEFAULT_PRE_LAUNCH_OBJECTIVES.length), DEFAULT_PRE_LAUNCH_OBJECTIVES),
+    postLaunchObjectives: fitObjectives(overrides.postLaunchObjectives, boundedCount(overrides.postLaunchCount, DEFAULT_POST_LAUNCH_OBJECTIVES.length), DEFAULT_POST_LAUNCH_OBJECTIVES),
     platforms: platformList(overrides.platforms),
     montageTool: overrides.montageTool === 'generic' ? 'generic' : 'capcut',
     coloringTool: overrides.coloringTool === 'generic' ? 'generic' : 'davinci-resolve',
@@ -80,6 +86,10 @@ export function normalizeCampaignConfig(input: unknown): CampaignConfig {
     montageTool: source.montageTool,
     coloringTool: source.coloringTool,
   })
+}
+
+export function objectiveLabel(objective: ShortObjective): string {
+  return objective.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
 
 export function campaignPhaseLabel(phase: CampaignPhase): string {
