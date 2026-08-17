@@ -18,7 +18,7 @@ pnpm verify
 pnpm dev
 ```
 
-Do not commit `.env` files, provider keys, OAuth secrets, database credentials, or private endpoint tokens. Use `.env.example` for placeholder documentation only.
+The repository is released under the [MIT License](LICENSE). Do not commit `.env` files, provider keys, OAuth secrets, database credentials, or private endpoint tokens. Use `.env.example` for placeholder documentation only.
 
 ## Contribution areas
 
@@ -61,7 +61,7 @@ The required quality checks are:
 pnpm verify
 ```
 
-`pnpm verify` runs typecheck, tests, secret scanning, accessibility smoke checks, public-fixture, release-notes-template, and CODEOWNERS validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
+`pnpm verify` runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, and license validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
 
 ## Adding a platform preset
 

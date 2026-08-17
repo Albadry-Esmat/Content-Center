@@ -65,7 +65,7 @@ The complete local quality gate is available as one command:
 pnpm verify
 ```
 
-It runs typecheck, tests, secret scanning, accessibility smoke checks, public-fixture, release-notes-template, and CODEOWNERS validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
+It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, and license validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
 
 ### Try the public demo
 
@@ -140,7 +140,7 @@ Initial platform families include YouTube, YouTube Shorts, Instagram Reels, TikT
 
 ## Privacy and security
 
-Do not commit provider keys, OAuth secrets, database credentials, or private endpoint tokens. Use `.env.example` only as a placeholder reference. Review [SECURITY.md](SECURITY.md) before adding provider functionality.
+The project is released under the [MIT License](LICENSE). Do not commit provider keys, OAuth secrets, database credentials, or private endpoint tokens. Use `.env.example` only as a placeholder reference. Review [SECURITY.md](SECURITY.md) before adding provider functionality.
 
 The local-first mode is intended to work without an account. Optional cloud workspace features must not become a prerequisite for creating, editing, saving, or exporting a local campaign.
 
@@ -168,6 +168,7 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 | `docs/screenshots/` | Public-safe dashboard and demo-generator screenshots for documentation. |
 | `docs/PRESET_AUTHORING.md` | Contributor contract for platform, CapCut, and DaVinci presets. |
 | `docs/BRANCHING_AND_RELEASE.md` | Dev, main, version-tag, and recovery workflow. |
+| `LICENSE` | MIT license for public use and contribution. |
 
 ## Contributing
 
