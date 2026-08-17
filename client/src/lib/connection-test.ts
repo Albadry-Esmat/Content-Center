@@ -1,14 +1,17 @@
-// Design philosophy: Editorial Control Room — connection checks return an explicit, reviewable desk status.
-
 import type { AiConfig } from './ai-config'
+
+export type ConnectionFailureCategory = 'success' | 'configuration' | 'proxy-required' | 'authentication' | 'rate-limit' | 'server' | 'network' | 'timeout'
 
 export type ConnectionTestResult = {
   ok: boolean
+  category: ConnectionFailureCategory
   message: string
   detail?: string
   latencyMs?: number
   warning?: string
   models?: string[]
+  retryable: boolean
+  nextAction: string
 }
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
@@ -18,13 +21,24 @@ function modelsUrl(baseUrl: string): string {
   return /\/v1$/i.test(trimmed) ? `${trimmed}/models` : `${trimmed}/v1/models`
 }
 
+function failure(category: ConnectionFailureCategory, message: string, detail: string, retryable: boolean, nextAction: string, latencyMs?: number): ConnectionTestResult {
+  return { ok: false, category, message, detail, retryable, nextAction, ...(typeof latencyMs === 'number' ? { latencyMs } : {}) }
+}
+
+export function classifyHttpFailure(status: number, latencyMs?: number): ConnectionTestResult {
+  if (status === 401 || status === 403) return failure('authentication', `Connection refused with HTTP ${status}.`, 'The endpoint is reachable but rejected authentication. Check the provider credential or server proxy configuration.', false, 'Verify the credential on the server or use a local endpoint without browser-held credentials.', latencyMs)
+  if (status === 429) return failure('rate-limit', 'The provider rate-limited this request.', 'Wait for the provider limit to reset, then retry. Avoid repeatedly pressing the test button.', true, 'Wait briefly and retry once.', latencyMs)
+  if (status >= 500) return failure('server', `The provider returned HTTP ${status}.`, 'The upstream service or local model server reported a server-side failure.', true, 'Check provider status or local server logs, then retry.', latencyMs)
+  return failure('network', `Connection refused with HTTP ${status}.`, 'Check the endpoint and model server response.', false, 'Verify the endpoint URL and provider configuration.', latencyMs)
+}
+
 export async function testAiConnection(config: Pick<AiConfig, 'baseUrl' | 'model'> & Partial<Pick<AiConfig, 'providerMode' | 'providerId'>>, fetchImpl: FetchLike = fetch): Promise<ConnectionTestResult> {
-  if (config.providerMode === 'known-provider') return { ok: false, message: 'Known-provider routing requires a server-side provider proxy.', detail: 'Use a server-side proxy before sending prompts to a hosted provider. No browser credential was used.' }
-  if (!config.baseUrl.trim()) return { ok: false, message: 'Add a base URL before testing the connection.', detail: 'The endpoint is empty.' }
-  if (!config.model.trim()) return { ok: false, message: 'Add a model name before testing the connection.', detail: 'The model field is empty.' }
+  if (config.providerMode === 'known-provider') return failure('proxy-required', 'Known-provider routing requires a server-side provider proxy.', 'Use the protected server proxy before sending prompts to a hosted provider. No browser credential was used.', false, 'Check the hosted-provider status and configure its server credential.')
+  if (!config.baseUrl.trim()) return failure('configuration', 'Add a base URL before testing the connection.', 'The endpoint is empty.', false, 'Enter a complete local endpoint URL.')
+  if (!config.model.trim()) return failure('configuration', 'Add a model name before testing the connection.', 'The model field is empty.', false, 'Choose a discovered model or enter the model ID used by the local server.')
 
   let url: string
-  try { url = modelsUrl(config.baseUrl); new URL(url) } catch { return { ok: false, message: 'The base URL is not valid.', detail: 'Use a complete URL such as http://localhost:1234 or https://provider.example/v1.' } }
+  try { url = modelsUrl(config.baseUrl); new URL(url) } catch { return failure('configuration', 'The base URL is not valid.', 'Use a complete URL such as http://localhost:1234 or https://provider.example/v1.', false, 'Correct the base URL and test again.') }
 
   const controller = new AbortController()
   const timeout = globalThis.setTimeout(() => controller.abort(), 8000)
@@ -32,13 +46,14 @@ export async function testAiConnection(config: Pick<AiConfig, 'baseUrl' | 'model
   try {
     const response = await fetchImpl(url, { method: 'GET', signal: controller.signal })
     const latencyMs = Math.round(performance.now() - started)
-    if (!response.ok) return { ok: false, message: `Connection refused with HTTP ${response.status}.`, detail: 'Check the endpoint and local model server.', latencyMs }
+    if (!response.ok) return classifyHttpFailure(response.status, latencyMs)
     const payload = await response.json().catch(() => null) as { data?: Array<{ id?: string }> } | null
     const models = payload?.data?.map((model) => model.id).filter(Boolean) as string[] | undefined
     const warning = models?.length && !models.includes(config.model.trim()) ? `The endpoint responded, but “${config.model.trim()}” was not listed in /models.` : undefined
-    return { ok: true, message: 'AI connection is live.', detail: `${url} responded in ${latencyMs} ms.`, latencyMs, warning, models: models || [] }
+    return { ok: true, category: 'success', message: 'AI connection is live.', detail: `${url} responded in ${latencyMs} ms.`, latencyMs, warning, models: models || [], retryable: true, nextAction: warning ? 'Choose a discovered model or verify the configured model ID before generating.' : 'You can generate a draft or continue refining the provider settings.' }
   } catch (error) {
-    const detail = error instanceof DOMException && error.name === 'AbortError' ? 'The request timed out after 8 seconds.' : error instanceof Error ? error.message : 'The browser could not reach the endpoint.'
-    return { ok: false, message: 'AI connection test failed.', detail }
+    const timedOut = error instanceof DOMException && error.name === 'AbortError'
+    if (timedOut) return failure('timeout', 'The AI connection test timed out.', 'The endpoint did not respond within 8 seconds.', true, 'Confirm the local model server is running, then retry once.')
+    return failure('network', 'AI connection test failed.', error instanceof Error ? error.message : 'The browser could not reach the endpoint.', true, 'Confirm the endpoint URL, CORS policy, and local server status, then retry.')
   } finally { globalThis.clearTimeout(timeout) }
 }
