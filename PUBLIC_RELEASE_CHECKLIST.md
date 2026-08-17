@@ -7,6 +7,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | Check | Evidence or owner | Status |
 |---|---|---|
 | A new user can understand the product promise and non-goals from `README.md`. | README and scope-aligned plan | Complete |
+| README includes public-safe screenshots of the dashboard and demo generator. | `docs/screenshots/` and README preview | Complete |
 | The no-provider demo path works through `/generator?demo=1` and the Dashboard action. | Manual browser check using the public demo fixture | Verify before release |
 | The public fixture contains no credentials, private notes, or generated factual claims. | `pnpm validate:demo-fixture` | Complete |
 | The default campaign supports one long-form asset, configurable pre-launch shorts, and configurable post-launch shorts. | Campaign configuration and Generator UI | Complete |

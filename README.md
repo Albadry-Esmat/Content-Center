@@ -78,6 +78,17 @@ The same scenario is available as a contributor fixture at [`fixtures/demo-campa
 pnpm validate:demo-fixture
 ```
 
+## Public workflow preview
+
+The screenshots below use the public-safe demo campaign. They contain no account data, provider credentials, or private campaign notes.
+
+![Content Center dashboard with the Try demo campaign entry point](docs/screenshots/dashboard.webp)
+
+The dashboard presents the local-first workspace, the four-stage production flow, and the direct path into the public demo.
+
+![Content Center generator with the public demo banner and campaign scope](docs/screenshots/public-demo-generator.webp)
+
+The generator keeps the public demo editable: the long-form topic, pre-launch teasers, post-launch extensions, review gate, and simple CapCut/DaVinci defaults remain visible before any provider request.
 
 ## AI connection modes
 
@@ -150,6 +161,7 @@ The local-first mode is intended to work without an account. Optional cloud work
 | `fixtures/demo-campaign.json` | Public-safe campaign scenario for demos, screenshots, and contributor tests. |
 | `ENHANCEMENT_PLAN_SCOPE_ALIGNED.md` | Scope-aligned enhancement and release plan. |
 | `PUBLIC_RELEASE_CHECKLIST.md` | Maintainer checklist for the first public GitHub release. |
+| `docs/screenshots/` | Public-safe dashboard and demo-generator screenshots for documentation. |
 
 ## Contributing
 
