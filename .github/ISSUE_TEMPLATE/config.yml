@@ -6,3 +6,6 @@ contact_links:
   - name: Read the public demo and setup docs
     url: https://github.com/Albadry-Esmat/Content-Center/blob/Dev/README.md
     about: Try the public demo fixture and review local-first/provider setup before opening a request.
+  - name: Make your first contribution
+    url: https://github.com/Albadry-Esmat/Content-Center/blob/Dev/docs/FIRST_CONTRIBUTION.md
+    about: Follow the beginner-friendly setup, contribution paths, privacy rules, and validation checklist.

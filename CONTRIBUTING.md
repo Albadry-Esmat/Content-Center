@@ -4,13 +4,13 @@ Thank you for helping improve Content Center. The project is a public, local-fir
 
 ## Before you start
 
-Read the [README](README.md) and [scope-aligned enhancement plan](ENHANCEMENT_PLAN_SCOPE_ALIGNED.md). The product is intentionally simpler than a professional video editor. Contributions should help creators understand the next production action without forcing advanced montage, advanced color grading, rendering, auto-publishing, or mandatory cloud usage into the core workflow.
+Start with the [first-contribution guide](docs/FIRST_CONTRIBUTION.md), then read the [README](README.md) and [scope-aligned enhancement plan](ENHANCEMENT_PLAN_SCOPE_ALIGNED.md). The product is intentionally simpler than a professional video editor. Contributions should help creators understand the next production action without forcing advanced montage, advanced color grading, rendering, auto-publishing, or mandatory cloud usage into the core workflow.
 
 ## Development setup
 
 Requirements are Node.js 18+ and pnpm.
 
-The fastest public-safe path is to load `fixtures/demo-campaign.json` through the dashboard’s **Try demo campaign** action. This scenario is intentionally free of private notes, provider credentials, and generated factual claims, so it can be used in screenshots, manual QA, and issue reproduction.
+The fastest public-safe path is to follow the [first-contribution guide](docs/FIRST_CONTRIBUTION.md), install the dependencies, and load `fixtures/demo-campaign.json` through the dashboard’s **Try demo campaign** action. This scenario is intentionally free of private notes, provider credentials, and generated factual claims, so it can be used in screenshots, manual QA, and issue reproduction.
 
 ```bash
 pnpm install --frozen-lockfile

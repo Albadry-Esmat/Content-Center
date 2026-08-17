@@ -4,7 +4,10 @@ All notable public changes to Content Center should be documented in this file. 
 
 ## [Unreleased]
 
-No changes yet.
+### Added
+
+- Beginner-friendly first-contribution guide covering setup, public-demo reproduction, safe contribution paths, validation, privacy boundaries, and the capital-D `Dev` pull-request workflow.
+- Contributor-onboarding validation included in the consolidated `pnpm verify` quality gate and linked from the README and GitHub issue chooser.
 
 ## [1.0.0-rc.1] - 2026-08-17
 
