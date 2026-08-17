@@ -43,7 +43,7 @@ Provider integrations must make the trust boundary visible. Local and remote mod
 
 ## Pull requests
 
-A pull request should explain the user problem, scope, affected modules, tests, migration or compatibility impact, privacy/security impact, and any follow-up work. Keep changes focused. Avoid combining a large runtime migration with an unrelated feature or broad formatting change.
+A pull request should explain the user problem, scope, affected modules, tests, migration or compatibility impact, privacy/security impact, and any follow-up work. Keep changes focused. Avoid combining a large runtime migration with an unrelated feature or broad formatting change. The repository’s default review ownership is recorded in [`.github/CODEOWNERS`](.github/CODEOWNERS); maintainers should update it when a team or path-specific owner changes.
 
 Every pull request should include:
 
@@ -61,7 +61,7 @@ The required quality checks are:
 pnpm verify
 ```
 
-`pnpm verify` runs typecheck, tests, secret scanning, accessibility smoke checks, public-fixture and release-notes-template validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
+`pnpm verify` runs typecheck, tests, secret scanning, accessibility smoke checks, public-fixture, release-notes-template, and CODEOWNERS validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
 
 ## Adding a platform preset
 

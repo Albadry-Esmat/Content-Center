@@ -1,0 +1,8 @@
+# Default review owner for the public repository. Replace with a maintainer team when one is established.
+* @Albadry-Esmat
+
+# Keep security, dependency, CI, and provider-boundary changes visible to the repository owner.
+/.github/ @Albadry-Esmat
+/SECURITY.md @Albadry-Esmat
+/server/ @Albadry-Esmat
+/client/src/lib/provider-proxy.ts @Albadry-Esmat

@@ -33,6 +33,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | `CONTRIBUTING.md` explains local setup, tests, provider boundaries, presets, pull requests, and demo-fixture usage. | Contributor guide | Complete |
 | Bug, provider, platform, UX, and preset issue templates are enabled. | `.github/ISSUE_TEMPLATE/` | Complete |
 | Pull requests use the repository validation and privacy checklist. | `.github/pull_request_template.md` | Complete |
+| Public and security-sensitive changes have a default maintainer review owner. | `.github/CODEOWNERS` | Complete |
 | CI runs on `main`, capital-D `Dev`, and version tags matching `v*`. | `.github/workflows/quality.yml` | Complete |
 | Dependency updates are surfaced weekly and must pass the normal verification gate. | `.github/dependabot.yml` and `pnpm verify` | Complete |
 | Public release announcements use a consistent scope, privacy, validation, and recovery structure. | `RELEASE_NOTES_TEMPLATE.md` | Complete |
@@ -48,7 +49,7 @@ pnpm verify
 git status --short --branch
 ```
 
-`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture and release-notes-template validation, production build, and whitespace validation.
+`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, and CODEOWNERS validation, production build, and whitespace validation.
 
 Then perform a manual smoke check using the public demo campaign. Confirm that the dashboard entry point opens the generator, the public-demo banner explains that no AI account is required, the campaign phase labels are visible, the simple montage and coloring guidance render, the platform selectors work, local mode remains available without an account, and no provider request occurs until the user explicitly chooses to generate.
 

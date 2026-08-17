@@ -65,7 +65,7 @@ The complete local quality gate is available as one command:
 pnpm verify
 ```
 
-It runs typecheck, tests, secret scanning, accessibility smoke checks, public-fixture and release-notes-template validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
+It runs typecheck, tests, secret scanning, accessibility smoke checks, public-fixture, release-notes-template, and CODEOWNERS validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
 
 ### Try the public demo
 
@@ -164,6 +164,7 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 | `PUBLIC_RELEASE_CHECKLIST.md` | Maintainer checklist for the first public GitHub release. |
 | `RELEASE_NOTES_TEMPLATE.md` | Maintainer template for public release announcements and safety notes. |
 | `.github/dependabot.yml` | Weekly npm dependency-update configuration. |
+| `.github/CODEOWNERS` | Default maintainer review ownership for repository changes. |
 | `docs/screenshots/` | Public-safe dashboard and demo-generator screenshots for documentation. |
 | `docs/PRESET_AUTHORING.md` | Contributor contract for platform, CapCut, and DaVinci presets. |
 
