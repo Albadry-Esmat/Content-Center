@@ -1,6 +1,7 @@
 // Design philosophy: Editorial Control Room — the generator is a calm production desk with visible state and recovery paths.
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'wouter'
 import { Check, CircleAlert, Download, FileText, Loader2, Plus, Save, Sparkles } from 'lucide-react'
 import { createCombinedPack, getPart, packReducer, type CombinedPack, type FieldSet, type PartKey } from '../lib/pack-domain'
 import { objectiveLabel, SHORT_OBJECTIVES, shortSlotDescription, SUPPORTED_PLATFORMS, type PlatformId, type ShortObjective } from '../lib/campaign-config'
@@ -55,6 +56,7 @@ function isNetworkFailure(error: unknown): boolean {
 }
 
 export default function Generator() {
+  const [location] = useLocation()
   const [mode, setMode] = useState<'long' | 'short' | 'combined'>('combined')
   const [topic, setTopic] = useState('')
   const [notes, setNotes] = useState('')
@@ -77,6 +79,7 @@ export default function Generator() {
   const reportedRunRef = useRef<string | null>(null)
   const persistedRunRef = useRef<string | null>(null)
   const recoveredCloudRunRef = useRef<string | null>(null)
+  const demoAppliedRef = useRef(false)
   const ready = topic.trim().length > 2
   const part = getPart(pack, activePart)
   const progress = useMemo(() => stages.filter((stage) => part.stageStatus[stage.id] === 'done').length * 25, [part.stageStatus])
@@ -91,6 +94,20 @@ export default function Generator() {
     packRef.current = next
     setPack(next)
   }
+
+  useEffect(() => {
+    const demoRequested = new URLSearchParams(location.split('?')[1] || '').get('demo') === '1'
+    if (demoRequested && !demoAppliedRef.current && !cloudSyncActive) {
+      demoAppliedRef.current = true
+      const demoTopic = 'How to turn one long video into a useful short-form campaign'
+      const demoNotes = 'Show a beginner-friendly workflow: one practical long-form lesson, two curiosity-building teasers before publication, and five simple follow-up shorts after publication. Keep the editing guidance simple for CapCut montage and DaVinci Resolve correction.'
+      const demoPack = createCombinedPack(demoTopic)
+      replacePack(demoPack)
+      setTopic(demoTopic)
+      setNotes(demoNotes)
+      toast.message('Demo campaign loaded.', { description: 'Edit the topic or notes, then generate locally or connect an AI provider in Settings.' })
+    }
+  }, [cloudSyncActive, location])
 
   useEffect(() => {
     const cloudData = cloudProject.data

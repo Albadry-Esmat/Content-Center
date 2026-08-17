@@ -26,6 +26,7 @@ export default function Settings() {
   function update<K extends keyof typeof config>(key: K, value: (typeof config)[K]) { setConfig((current) => ({ ...current, [key]: value })) }
   function persist() {
     saveAiConfig(config)
+    window.dispatchEvent(new Event('content-center-settings'))
     setSaved(true)
     toast.success('Workspace preferences saved', { description: 'They stay in this browser and shape future generation.' })
     window.setTimeout(() => setSaved(false), 1800)
