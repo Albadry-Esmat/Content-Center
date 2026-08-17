@@ -61,7 +61,7 @@ The required quality checks are:
 pnpm verify
 ```
 
-`pnpm verify` runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, and changelog validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
+`pnpm verify` runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, and release-readiness validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
 
 ## Adding a platform preset
 
@@ -77,7 +77,7 @@ Before implementing a provider, document whether it is local or remote, how cred
 
 ## Changelog and release notes
 
-User-visible changes should be summarized in [`CHANGELOG.md`](CHANGELOG.md) under `Unreleased` during development. Before a version tag, use [`RELEASE_NOTES_TEMPLATE.md`](RELEASE_NOTES_TEMPLATE.md), repeat the clean-checkout procedure in [`docs/RELEASE_VERIFICATION.md`](docs/RELEASE_VERIFICATION.md), run `pnpm verify`, and move only verified entries into a versioned changelog heading.
+User-visible changes should be summarized in [`CHANGELOG.md`](CHANGELOG.md) under `Unreleased` during development. Before a version tag, follow [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md), use [`RELEASE_NOTES_TEMPLATE.md`](RELEASE_NOTES_TEMPLATE.md), repeat the clean-checkout procedure in [`docs/RELEASE_VERIFICATION.md`](docs/RELEASE_VERIFICATION.md), run `pnpm verify`, and move only verified entries into a versioned changelog heading. The release-readiness validator must pass before tagging.
 
 ## Reporting issues
 

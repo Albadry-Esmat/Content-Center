@@ -65,7 +65,7 @@ The complete local quality gate is available as one command:
 pnpm verify
 ```
 
-It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, and changelog validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
+It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, and release-readiness validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
 
 ### Try the public demo
 
@@ -172,10 +172,12 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 | `SUPPORT.md` | Public-safe troubleshooting and issue-routing guidance. |
 | `CHANGELOG.md` | Public history and unreleased release-candidate changes. |
 | `docs/RELEASE_VERIFICATION.md` | Clean-checkout automation and public-demo smoke evidence. |
+| `docs/RELEASE_CANDIDATE.md` | Candidate tag identity, scope, evidence, and announcement requirements. |
+| `scripts/validate-release-readiness.mjs` | Prevents tagging with incomplete release evidence or metadata. |
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. New platform or editing-tool presets should be data-driven, documented, and covered by tests; see the [preset authoring guide](docs/PRESET_AUTHORING.md) for the contract. New provider integrations must include privacy behavior, credential handling, normalized errors, and contract fixtures. Maintainers should use the [branching and release workflow](docs/BRANCHING_AND_RELEASE.md), [public-release checklist](PUBLIC_RELEASE_CHECKLIST.md), [release verification record](docs/RELEASE_VERIFICATION.md), and [release-notes template](RELEASE_NOTES_TEMPLATE.md) before tagging or announcing a release.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. New platform or editing-tool presets should be data-driven, documented, and covered by tests; see the [preset authoring guide](docs/PRESET_AUTHORING.md) for the contract. New provider integrations must include privacy behavior, credential handling, normalized errors, and contract fixtures. Maintainers should use the [branching and release workflow](docs/BRANCHING_AND_RELEASE.md), [public-release checklist](PUBLIC_RELEASE_CHECKLIST.md), [release verification record](docs/RELEASE_VERIFICATION.md), [release candidate record](docs/RELEASE_CANDIDATE.md), and [release-notes template](RELEASE_NOTES_TEMPLATE.md) before tagging or announcing a release.
 
 ## License and community status
 

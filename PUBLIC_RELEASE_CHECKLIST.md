@@ -43,6 +43,8 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | Public support requests have safe troubleshooting and issue-routing guidance. | `SUPPORT.md` and `pnpm validate:support` | Complete |
 | Public history and unreleased release-candidate changes are maintained in a validated changelog. | `CHANGELOG.md` and `pnpm validate:changelog` | Complete |
 | The final clean-checkout verification record is retained with the release evidence. | `docs/RELEASE_VERIFICATION.md` | Complete |
+| The public preview tag identity, scope, evidence, and announcement requirements are documented. | `docs/RELEASE_CANDIDATE.md` | Complete |
+| Tagging is blocked when release evidence, candidate metadata, or package version is incomplete. | `pnpm validate:release-readiness` | Complete |
 
 ## Release verification
 
@@ -54,7 +56,7 @@ pnpm verify
 git status --short --branch
 ```
 
-`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, and changelog validation, production build, and whitespace validation.
+`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, and release-readiness validation, production build, and whitespace validation.
 
 Then perform a manual smoke check using the public demo campaign. Confirm that the dashboard entry point opens the generator, the public-demo banner explains that no AI account is required, the campaign phase labels are visible, the simple montage and coloring guidance render, the platform selectors work, local mode remains available without an account, and no provider request occurs until the user explicitly chooses to generate.
 
