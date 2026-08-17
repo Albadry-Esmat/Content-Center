@@ -39,12 +39,14 @@ Tool guidance is defined in [`client/src/lib/production-guidance.ts`](../client/
 | `summary` | One-sentence workflow promise | Tell a beginner what the guidance helps them do. |
 | `steps` | Ordered production actions | Use observable actions in a safe beginner sequence. Keep the list short enough to follow during production. |
 | `avoid` | Explicit boundary | Name advanced or distracting operations that are outside the default path. |
+| `reviewCue` | Beginner QA prompt | Give one short visual or listening check before repeating the simple recipe across the campaign. |
+| `version` | Preset revision marker | Use a `vN` marker and increment it when user-facing behavior changes. |
 
 The CapCut default should stay centered on hard cuts, removing pauses, short punch-ins, screen recordings or B-roll, readable captions, and restrained audio ducking. The DaVinci Resolve default should stay centered on exposure, white balance, moderate contrast, restrained saturation, natural skin tones, and readable screen recordings. Do not add masks, motion tracking, advanced keyframes, complex effect stacks, LUT design, advanced node trees, or HDR finishing to the default workflow.
 
 ## Contribution workflow
 
-Start with the user-facing production decision the preset should improve. Add or update the typed data, increment the preset version when the behavior changes, and add a focused test for the public contract. For a platform change, test the identifier, ordering behavior, version, aspect-ratio guidance, CTA, safe-zone reminder, and any source or assumption that matters. For a tool change, test the tool label, at least one ordered action, and the explicit boundary in `avoid`.
+Start with the user-facing production decision the preset should improve. Add or update the typed data, increment the preset version when the behavior changes, and add a focused test for the public contract. For a platform change, test the identifier, ordering behavior, version, aspect-ratio guidance, CTA, safe-zone reminder, and any source or assumption that matters. For a tool change, test the tool label, at least one ordered action, the explicit boundary in `avoid`, the beginner `reviewCue`, and the `vN` version marker.
 
 Use the public demo campaign in [`fixtures/demo-campaign.json`](../fixtures/demo-campaign.json) for manual review. Confirm that the preset remains editable in the Generator, that the campaign still works without a provider account, and that the default path stays simple. Do not include provider credentials, private prompts, account data, or unsupported factual claims in fixtures or screenshots.
 
