@@ -9,7 +9,7 @@ export type ShortObjective =
   | 'advanced-context'
   | 'question'
 
-export type PlatformId = 'youtube' | 'youtube-shorts' | 'instagram-reels' | 'tiktok' | 'linkedin' | 'x'
+export type PlatformId = 'youtube' | 'youtube-shorts' | 'instagram-reels' | 'tiktok' | 'facebook-reels' | 'linkedin' | 'x'
 export type MontageTool = 'capcut' | 'generic'
 export type ColoringTool = 'davinci-resolve' | 'generic'
 
@@ -27,7 +27,7 @@ export type CampaignConfig = {
 export const DEFAULT_PRE_LAUNCH_OBJECTIVES: ShortObjective[] = ['curiosity', 'promise']
 export const DEFAULT_POST_LAUNCH_OBJECTIVES: ShortObjective[] = ['insight', 'mistake', 'quick-tip', 'advanced-context', 'question']
 export const DEFAULT_PLATFORMS: PlatformId[] = ['youtube', 'youtube-shorts', 'instagram-reels', 'tiktok']
-export const SUPPORTED_PLATFORMS: PlatformId[] = ['youtube', 'youtube-shorts', 'instagram-reels', 'tiktok', 'linkedin', 'x']
+export const SUPPORTED_PLATFORMS: PlatformId[] = ['youtube', 'youtube-shorts', 'instagram-reels', 'tiktok', 'facebook-reels', 'linkedin', 'x']
 
 const PLATFORM_IDS: PlatformId[] = SUPPORTED_PLATFORMS
 export const SHORT_OBJECTIVES: ShortObjective[] = ['curiosity', 'promise', 'insight', 'mistake', 'quick-tip', 'advanced-context', 'question']

@@ -33,7 +33,7 @@ const stages: Array<{ id: GenerationStage; label: string; detail: string }> = [
 ]
 
 const emptyFields: FieldSet = { title: '', promise: '', audience: '', hook: '', story: '', insight: '', proof: '', payoff: '', cta: '' }
-const platformLabels: Record<PlatformId, string> = { youtube: 'YouTube', 'youtube-shorts': 'YouTube Shorts', 'instagram-reels': 'Instagram Reels', tiktok: 'TikTok', linkedin: 'LinkedIn', x: 'X' }
+const platformLabels: Record<PlatformId, string> = { youtube: 'YouTube', 'youtube-shorts': 'YouTube Shorts', 'instagram-reels': 'Instagram Reels', tiktok: 'TikTok', 'facebook-reels': 'Facebook Reels', linkedin: 'LinkedIn', x: 'X' }
 
 function sampleFields(topic: string, part: PartKey): FieldSet {
   const short = part !== 'long'

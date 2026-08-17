@@ -136,7 +136,7 @@ The default workflow does not require advanced node trees, LUT creation, HDR fin
 
 The campaign model is designed to adapt a central idea to selected platforms without rewriting everything manually. Platform presets should remain versioned and editable because platform practices can change.
 
-Initial platform families include YouTube, YouTube Shorts, Instagram Reels, TikTok, LinkedIn, and X-style feeds. A preset may define title and caption style, CTA, aspect-ratio guidance, safe-zone notes, schedule role, and export reminders.
+Initial platform families include YouTube, YouTube Shorts, Instagram Reels, TikTok, Facebook Reels, LinkedIn, and X-style feeds. A preset may define title and caption style, CTA, aspect-ratio guidance, safe-zone notes, schedule role, and export reminders.
 
 ## Privacy and security
 

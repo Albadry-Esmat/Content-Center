@@ -30,6 +30,10 @@ const PRESETS: Record<PlatformId, PlatformPreset> = {
     id: 'tiktok', label: 'TikTok', role: 'Fast discovery and comment-driven short', aspectRatio: '9:16',
     titleGuidance: 'Frame the hook as a direct observation, mistake, question, or result.', captionGuidance: 'Use conversational context that can stand alone in the feed.', ctaGuidance: 'Invite a comment, example, or disagreement when appropriate.', safeZoneGuidance: 'Keep essential text away from the interface and caption overlay areas.', exportGuidance: 'Cut quickly only when it improves clarity; do not sacrifice comprehension for speed.', version: 'v1',
   },
+  'facebook-reels': {
+    id: 'facebook-reels', label: 'Facebook Reels', role: 'Community reach and discovery short', aspectRatio: '9:16',
+    titleGuidance: 'Lead with a clear benefit, relatable moment, or practical takeaway.', captionGuidance: 'Add one or two context lines so the clip remains understandable when shared.', ctaGuidance: 'Invite a simple reaction, share, or follow that matches the short objective.', safeZoneGuidance: 'Keep captions and key visuals away from the top, bottom, and side interface areas.', exportGuidance: 'Keep the opening frame legible and review the crop on a phone before sharing.', version: 'v1',
+  },
   linkedin: {
     id: 'linkedin', label: 'LinkedIn', role: 'Professional insight and discussion', aspectRatio: '1:1 or 16:9',
     titleGuidance: 'State the practical lesson and professional context early.', captionGuidance: 'Explain why the insight matters in a real project or team setting.', ctaGuidance: 'Ask for professional examples or invite discussion.', safeZoneGuidance: 'Use restrained on-screen text with generous margins for desktop and mobile.', exportGuidance: 'Keep technical evidence visible long enough to be understood without frantic cuts.', version: 'v1',
