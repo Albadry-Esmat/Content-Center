@@ -149,10 +149,11 @@ The local-first mode is intended to work without an account. Optional cloud work
 | `scripts/` | Security, accessibility, build-audit, and public-fixture checks. |
 | `fixtures/demo-campaign.json` | Public-safe campaign scenario for demos, screenshots, and contributor tests. |
 | `ENHANCEMENT_PLAN_SCOPE_ALIGNED.md` | Scope-aligned enhancement and release plan. |
+| `PUBLIC_RELEASE_CHECKLIST.md` | Maintainer checklist for the first public GitHub release. |
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. New platform or editing-tool presets should be data-driven, documented, and covered by tests. New provider integrations must include privacy behavior, credential handling, normalized errors, and contract fixtures.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. New platform or editing-tool presets should be data-driven, documented, and covered by tests. New provider integrations must include privacy behavior, credential handling, normalized errors, and contract fixtures. Maintainers should use the [public-release checklist](PUBLIC_RELEASE_CHECKLIST.md) before tagging or announcing a release.
 
 ## License and community status
 
