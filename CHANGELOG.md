@@ -1,0 +1,27 @@
+# Changelog
+
+All notable public changes to Content Center should be documented in this file. The project follows a simple unreleased-to-tagged flow: maintainers update the `Unreleased` section, run `pnpm verify`, prepare [`RELEASE_NOTES_TEMPLATE.md`](RELEASE_NOTES_TEMPLATE.md), and move the verified entries under a versioned heading when a release tag is created.
+
+## [Unreleased]
+
+### Added
+
+- Public-safe demo campaign fixture with a direct `/generator?demo=1` route and dashboard entry point.
+- Campaign support for one long-form video, configurable pre-launch shorts, configurable post-launch shorts, objective selectors, platform presets, simple CapCut montage guidance, and simple DaVinci Resolve coloring guidance.
+- Local-first provider support plus documented known-provider routing, model discovery, diagnostics, credential isolation, and revision-conflict safety.
+- Public contribution workflow artifacts: issue templates, pull request checklist, CODEOWNERS, Dependabot configuration, support guidance, branching and release guidance, preset authoring guidance, release-notes template, and MIT license.
+
+### Changed
+
+- Consolidated the contributor and release verification commands under `pnpm verify`.
+- Added accessibility smoke checks, demo-fixture validation, release-notes validation, CODEOWNERS validation, branching-guide validation, license validation, and support-guide validation to the verification gate.
+- CI now verifies pushes to `main`, capital-D `Dev`, and version tags matching `v*`.
+
+### Fixed
+
+- Optional analytics no longer emits placeholder URLs when analytics configuration is absent; it initializes only with explicit HTTP(S) endpoint and site-ID settings.
+- Public demo query detection reliably uses the browser search string and displays accessible no-account guidance.
+
+## Release notes
+
+Use [`RELEASE_NOTES_TEMPLATE.md`](RELEASE_NOTES_TEMPLATE.md) for public announcements. Do not publish credentials, private prompts, personal data, authorization headers, or unresolved vulnerability details. Follow [`SECURITY.md`](SECURITY.md) for undisclosed security reports and [`PUBLIC_RELEASE_CHECKLIST.md`](PUBLIC_RELEASE_CHECKLIST.md) before tagging a release.

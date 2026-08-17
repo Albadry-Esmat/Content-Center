@@ -65,7 +65,7 @@ The complete local quality gate is available as one command:
 pnpm verify
 ```
 
-It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, and support-guide validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
+It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, and changelog validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
 
 ### Try the public demo
 
@@ -170,6 +170,7 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 | `docs/BRANCHING_AND_RELEASE.md` | Dev, main, version-tag, and recovery workflow. |
 | `LICENSE` | MIT license for public use and contribution. |
 | `SUPPORT.md` | Public-safe troubleshooting and issue-routing guidance. |
+| `CHANGELOG.md` | Public history and unreleased release-candidate changes. |
 
 ## Contributing
 
