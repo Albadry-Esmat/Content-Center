@@ -61,7 +61,7 @@ The required quality checks are:
 pnpm verify
 ```
 
-`pnpm verify` runs typecheck, tests, secret scanning, accessibility smoke checks, public-fixture validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
+`pnpm verify` runs typecheck, tests, secret scanning, accessibility smoke checks, public-fixture and release-notes-template validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
 
 ## Adding a platform preset
 

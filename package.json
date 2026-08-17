@@ -11,9 +11,10 @@
     "test": "vitest run",
     "security": "node scripts/security-scan.mjs",
     "validate:demo-fixture": "node scripts/validate-demo-fixture.mjs",
+    "validate:release-notes": "node scripts/validate-release-notes.mjs",
     "sanitize:reference-secrets": "node scripts/sanitize-reference-secrets.mjs",
     "a11y:smoke": "node scripts/a11y-smoke.mjs",
-    "verify": "pnpm check && pnpm test && pnpm security && pnpm a11y:smoke && pnpm validate:demo-fixture && pnpm build && git diff --check",
+    "verify": "pnpm check && pnpm test && pnpm security && pnpm a11y:smoke && pnpm validate:demo-fixture && pnpm validate:release-notes && pnpm build && git diff --check",
     "bundle:audit": "vite build --sourcemap && node scripts/bundle-audit.mjs $(find dist/public/assets -name 'index-*.js.map' -printf '%s %p\\n' | sort -nr | head -1 | cut -d' ' -f2-)",
     "format": "prettier --write .",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
