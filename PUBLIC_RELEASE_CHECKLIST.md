@@ -12,6 +12,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | The public fixture contains no credentials, private notes, or generated factual claims. | `pnpm validate:demo-fixture` | Complete |
 | The default campaign supports one long-form asset, configurable pre-launch shorts, and configurable post-launch shorts. | Campaign configuration and Generator UI | Complete |
 | Default editing guidance remains simple CapCut montage and simple DaVinci Resolve correction. | Preset data and production guidance panels | Complete |
+| Platform and tool preset contributors have a typed contract, versioning rules, and validation workflow. | `docs/PRESET_AUTHORING.md` | Complete |
 | Platform adaptation remains editable and does not imply auto-publishing. | Platform preset data and exports | Complete |
 
 ## Privacy and security

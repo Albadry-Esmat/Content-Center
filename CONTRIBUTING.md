@@ -71,11 +71,11 @@ pnpm validate:demo-fixture
 
 ## Adding a platform preset
 
-Add platform guidance as versioned data rather than embedding it in many prompt strings. Document the preset’s title/caption style, CTA, aspect-ratio guidance, safe-zone notes, schedule role, and export reminders. Avoid presenting changing platform limits as permanent facts. Include fixture coverage and make the UI display the preset version or update note when appropriate.
+Add platform guidance as versioned data rather than embedding it in many prompt strings. Follow the [preset authoring guide](docs/PRESET_AUTHORING.md) for the stable identifier, title/caption style, CTA, aspect-ratio guidance, safe-zone notes, schedule role, export reminders, version marker, and source or assumption note. Avoid presenting changing platform limits as permanent facts. Include fixture coverage and make the UI display the preset version or update note when appropriate.
 
 ## Adding a tool preset
 
-Keep creative instructions separate from tool-specific labels. A tool preset should map simple actions such as hard cut, punch-in, caption emphasis, audio ducking, exposure correction, white-balance correction, and moderate contrast to the selected tool. Do not make advanced editing or color-grading operations part of the default path.
+Keep creative instructions separate from tool-specific labels. Follow the [preset authoring guide](docs/PRESET_AUTHORING.md) when mapping simple actions such as hard cut, punch-in, caption emphasis, audio ducking, exposure correction, white-balance correction, and moderate contrast to the selected tool. Add regression coverage for the ordered steps and the explicit `avoid` boundary. Do not make advanced editing or color-grading operations part of the default path.
 
 ## Adding an AI provider
 
