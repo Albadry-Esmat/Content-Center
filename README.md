@@ -167,10 +167,11 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 | `.github/CODEOWNERS` | Default maintainer review ownership for repository changes. |
 | `docs/screenshots/` | Public-safe dashboard and demo-generator screenshots for documentation. |
 | `docs/PRESET_AUTHORING.md` | Contributor contract for platform, CapCut, and DaVinci presets. |
+| `docs/BRANCHING_AND_RELEASE.md` | Dev, main, version-tag, and recovery workflow. |
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. New platform or editing-tool presets should be data-driven, documented, and covered by tests; see the [preset authoring guide](docs/PRESET_AUTHORING.md) for the contract. New provider integrations must include privacy behavior, credential handling, normalized errors, and contract fixtures. Maintainers should use the [public-release checklist](PUBLIC_RELEASE_CHECKLIST.md) and [release-notes template](RELEASE_NOTES_TEMPLATE.md) before tagging or announcing a release.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. New platform or editing-tool presets should be data-driven, documented, and covered by tests; see the [preset authoring guide](docs/PRESET_AUTHORING.md) for the contract. New provider integrations must include privacy behavior, credential handling, normalized errors, and contract fixtures. Maintainers should use the [branching and release workflow](docs/BRANCHING_AND_RELEASE.md), [public-release checklist](PUBLIC_RELEASE_CHECKLIST.md), and [release-notes template](RELEASE_NOTES_TEMPLATE.md) before tagging or announcing a release.
 
 ## License and community status
 

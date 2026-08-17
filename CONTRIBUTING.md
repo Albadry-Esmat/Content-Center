@@ -43,7 +43,7 @@ Provider integrations must make the trust boundary visible. Local and remote mod
 
 ## Pull requests
 
-A pull request should explain the user problem, scope, affected modules, tests, migration or compatibility impact, privacy/security impact, and any follow-up work. Keep changes focused. Avoid combining a large runtime migration with an unrelated feature or broad formatting change. The repository’s default review ownership is recorded in [`.github/CODEOWNERS`](.github/CODEOWNERS); maintainers should update it when a team or path-specific owner changes.
+A pull request should explain the user problem, scope, affected modules, tests, migration or compatibility impact, privacy/security impact, and any follow-up work. Keep changes focused. Avoid combining a large runtime migration with an unrelated feature or broad formatting change. The repository’s default review ownership is recorded in [`.github/CODEOWNERS`](.github/CODEOWNERS); maintainers should update it when a team or path-specific owner changes. Follow the [branching and release workflow](docs/BRANCHING_AND_RELEASE.md) for the capital-D `Dev` branch, release tags, and recovery expectations.
 
 Every pull request should include:
 
