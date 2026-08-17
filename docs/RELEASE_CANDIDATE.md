@@ -23,12 +23,12 @@ This candidate does not add advanced montage, advanced color grading, rendering 
 
 ## Required evidence before tagging
 
-- [ ] `Dev` is clean and synchronized with `origin/Dev`.
-- [ ] A fresh checkout passes `pnpm install --frozen-lockfile` and `pnpm verify`.
-- [ ] `/generator?demo=1` passes the public-demo smoke review without an account or provider request before explicit generation.
-- [ ] [`PUBLIC_RELEASE_CHECKLIST.md`](../PUBLIC_RELEASE_CHECKLIST.md) is complete.
-- [ ] [`CHANGELOG.md`](../CHANGELOG.md) and [`RELEASE_NOTES_TEMPLATE.md`](../RELEASE_NOTES_TEMPLATE.md) are ready for the candidate announcement.
-- [ ] No secrets, private notes, unsupported claims, or unrelated generated artifacts are present.
+- [x] `Dev` is clean and synchronized with `origin/Dev`.
+- [x] A fresh checkout passes `pnpm install --frozen-lockfile` and `pnpm verify`.
+- [x] `/generator?demo=1` passes the public-demo smoke review without an account or provider request before explicit generation.
+- [x] [`PUBLIC_RELEASE_CHECKLIST.md`](../PUBLIC_RELEASE_CHECKLIST.md) is complete.
+- [x] [`CHANGELOG.md`](../CHANGELOG.md) and [`RELEASE_NOTES_TEMPLATE.md`](../RELEASE_NOTES_TEMPLATE.md) are ready for the candidate announcement.
+- [x] No secrets, private notes, unsupported claims, or unrelated generated artifacts are present.
 
 ## Candidate announcement
 

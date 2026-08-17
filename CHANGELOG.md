@@ -4,6 +4,10 @@ All notable public changes to Content Center should be documented in this file. 
 
 ## [Unreleased]
 
+No changes yet.
+
+## [1.0.0-rc.1] - 2026-08-17
+
 ### Added
 
 - Public-safe demo campaign fixture with a direct `/generator?demo=1` route and dashboard entry point.
