@@ -1,7 +1,7 @@
 // Design philosophy: Editorial Control Room — the generator is a calm production desk with visible state and recovery paths.
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation } from 'wouter'
+import { Link, useLocation } from 'wouter'
 import { Check, CircleAlert, Download, FileText, Loader2, Plus, Save, Sparkles } from 'lucide-react'
 import { createCombinedPack, getPart, packReducer, type CombinedPack, type FieldSet, type PartKey } from '../lib/pack-domain'
 import { objectiveLabel, SHORT_OBJECTIVES, shortSlotDescription, SUPPORTED_PLATFORMS, type PlatformId, type ShortObjective } from '../lib/campaign-config'
@@ -96,7 +96,7 @@ export default function Generator() {
   }
 
   useEffect(() => {
-    const demoRequested = new URLSearchParams(location.split('?')[1] || '').get('demo') === '1'
+    const demoRequested = new URLSearchParams(window.location.search).get('demo') === '1'
     if (demoRequested && !demoAppliedRef.current && !cloudSyncActive) {
       demoAppliedRef.current = true
       const demoTopic = 'How to turn one long video into a useful short-form campaign'
@@ -308,8 +308,10 @@ export default function Generator() {
   }
 
   const generationProfile = loadAiConfig()
+  const demoMode = new URLSearchParams(window.location.search).get('demo') === '1'
   return <div className="page page-generator">
     <div className="page-heading generator-heading"><div><span className="section-index">04 / PRODUCTION DESK</span><h1>Build the pack.</h1><p>Start with a topic. The system keeps the brief, the output, and the hand-off connected.</p></div><div className="generator-stamp"><span className="status-dot" /> {cloudSyncActive ? 'CLOUD PROJECT ACTIVE' : 'LOCAL-FIRST MODE'}<br /><small>{cloudSyncActive ? 'LOCAL BACKUP ENABLED' : 'NO CLOUD UPLOADS'}</small></div></div>
+    {demoMode && <aside className="demo-banner" aria-label="Public demo campaign"><div><span className="section-index">PUBLIC DEMO</span><strong>Explore without an AI account</strong><p>This campaign is preloaded with a long-form topic, two pre-launch shorts, and five post-launch shorts. No provider request is made until you choose to generate.</p></div><Link href="/" className="text-link">Back to dashboard</Link></aside>}
     <GenerationProgressHeader summary={packProgress} run={run} onContinue={continueRecommended} />
     <section className={`campaign-review-panel ${review.ready ? 'ready' : 'needs-review'}`} aria-live="polite"><div><span className="section-index">REVIEW GATE</span><strong>{review.ready ? 'Ready for creator review' : 'Review before publishing'}</strong><small>{review.errors} blocking · {review.warnings} warnings · {review.info} open steps</small></div><div className="campaign-review-issues">{review.issues.filter((item) => item.severity !== 'info').slice(0, 3).map((item) => <span key={item.id} className={`review-chip ${item.severity}`}>{item.message}</span>)}</div></section>
     <ProjectHistoryPanel cloudActive={cloudSyncActive} versions={packVersions.data || []} runs={generationRuns.data || []} loading={packVersions.isLoading || generationRuns.isLoading} restoringVersionId={restoreCloudVersion.isPending ? restoreCloudVersion.variables?.versionId || null : null} onRestore={handleRestoreVersion} />

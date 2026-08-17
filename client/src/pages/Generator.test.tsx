@@ -5,6 +5,11 @@ import React from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createCombinedPack } from '../lib/pack-domain'
 
+vi.mock('wouter', async () => {
+  const actual = await vi.importActual<typeof import('wouter')>('wouter')
+  return { ...actual, useLocation: () => [window.location.pathname + window.location.search] }
+})
+
 const mocks = vi.hoisted(() => ({
   runs: [] as Array<Record<string, unknown>>,
   versions: [] as Array<Record<string, unknown>>,
@@ -42,7 +47,7 @@ vi.mock('../components/GenerationRunPanel', () => ({ default: ({ run }: { run: {
 import Generator from './Generator'
 
 describe('Generator cloud reload recovery', () => {
-  afterEach(() => { cleanup(); mocks.runs = []; mocks.versions = []; mocks.isAuthenticated = true; vi.clearAllMocks() })
+  afterEach(() => { cleanup(); window.history.pushState({}, '', '/'); mocks.runs = []; mocks.versions = []; mocks.isAuthenticated = true; vi.clearAllMocks() })
 
   it('restores a persisted running cloud snapshot and surfaces resumable cancelled tasks', async () => {
     const pack = createCombinedPack('Reloaded cloud pack')
@@ -69,6 +74,17 @@ describe('Generator cloud reload recovery', () => {
     screen.getByRole('button', { name: /Restore/i }).click()
     await waitFor(() => expect(mocks.restoreVersion).toHaveBeenCalledWith({ workspaceId: 'ws_history', projectId: 'prj_history', versionId: 'ver_1', expectedRevision: 0 }))
     await waitFor(() => expect((screen.getByLabelText(/Video topic/i) as HTMLInputElement).value).toBe('Restored from history'))
+  })
+
+  it('shows public demo guidance without requiring a provider account', () => {
+    mocks.isAuthenticated = false
+    window.history.pushState({}, '', '/generator?demo=1')
+
+    render(<Generator />)
+
+    expect(screen.getByRole('complementary', { name: 'Public demo campaign' })).toBeTruthy()
+    expect(screen.getByText('Explore without an AI account')).toBeTruthy()
+    expect((screen.getByLabelText(/Video topic/i) as HTMLInputElement).value).toBe('How to turn one long video into a useful short-form campaign')
   })
 
   it('stays local-first when a stale cloud selection exists without an authenticated session', () => {
