@@ -40,6 +40,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | Branch, tag, promotion, and recovery expectations are documented for maintainers and contributors. | `docs/BRANCHING_AND_RELEASE.md` | Complete |
 | Community conduct and security policies are linked from the public repository surface. | `CODE_OF_CONDUCT.md`, `SECURITY.md`, `README.md` | Complete |
 | The repository includes a public MIT license and validates its required terms. | `LICENSE` and `pnpm validate:license` | Complete |
+| Public support requests have safe troubleshooting and issue-routing guidance. | `SUPPORT.md` and `pnpm validate:support` | Complete |
 
 ## Release verification
 
@@ -51,7 +52,7 @@ pnpm verify
 git status --short --branch
 ```
 
-`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, and license validation, production build, and whitespace validation.
+`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, and support-guide validation, production build, and whitespace validation.
 
 Then perform a manual smoke check using the public demo campaign. Confirm that the dashboard entry point opens the generator, the public-demo banner explains that no AI account is required, the campaign phase labels are visible, the simple montage and coloring guidance render, the platform selectors work, local mode remains available without an account, and no provider request occurs until the user explicitly chooses to generate.
 

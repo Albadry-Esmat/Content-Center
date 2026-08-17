@@ -61,7 +61,7 @@ The required quality checks are:
 pnpm verify
 ```
 
-`pnpm verify` runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, and license validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
+`pnpm verify` runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, and support-guide validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
 
 ## Adding a platform preset
 
@@ -77,4 +77,4 @@ Before implementing a provider, document whether it is local or remote, how cred
 
 ## Reporting issues
 
-Use issue templates where available. Include the runtime, browser, provider mode, model, selected platform/tool presets, reproduction steps, expected behavior, actual behavior, and whether a local backup is available. Prefer the public demo fixture for reproduction. Remove private notes, tokens, and personal data before sharing logs or exports.
+Read [`SUPPORT.md`](SUPPORT.md) before opening a request and use issue templates where available. Include the runtime, browser, provider mode, model, selected platform/tool presets, reproduction steps, expected behavior, actual behavior, and whether a local backup is available. Prefer the public demo fixture for reproduction. Remove private notes, tokens, and personal data before sharing logs or exports.

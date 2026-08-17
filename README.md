@@ -65,13 +65,13 @@ The complete local quality gate is available as one command:
 pnpm verify
 ```
 
-It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, and license validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
+It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, and support-guide validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
 
 ### Try the public demo
 
 You can explore the campaign workflow without an AI account, API key, or cloud workspace. Start the development server, open the dashboard, and choose **Try demo campaign**, or open `/generator?demo=1` directly. The demo loads a public-safe topic and notes, keeps the default two-before/five-after campaign shape, and does not make a provider request until you choose to generate.
 
-The same scenario is available as a contributor fixture at [`fixtures/demo-campaign.json`](fixtures/demo-campaign.json). Validate it with:
+The same scenario is available as a contributor fixture at [`fixtures/demo-campaign.json`](fixtures/demo-campaign.json). For troubleshooting and safe issue routing, see [`SUPPORT.md`](SUPPORT.md). Validate the fixture with:
 
 ```bash
 pnpm validate:demo-fixture
@@ -169,6 +169,7 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 | `docs/PRESET_AUTHORING.md` | Contributor contract for platform, CapCut, and DaVinci presets. |
 | `docs/BRANCHING_AND_RELEASE.md` | Dev, main, version-tag, and recovery workflow. |
 | `LICENSE` | MIT license for public use and contribution. |
+| `SUPPORT.md` | Public-safe troubleshooting and issue-routing guidance. |
 
 ## Contributing
 
