@@ -59,15 +59,13 @@ pnpm dev
 
 The development server selects the next available port when the default port is occupied. Open the localhost URL printed in the terminal.
 
-The production build and validation commands are:
+The complete local quality gate is available as one command:
 
 ```bash
-pnpm check
-pnpm test
-pnpm security
-pnpm a11y:smoke
-pnpm build
+pnpm verify
 ```
+
+It runs typecheck, tests, secret scanning, accessibility smoke checks, public-fixture validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
 
 ### Try the public demo
 

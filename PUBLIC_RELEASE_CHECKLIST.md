@@ -42,15 +42,11 @@ Before tagging or announcing a release, run the following from a clean checkout 
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm check
-pnpm test
-pnpm security
-pnpm a11y:smoke
-pnpm validate:demo-fixture
-pnpm build
-git diff --check
+pnpm verify
 git status --short --branch
 ```
+
+`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture validation, production build, and whitespace validation.
 
 Then perform a manual smoke check using the public demo campaign. Confirm that the dashboard entry point opens the generator, the public-demo banner explains that no AI account is required, the campaign phase labels are visible, the simple montage and coloring guidance render, the platform selectors work, local mode remains available without an account, and no provider request occurs until the user explicitly chooses to generate.
 

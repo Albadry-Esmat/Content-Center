@@ -14,12 +14,7 @@ The fastest public-safe path is to load `fixtures/demo-campaign.json` through th
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm check
-pnpm test
-pnpm security
-pnpm a11y:smoke
-pnpm build
-pnpm validate:demo-fixture
+pnpm verify
 pnpm dev
 ```
 
@@ -63,13 +58,10 @@ Every pull request should include:
 The required quality checks are:
 
 ```bash
-pnpm check
-pnpm test
-pnpm security
-pnpm a11y:smoke
-pnpm build
-pnpm validate:demo-fixture
+pnpm verify
 ```
+
+`pnpm verify` runs typecheck, tests, secret scanning, accessibility smoke checks, public-fixture validation, the production build, and whitespace validation. Use the individual commands from the README when narrowing down a failure.
 
 ## Adding a platform preset
 

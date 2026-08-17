@@ -11,8 +11,9 @@
 
 ## Validation
 
-Run the checks that apply and record the result below.
+Run the checks that apply and record the result below. For the complete local gate, run `pnpm verify`.
 
+- [ ] `pnpm verify`
 - [ ] `pnpm check`
 - [ ] `pnpm test`
 - [ ] `pnpm security`
