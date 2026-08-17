@@ -50,6 +50,14 @@ The foundation/reference area is the central future extension point. Its visual 
 | Safety note | State that unsupported claims require verification and that generated text does not replace source review. |
 | Recovery | Provide a visible path to cancel, retry, discard, keep existing notes, or compare before replacement. |
 
+## Foundation/reference generation contract
+
+Batch 3 defines the AI draft as a structured artifact with the following editable sections: `workingAngle`, `audienceProblem`, `intendedPromise`, `keyPoints`, `evidenceToCollect`, `sourcesToCheck`, `termsToDefine`, `openQuestions`, and `verificationReminders`. The parser trims text values, removes empty list items, reports missing sections as review warnings, and supplies a deterministic verification reminder when the provider omits one.
+
+The prompt contract requires JSON-only output and explicitly states that the result is an editable planning draft, not verified research. The model must not browse or claim to have checked a source, invent URLs, citations, versions, dates, metrics, or other specific facts. Missing evidence should be represented with placeholders such as `[source to verify]` or `[verification required]`. Campaign shape, objectives, selected platforms, simple editing defaults, topic, current notes, language, reading direction, brand phrases, and rules version may be included as generation context; provider credentials, endpoint secrets, and private authorization data are never part of that context.
+
+Every successful draft carries the existing generation provenance shape with `source: ai`, provider ID, provider mode, model, and generation timestamp. This provenance is descriptive metadata for review and recovery; it does not certify the truth of any claim. The visible generation action, review controls, persistence, and downstream acceptance remain gated behind later batches.
+
 ## Interaction state model
 
 The later implementation must support these observable states without changing the meaning of the existing campaign values:
@@ -88,6 +96,7 @@ This batch defines the contract only. It does not implement the visual redesign,
 | Requirement | Covered by |
 |---|---|
 | FR-01 | Information architecture and summary contract |
+| FR-06 | Structured foundation/reference contract, parser warnings, verification fallback, and provenance rules |
 | FR-02 | Foundation/reference workspace contract and `CS-GENERATING` |
 | FR-03 | Mode status and local-demo state |
 | FR-04 / FR-05 | User-authored, AI-draft, and recovery states |

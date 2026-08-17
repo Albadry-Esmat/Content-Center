@@ -4,7 +4,9 @@ import { loadAiConfig, type AiConfig } from './ai-config'
 import { type AiProvider } from './ai-provider'
 import { createProviderForConfig } from './provider-registry'
 import { parseModelJson, validateMontage } from './ai-parser'
-import { buildFieldsPrompt, buildScriptPrompt } from './prompt-builders'
+import { buildFieldsPrompt, buildFoundationReferencePrompt, buildScriptPrompt } from './prompt-builders'
+import { normaliseFoundationReference, type FoundationReference } from './foundation-reference'
+import { createGenerationProvenance } from './generation-provenance'
 import type { CampaignConfig } from './campaign-config'
 import type { FieldSet, PartKey } from './pack-domain'
 import type { GradeArtifact, MontageShot, ScriptArtifact } from './pack-domain'
@@ -21,6 +23,25 @@ function normaliseFields(input: unknown): { fields: FieldSet; warnings: string[]
     return [key, value.trim()]
   })) as FieldSet
   return { fields, warnings }
+}
+
+export async function generateFoundationReference(input: { topic: string; notes: string; rulesVersion: string; campaign?: CampaignConfig; config?: AiConfig; provider?: AiProvider; signal?: AbortSignal }): Promise<{ foundation: FoundationReference; warnings: string[]; truncated: boolean; provenance: ReturnType<typeof createGenerationProvenance> }> {
+  const config = input.config || loadAiConfig()
+  const provider = input.provider || createProviderForConfig(config)
+  const controller = new AbortController()
+  const timeout = globalThis.setTimeout(() => controller.abort(), 120_000)
+  const relayAbort = () => controller.abort()
+  input.signal?.addEventListener('abort', relayAbort, { once: true })
+  try {
+    const prompt = buildFoundationReferencePrompt({ ...input, preferences: config })
+    const raw = await provider.complete({ baseUrl: config.baseUrl, model: config.model, temperature: config.temperature, maxTokens: config.maxTokens, messages: [{ role: 'system', content: prompt.system }, { role: 'user', content: prompt.user }] }, controller.signal)
+    const parsed = parseModelJson<unknown>(raw)
+    const result = normaliseFoundationReference(parsed.value)
+    return { ...result, warnings: [...parsed.warnings, ...result.warnings], truncated: parsed.truncated, provenance: createGenerationProvenance(config) }
+  } finally {
+    globalThis.clearTimeout(timeout)
+    input.signal?.removeEventListener('abort', relayAbort)
+  }
 }
 
 export async function generateFieldsForPart(input: { partKey: PartKey; topic: string; notes: string; rulesVersion: string; campaign?: CampaignConfig; config?: AiConfig; provider?: AiProvider; signal?: AbortSignal }) {

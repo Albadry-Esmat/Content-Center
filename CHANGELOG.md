@@ -12,6 +12,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Versioned CapCut and DaVinci Resolve guidance now includes a beginner review cue and surfaces the preset version in the editor while preserving the simple default boundaries.
 - Campaign Scope UX specification defining grouped information architecture, foundation/reference states, explicit AI actions, accessibility, responsive behavior, and recovery boundaries; its validator is included in `pnpm verify`.
 - Campaign Scope now uses a clearer summary, grouped editing defaults, short timeline, objectives, and platform sections with native progressive disclosure while preserving the existing campaign values and local-first demo behavior.
+- Added a structured foundation/reference AI draft contract with deterministic normalization, missing-section warnings, verification reminders, campaign context, local/remote provenance, and explicit no-browsing or no-invented-source safety rules; the visible generation action remains gated for the next batch.
 
 ## [1.0.0-rc.1] - 2026-08-17
 

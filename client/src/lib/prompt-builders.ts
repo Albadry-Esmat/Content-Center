@@ -29,6 +29,15 @@ export function buildFieldsPrompt(input: { partKey: PartKey; topic: string; note
   }
 }
 
+export function buildFoundationReferencePrompt(input: { topic: string; notes: string; rulesVersion: string; campaign?: CampaignConfig; preferences?: GenerationPreferences }) {
+  const campaign = input.campaign
+  const campaignShape = campaign ? JSON.stringify({ preLaunchCount: campaign.preLaunchCount, postLaunchCount: campaign.postLaunchCount, preLaunchObjectives: campaign.preLaunchObjectives, postLaunchObjectives: campaign.postLaunchObjectives, platforms: campaign.platforms, montageTool: campaign.montageTool, coloringTool: campaign.coloringTool }) : '(default campaign shape)'
+  return {
+    system: `You are an editorial research-planning assistant. ${buildWritingGuidance(input.preferences)} Return ONLY valid JSON with exactly these keys: workingAngle, audienceProblem, intendedPromise, keyPoints, evidenceToCollect, sourcesToCheck, termsToDefine, openQuestions, verificationReminders. This is an editable planning draft, not verified research. Do not browse, claim to have checked a source, invent URLs, citations, versions, dates, metrics, or other specific facts. If evidence is missing, use a clear placeholder such as [source to verify] or [verification required]. Keep the plan useful for a long-form video and its pre-launch and post-launch shorts. Rules version: ${input.rulesVersion}.`,
+    user: `Create a reviewable foundation and reference plan for this content campaign.\n\nTopic:\n${input.topic || '(not supplied)'}\n\nCurrent grounding notes:\n${input.notes || '(none supplied)'}\n\nCampaign configuration:\n${campaignShape}\n\nThe output should help the creator decide the angle, audience problem, promise, points to cover, evidence to collect, sources to check, terms to define, open questions, and verification reminders. Never treat an unsupported claim as confirmed.`,
+  }
+}
+
 export function buildScriptPrompt(input: { partKey: PartKey; topic: string; notes: string; fields: FieldSet; campaign?: CampaignConfig; preferences?: GenerationPreferences }) {
   return {
     system: `You are an editorial video script strategist. ${buildWritingGuidance(input.preferences)} Return only Markdown with clear sections for Hook, Story, Technical Breakdown, Proof, Verdict, and CTA, translated naturally when the selected language requires it. Do not invent factual specifics absent from the grounding notes.`,
