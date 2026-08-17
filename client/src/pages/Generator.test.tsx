@@ -67,7 +67,7 @@ describe('Generator cloud reload recovery', () => {
     expect(await screen.findByText('v1 · Saved snapshot')).toBeTruthy()
     expect(screen.getByText('Needs recovery · 0 tasks')).toBeTruthy()
     screen.getByRole('button', { name: /Restore/i }).click()
-    await waitFor(() => expect(mocks.restoreVersion).toHaveBeenCalledWith({ workspaceId: 'ws_history', projectId: 'prj_history', versionId: 'ver_1' }))
+    await waitFor(() => expect(mocks.restoreVersion).toHaveBeenCalledWith({ workspaceId: 'ws_history', projectId: 'prj_history', versionId: 'ver_1', expectedRevision: 0 }))
     await waitFor(() => expect((screen.getByLabelText(/Video topic/i) as HTMLInputElement).value).toBe('Restored from history'))
   })
 

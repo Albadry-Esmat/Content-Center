@@ -33,7 +33,7 @@ describe('workspace durable history procedures', () => {
     const packData = { meta: { topic: 'Versioned pack' }, parts: [] }
 
     await expect(caller().savePack({ workspaceId: 'ws_history', projectId: 'prj_history', packData })).resolves.toEqual({ id: 'ver_3', revision: 3 })
-    expect(mocks.saveProjectPack).toHaveBeenCalledWith(7, 'ws_history', 'prj_history', packData)
+    expect(mocks.saveProjectPack).toHaveBeenCalledWith(7, 'ws_history', 'prj_history', packData, undefined)
   })
 
   it('lists immutable revisions and restores a selected version within the project boundary', async () => {
@@ -43,6 +43,6 @@ describe('workspace durable history procedures', () => {
     await expect(caller().listPackVersions({ workspaceId: 'ws_history', projectId: 'prj_history' })).resolves.toEqual([{ id: 'ver_2', revision: 2, source: 'manual_save' }])
     await expect(caller().restorePackVersion({ workspaceId: 'ws_history', projectId: 'prj_history', versionId: 'ver_2' })).resolves.toMatchObject({ revision: 3, packData: { meta: { topic: 'Restored' } } })
     expect(mocks.listProjectPackVersions).toHaveBeenCalledWith(7, 'ws_history', 'prj_history')
-    expect(mocks.restoreProjectPackVersion).toHaveBeenCalledWith(7, 'ws_history', 'prj_history', 'ver_2')
+    expect(mocks.restoreProjectPackVersion).toHaveBeenCalledWith(7, 'ws_history', 'prj_history', 'ver_2', undefined)
   })
 })

@@ -8,14 +8,16 @@ const PACKS_KEY = 'albadry_content_packs_v1'
 const COMBINED_PACKS_KEY = 'albadry_combined_packs_v2'
 
 export type ImportResult = { packs: CombinedPack[]; rejected: number; error?: string }
+export type BackupEnvelope = { format: 'content-center-backup'; version: 1; exportedAt: string; packs: CombinedPack[] }
 
-export function serializeCombinedPacks(packs: CombinedPack[]): string { return JSON.stringify(packs) }
+export function serializeCombinedPacks(packs: CombinedPack[]): string { return JSON.stringify({ format: 'content-center-backup', version: 1, exportedAt: new Date().toISOString(), packs }) satisfies string }
 
 export function deserializeCombinedPacks(raw: string): CombinedPack[] {
   try {
     const parsed = JSON.parse(raw) as unknown
-    if (!Array.isArray(parsed)) return []
-    return parsed
+    const records = Array.isArray(parsed) ? parsed : parsed && typeof parsed === 'object' && 'packs' in parsed && Array.isArray((parsed as { packs?: unknown }).packs) ? (parsed as { packs: unknown[] }).packs : null
+    if (!records) return []
+    return records
       .map((pack) => normalizeCombinedPack(pack))
       .filter((pack): pack is CombinedPack => Boolean(pack))
   } catch { return [] }
@@ -26,9 +28,10 @@ export function exportCombinedPacksJson(): string { return serializeCombinedPack
 export function importCombinedPacksJson(raw: string): ImportResult {
   try {
     const parsed = JSON.parse(raw) as unknown
-    if (!Array.isArray(parsed)) return { packs: [], rejected: 0, error: 'Backup must contain a JSON array of combined packs.' }
-    const valid = parsed.filter((pack): pack is CombinedPack => Boolean(pack && typeof pack === 'object' && (pack as CombinedPack).schemaVersion === 2 && (pack as CombinedPack).meta?.id))
-    const rejected = parsed.length - valid.length
+    const records = Array.isArray(parsed) ? parsed : parsed && typeof parsed === 'object' && 'packs' in parsed && Array.isArray((parsed as { packs?: unknown }).packs) ? (parsed as { packs: unknown[] }).packs : null
+    if (!records) return { packs: [], rejected: 0, error: 'Backup must contain a Content Center backup envelope or a JSON array of combined packs.' }
+    const valid = records.map((pack) => normalizeCombinedPack(pack)).filter((pack): pack is CombinedPack => Boolean(pack && pack.schemaVersion === 2 && pack.meta?.id))
+    const rejected = records.length - valid.length
     const merged = [...valid, ...loadCombinedPacks().filter((existing) => !valid.some((pack) => pack.meta.id === existing.meta.id))].slice(0, 50)
     window.localStorage.setItem(COMBINED_PACKS_KEY, serializeCombinedPacks(merged))
     return { packs: merged, rejected }

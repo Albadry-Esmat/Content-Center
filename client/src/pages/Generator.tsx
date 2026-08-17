@@ -62,6 +62,7 @@ export default function Generator() {
   const [activeStage, setActiveStage] = useState<GenerationStage>('fields')
   const [activePart, setActivePart] = useState<PartKey>('long')
   const [saved, setSaved] = useState(false)
+  const [cloudRevision, setCloudRevision] = useState(0)
   const { isAuthenticated } = useAuth()
   const { workspaceId, projectId } = useWorkspaceSelection()
   const cloudSyncActive = Boolean(isAuthenticated && workspaceId && projectId)
@@ -92,14 +93,17 @@ export default function Generator() {
   }
 
   useEffect(() => {
-    const cloudPack = cloudProject.data?.packData
+    const cloudData = cloudProject.data
+    if (!cloudData) return
+    setCloudRevision(cloudData.revision || 0)
+    const cloudPack = cloudData.packData
     if (!cloudPack || typeof cloudPack !== 'object' || !('parts' in cloudPack) || !('meta' in cloudPack)) return
     const restored = cloudPack as unknown as CombinedPack
     setPack(restored)
     packRef.current = restored
     setTopic(restored.meta.topic || '')
     setNotes(restored.meta.notes || '')
-  }, [cloudProject.data?.id])
+  }, [cloudProject.data?.id, cloudProject.data?.updatedAt])
 
   async function runTask(task: GenerationTask, signal: AbortSignal) {
     const config = loadAiConfig()
@@ -244,11 +248,16 @@ export default function Generator() {
     saveCombinedPack(nextPack)
     if (cloudSyncActive && workspaceId && projectId) {
       try {
-        const savedVersion = await saveCloudPack.mutateAsync({ workspaceId, projectId, packData: nextPack as unknown as Record<string, unknown> })
+        const savedVersion = await saveCloudPack.mutateAsync({ workspaceId, projectId, packData: nextPack as unknown as Record<string, unknown>, expectedRevision: cloudRevision })
+        setCloudRevision(savedVersion.revision)
         await trpcUtils.workspace.listPackVersions.invalidate({ workspaceId, projectId })
         toast.success(`Saved as version ${savedVersion.revision}`, { description: 'A local backup was also kept in this browser.' })
       } catch (error) {
-        toast.error('Saved locally only', { description: error instanceof Error ? error.message : 'Cloud sync is unavailable. Retry when the workspace reconnects.' })
+        if (typeof error === 'object' && error && 'data' in error && (error as { data?: { code?: string } }).data?.code === 'CONFLICT') {
+          const refreshed = await trpcUtils.workspace.getProject.fetch({ workspaceId, projectId })
+          setCloudRevision(refreshed?.revision || cloudRevision)
+          toast.error('Cloud version conflict', { description: 'Your local pack is safe. Refresh or merge the newer cloud version before retrying this save.' })
+        } else toast.error('Saved locally only', { description: error instanceof Error ? error.message : 'Cloud sync is unavailable. Retry when the workspace reconnects.' })
       }
     }
     setSaved(true)
@@ -258,8 +267,9 @@ export default function Generator() {
   async function handleRestoreVersion(versionId: string) {
     if (!workspaceId || !projectId) return
     try {
-      const restored = await restoreCloudVersion.mutateAsync({ workspaceId, projectId, versionId })
+      const restored = await restoreCloudVersion.mutateAsync({ workspaceId, projectId, versionId, expectedRevision: cloudRevision })
       const restoredPack = restored.packData as unknown as CombinedPack
+      setCloudRevision(restored.revision)
       replacePack(restoredPack)
       setTopic(restoredPack.meta.topic || '')
       setNotes(restoredPack.meta.notes || '')
@@ -270,7 +280,8 @@ export default function Generator() {
       ])
       toast.success(`Restored version ${restored.revision}`, { description: 'The restored pack is protected as a new cloud revision.' })
     } catch (error) {
-      toast.error('Unable to restore this version.', { description: error instanceof Error ? error.message : 'Retry when the workspace reconnects.' })
+      if (typeof error === 'object' && error && 'data' in error && (error as { data?: { code?: string } }).data?.code === 'CONFLICT') toast.error('Restore conflict', { description: 'A newer cloud revision exists. Refresh the project history and choose the restore action again.' })
+      else toast.error('Unable to restore this version.', { description: error instanceof Error ? error.message : 'Retry when the workspace reconnects.' })
     }
   }
 

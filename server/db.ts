@@ -157,29 +157,50 @@ export async function createProjectForWorkspace(userId: number, workspaceId: str
   return created[0];
 }
 
-export async function getProjectForWorkspace(userId: number, workspaceId: string, projectId: string) {
-  await requireWorkspaceRole(userId, workspaceId, PROJECT_READ_ROLES);
-  const db = await requireDatabase();
-  const found = await db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.workspaceId, workspaceId))).limit(1);
-  return found[0] ?? null;
+export class PackRevisionConflictError extends Error {
+  constructor(public readonly expectedRevision: number, public readonly currentRevision: number) {
+    super(`This project changed in another session. Expected revision ${expectedRevision}, but the cloud is now at revision ${currentRevision}.`);
+    this.name = 'PackRevisionConflictError';
+  }
 }
 
-export async function saveProjectPack(userId: number, workspaceId: string, projectId: string, packData: Record<string, unknown>) {
-  await requireWorkspaceRole(userId, workspaceId, EDITOR_ROLES);
-  const db = await requireDatabase();
-  const existing = await getProjectForWorkspace(userId, workspaceId, projectId);
-  if (!existing) throw new Error("Project not found in this workspace.");
-  const latestVersion = await db.select({ revision: projectPackVersions.revision })
+async function latestPackRevision(db: Awaited<ReturnType<typeof requireDatabase>>, workspaceId: string, projectId: string): Promise<number> {
+  if (!db) return 0;
+  const latest = await db.select({ revision: projectPackVersions.revision })
     .from(projectPackVersions)
     .where(and(eq(projectPackVersions.workspaceId, workspaceId), eq(projectPackVersions.projectId, projectId)))
     .orderBy(desc(projectPackVersions.revision))
     .limit(1);
+  return latest[0]?.revision ?? 0;
+}
+
+export async function getProjectForWorkspace(userId: number, workspaceId: string, projectId: string) {
+  await requireWorkspaceRole(userId, workspaceId, PROJECT_READ_ROLES);
+  const db = await requireDatabase();
+  const found = await db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.workspaceId, workspaceId))).limit(1);
+  if (!found[0]) return null;
+  return { ...found[0], revision: await latestPackRevision(db, workspaceId, projectId) };
+}
+
+export async function saveProjectPack(userId: number, workspaceId: string, projectId: string, packData: Record<string, unknown>, expectedRevision?: number) {
+  await requireWorkspaceRole(userId, workspaceId, EDITOR_ROLES);
+  const db = await requireDatabase();
+  const existing = await getProjectForWorkspace(userId, workspaceId, projectId);
+  if (!existing) throw new Error("Project not found in this workspace.");
+  const currentRevision = await latestPackRevision(db, workspaceId, projectId);
+  if (expectedRevision !== undefined && expectedRevision !== currentRevision) throw new PackRevisionConflictError(expectedRevision, currentRevision);
   const versionId = `ver_${nanoid(18)}`;
-  const revision = (latestVersion[0]?.revision ?? 0) + 1;
-  await db.transaction(async (tx) => {
-    await tx.update(projects).set({ packData }).where(and(eq(projects.id, projectId), eq(projects.workspaceId, workspaceId)));
-    await tx.insert(projectPackVersions).values({ id: versionId, workspaceId, projectId, revision, source: "manual_save", packData, createdByUserId: userId });
-  });
+  const revision = currentRevision + 1;
+  try {
+    await db.transaction(async (tx) => {
+      await tx.update(projects).set({ packData }).where(and(eq(projects.id, projectId), eq(projects.workspaceId, workspaceId)));
+      await tx.insert(projectPackVersions).values({ id: versionId, workspaceId, projectId, revision, source: "manual_save", packData, createdByUserId: userId });
+    });
+  } catch (error) {
+    const afterFailureRevision = await latestPackRevision(db, workspaceId, projectId);
+    if (expectedRevision !== undefined && afterFailureRevision !== expectedRevision) throw new PackRevisionConflictError(expectedRevision, afterFailureRevision);
+    throw error;
+  }
   return { id: versionId, revision };
 }
 
@@ -194,7 +215,7 @@ export async function listProjectPackVersions(userId: number, workspaceId: strin
     .limit(30);
 }
 
-export async function restoreProjectPackVersion(userId: number, workspaceId: string, projectId: string, versionId: string) {
+export async function restoreProjectPackVersion(userId: number, workspaceId: string, projectId: string, versionId: string, expectedRevision?: number) {
   await requireWorkspaceRole(userId, workspaceId, EDITOR_ROLES);
   const db = await requireDatabase();
   const version = await db.select({ packData: projectPackVersions.packData })
@@ -202,12 +223,9 @@ export async function restoreProjectPackVersion(userId: number, workspaceId: str
     .where(and(eq(projectPackVersions.id, versionId), eq(projectPackVersions.workspaceId, workspaceId), eq(projectPackVersions.projectId, projectId)))
     .limit(1);
   if (!version[0]) throw new Error("Version not found in this project.");
-  const latestVersion = await db.select({ revision: projectPackVersions.revision })
-    .from(projectPackVersions)
-    .where(and(eq(projectPackVersions.workspaceId, workspaceId), eq(projectPackVersions.projectId, projectId)))
-    .orderBy(desc(projectPackVersions.revision))
-    .limit(1);
-  const revision = (latestVersion[0]?.revision ?? 0) + 1;
+  const currentRevision = await latestPackRevision(db, workspaceId, projectId);
+  if (expectedRevision !== undefined && expectedRevision !== currentRevision) throw new PackRevisionConflictError(expectedRevision, currentRevision);
+  const revision = currentRevision + 1;
   const restoredVersionId = `ver_${nanoid(18)}`;
   await db.transaction(async (tx) => {
     await tx.update(projects).set({ packData: version[0].packData }).where(and(eq(projects.id, projectId), eq(projects.workspaceId, workspaceId)));
