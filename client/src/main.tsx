@@ -5,9 +5,12 @@ import { httpBatchLink } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
+import { initializeOptionalAnalytics } from "./lib/optional-analytics";
 import "./index.css";
 
 const queryClient = new QueryClient();
+
+initializeOptionalAnalytics();
 
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {

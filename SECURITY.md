@@ -14,6 +14,7 @@ The project must preserve these boundaries:
 - AI and imported backup content must be parsed and rendered safely.
 - Cloud workspace access must enforce authentication, workspace membership, and project authorization.
 - Local persistence failures must not silently discard the active campaign.
+- Optional analytics must remain disabled unless both an explicit HTTP(S) endpoint and site identifier are configured.
 
 ## Reporting a vulnerability
 
@@ -36,7 +37,7 @@ pnpm test
 pnpm build
 ```
 
-Never bypass secret scanning by renaming a credential or placing it in a fixture. Use deterministic placeholders and test doubles instead. Provider contract fixtures must not contain real account data or private prompts.
+Never bypass secret scanning by renaming a credential or placing it in a fixture. Use deterministic placeholders and test doubles instead. Provider contract fixtures must not contain real account data or private prompts. The default build must not emit requests to placeholder analytics URLs; optional analytics is initialized only when both configuration values are present and the endpoint uses HTTP(S).
 
 ## Response process
 

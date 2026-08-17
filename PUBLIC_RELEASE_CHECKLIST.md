@@ -24,6 +24,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | Undisclosed vulnerabilities are directed to private reporting rather than public issues. | `SECURITY.md` and issue-template configuration | Complete |
 | Backup and revision conflicts preserve user data rather than silently overwriting changes. | Storage and cloud revision tests | Complete |
 | A release scan and dependency review are run from the release commit. | Maintainer release record | Verify before release |
+| Optional analytics is disabled by default and cannot emit placeholder URLs. | `client/src/lib/optional-analytics.ts` and regression tests | Complete |
 
 ## Contributor and repository readiness
 

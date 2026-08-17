@@ -146,6 +146,8 @@ Do not commit provider keys, OAuth secrets, database credentials, or private end
 
 The local-first mode is intended to work without an account. Optional cloud workspace features must not become a prerequisite for creating, editing, saving, or exporting a local campaign.
 
+Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_ANALYTICS_WEBSITE_ID` are explicitly configured. The default build does not request a placeholder URL or send campaign content to an analytics service.
+
 ## Repository map
 
 | Path | Purpose |
