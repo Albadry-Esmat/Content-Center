@@ -20,6 +20,10 @@ const requiredHooks = [
   [generator, 'fieldset className="campaign-platforms"', 'native platform checkbox fieldset'],
   [generator, 'aria-label={platformLabels[platform]}', 'explicit platform checkbox accessible names'],
   [settings, 'model-discovery-notice', 'semantic model-discovery notices'],
+  [settings, 'settings-workspace', 'dedicated Settings workspace shell'],
+  [settings, 'settings-section-nav', 'Settings section navigation'],
+  [settings, 'settings-action-bar', 'sticky Settings action bar'],
+  [settings, 'aria-current={settingsSection ===', 'active Settings section semantics'],
   [settings, 'className="profile-tabs"', 'compact Generation Profile tabs'],
   [settings, '<TabsTrigger value="language">', 'language profile tab'],
   [settings, '<TabsTrigger value="direction">', 'direction profile tab'],
@@ -36,6 +40,7 @@ for (const [source, token, description] of requiredHooks) {
 }
 if (dashboard.includes('/manus-storage/')) failures.push('Dashboard still contains the unavailable manus-storage hero path.')
 if (settings.includes('discovery-placeholder')) failures.push('Settings must not manufacture a discovery-placeholder model that creates a false warning.')
+if (settings.includes('<StageSequence')) failures.push('Settings should not render the global production sequence above the compact workspace.')
 if (/id: '(openai|anthropic|google)'[^\n]*suggestedModels: \[[^\]]+\]/.test(providerRegistry)) failures.push('Hosted provider catalog must not advertise stale static model IDs; discovery should be authoritative.')
 
 function themeTokens(selector) {

@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { AlignLeft, AlignRight, Check, CircleAlert, CircleCheck, Info, Languages, Loader2, Quote, ShieldCheck, SlidersHorizontal, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
-import StageSequence from '../components/StageSequence'
 import { DEFAULT_AI_CONFIG, loadAiConfig, saveAiConfig } from '../lib/ai-config'
 import { discoverAiModels, testAiConnection, type ConnectionTestResult } from '../lib/connection-test'
 import { trpc } from '@/lib/trpc'
@@ -45,6 +44,7 @@ export default function Settings() {
   const [discoveringModels, setDiscoveringModels] = useState(false)
   const [modelDiscoveryNotice, setModelDiscoveryNotice] = useState<ModelDiscoveryNotice | null>(null)
   const [profileTab, setProfileTab] = useState('language')
+  const [settingsSection, setSettingsSection] = useState<'profile' | 'provider' | 'privacy'>('profile')
   const provider = getProviderDescriptor(config.providerId)
   const hostedStatus = trpc.ai.providerStatus.useQuery(undefined, { enabled: config.providerMode === 'known-provider', retry: false })
   const currentHostedStatus = hostedStatus.data?.find((item) => item.providerId === config.providerId)
@@ -83,6 +83,11 @@ export default function Settings() {
     else toast.error(result.message, { description: result.retryable ? `${result.detail} Retry is available. ${result.nextAction}` : `${result.detail} ${result.nextAction}` })
     setTesting(false)
   }
+  function jumpToSection(section: 'profile' | 'provider' | 'privacy') {
+    setSettingsSection(section)
+    document.getElementById(`settings-${section}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   async function discoverModels() {
     setDiscoveringModels(true); setModelDiscoveryNotice({ kind: 'loading', title: 'Discovering model IDs…', detail: 'Reading the provider’s models endpoint. No prompt or credential is being sent from this browser.' })
     try {
@@ -113,12 +118,21 @@ export default function Settings() {
     } finally { setDiscoveringModels(false) }
   }
 
-  return <div className="page page-settings">
-    <div className="source-strip"><span className="source-tape">WORKSPACE PREFERENCES / TRUST BOUNDARY</span><span>LOCAL-FIRST · BROWSER CREDENTIALS / NOT STORED · CREATOR PROFILE / READY</span></div>
-    <StageSequence active="fields" />
-    <div className="page-heading"><div><span className="section-index">06 / SETTINGS & PREFERENCES</span><h1>Set the working style.</h1><p>Shape how every future brief and script reads without keeping provider credentials in this browser.</p></div><div className="settings-shield"><ShieldCheck size={18} /><span>Preference scope<br /><b>This browser</b></span></div></div>
+  return <div className="page page-settings settings-page">
+    <header className="settings-workspace-header">
+      <div><span className="section-index">SETTINGS / WORKSPACE</span><h1>Working style, in one place.</h1><p>Set your profile and provider without leaving the configuration workspace.</p></div>
+      <div className="settings-workspace-status"><span className="status-dot" /><span><b>Local-first</b><small>This browser · credentials not stored</small></span></div>
+    </header>
+    <div className="settings-workspace">
+      <nav className="settings-section-nav" aria-label="Settings sections">
+        <span className="settings-section-nav-label">Configure</span>
+        <button type="button" className={settingsSection === 'profile' ? 'active' : ''} aria-current={settingsSection === 'profile' ? 'page' : undefined} onClick={() => jumpToSection('profile')}><Languages size={15} /><span><b>Profile</b><small>Language and voice</small></span></button>
+        <button type="button" className={settingsSection === 'provider' ? 'active' : ''} aria-current={settingsSection === 'provider' ? 'page' : undefined} onClick={() => jumpToSection('provider')}><SlidersHorizontal size={15} /><span><b>Provider</b><small>Connection and models</small></span></button>
+        <button type="button" className={settingsSection === 'privacy' ? 'active' : ''} aria-current={settingsSection === 'privacy' ? 'page' : undefined} onClick={() => jumpToSection('privacy')}><ShieldCheck size={15} /><span><b>Privacy</b><small>Trust boundary</small></span></button>
+      </nav>
+      <div className="settings-workspace-content">
     <div className="settings-grid">
-      <section className="settings-card">
+      <section id="settings-profile" className="settings-card">
         <div className="card-header"><span className="section-index">GENERATION PROFILE</span><Languages size={16} /></div>
         <p className="settings-intro">The profile applies to new generation requests. You can still edit every artifact after it is created.</p>
         <Tabs value={profileTab} onValueChange={setProfileTab} className="profile-tabs">
@@ -145,9 +159,8 @@ export default function Settings() {
           </TabsContent>
         </Tabs>
         <div className="profile-summary"><Quote size={16} /><span><b>{config.scriptLanguage || 'Language not selected'} · {config.textDirection.toUpperCase()}</b><small>{config.brandPhrases.trim() ? 'Brand phrases will be available to the model.' : 'No brand phrases configured.'}</small></span></div>
-        <div className="connection-actions"><button className="button button-primary" onClick={persist}><Check size={15} /> {saved ? 'Preferences saved' : 'Save preferences'}</button></div>
       </section>
-      <section className="settings-card">
+      <section id="settings-provider" className="settings-card">
         <div className="card-header"><span className="section-index">AI CONNECTION</span><ShieldCheck size={16} /></div>
         <div className="profile-summary"><ShieldCheck size={16} /><span><b>{config.providerMode === 'local' ? 'LOCAL AI / PRIVACY-FIRST' : 'KNOWN PROVIDER / SECURE ROUTING REQUIRED'}</b><small>{provider.label} · {provider.endpointStyle}</small></span></div>
         <div className="security-note"><ShieldCheck size={16} /><span><b>{provider.requiresServerProxy ? 'Server proxy required' : 'Browser-safe local endpoint'}</b> {provider.privacyNote}</span></div>
@@ -156,12 +169,15 @@ export default function Settings() {
         <label htmlFor="provider">Provider</label><select id="provider" value={config.providerId} onChange={(event) => { const selected = getProviderDescriptor(event.target.value); setConfig((current) => ({ ...current, providerId: selected.id, providerMode: selected.mode })) }}>{PROVIDER_CATALOG.map((item) => <option key={item.id} value={item.id}>{item.label}{item.requiresServerProxy ? ' · server proxy' : ' · local'}</option>)}</select>
         <label htmlFor="base-url">OpenAI-compatible base URL</label><input id="base-url" value={config.baseUrl} onChange={(event) => update('baseUrl', event.target.value)} />
         <label htmlFor="model">Model</label><input id="model" list="model-options" value={config.model} onChange={(event) => update('model', event.target.value)} /><datalist id="model-options">{modelOptions.map((model) => <option key={model} value={model} />)}</datalist>
-        <div className="connection-actions"><button className="button button-quiet" onClick={testConnection} disabled={testing}>{testing ? <><Loader2 className="spin" size={15} /> Testing connection…</> : <><CircleCheck size={15} /> Test connection</>}</button><button className="button button-quiet" onClick={discoverModels} disabled={discoveringModels}>{discoveringModels ? <><Loader2 className="spin" size={15} /> Discovering models…</> : <><SlidersHorizontal size={15} /> Discover models</>}</button><button className="button button-quiet" onClick={persist}><Check size={15} /> Save all settings</button></div>
+        <div className="connection-actions"><button className="button button-quiet" onClick={testConnection} disabled={testing}>{testing ? <><Loader2 className="spin" size={15} /> Testing connection…</> : <><CircleCheck size={15} /> Test connection</>}</button><button className="button button-quiet" onClick={discoverModels} disabled={discoveringModels}>{discoveringModels ? <><Loader2 className="spin" size={15} /> Discovering models…</> : <><SlidersHorizontal size={15} /> Discover models</>}</button></div>
         {modelDiscoveryNotice && <div className={`model-discovery-notice ${modelDiscoveryNotice.kind}`} role={modelDiscoveryNotice.kind === 'error' ? 'alert' : 'status'} aria-live="polite">{modelDiscoveryNotice.kind === 'loading' ? <Loader2 className="spin" size={16} /> : modelDiscoveryNotice.kind === 'success' ? <CircleCheck size={16} /> : modelDiscoveryNotice.kind === 'warning' ? <TriangleAlert size={16} /> : <Info size={16} />}<span><b>{modelDiscoveryNotice.title}</b><small>{modelDiscoveryNotice.detail}</small>{modelDiscoveryNotice.nextAction && <small><strong>Next:</strong> {modelDiscoveryNotice.nextAction}</small>}</span></div>}
         {discoveredModels.length > 0 && <div className="discovered-models" aria-label="Discovered model IDs"><div className="discovered-models-heading"><span><b>Exact model IDs</b><small>Returned by the configured provider</small></span><span>{discoveredModels.length} available</span></div><ul>{discoveredModels.map((model) => <li key={model}><button type="button" className={config.model === model ? 'selected' : ''} onClick={() => update('model', model)} aria-label={`Use discovered model ${model}`}><span>{config.model === model ? 'Selected' : 'Use'}</span><code>{model}</code></button></li>)}</ul></div>}
         {connectionResult && <div className={`connection-result ${connectionResult.ok ? 'success' : 'error'}`} role={connectionResult.ok ? 'status' : 'alert'} aria-live="polite">{connectionResult.ok ? <CircleCheck size={16} /> : <CircleAlert size={16} />}<span><b>{connectionResult.message}</b><small>{connectionResult.warning || connectionResult.detail}</small><small><strong>Next:</strong> {connectionResult.nextAction}</small></span></div>}
-        <div className="security-note"><ShieldCheck size={16} /><span><b>Trust boundary</b> Your notes, drafts, and profile stay in this browser unless you actively use a cloud project. This local connection supports endpoints that do not require browser-held credentials.</span></div>
+        <div id="settings-privacy" className="security-note"><ShieldCheck size={16} /><span><b>Trust boundary</b> Your notes, drafts, and profile stay in this browser unless you actively use a cloud project. This local connection supports endpoints that do not require browser-held credentials.</span></div>
       </section>
+    </div>
+      <footer className="settings-action-bar" aria-label="Settings actions"><span>{saved ? 'Changes saved to this browser.' : 'Save when your profile or provider changes.'}</span><button className="button button-primary" onClick={persist}><Check size={15} /> {saved ? 'Saved' : 'Save changes'}</button></footer>
+      </div>
     </div>
   </div>
 }

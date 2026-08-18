@@ -13,6 +13,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Replaced the broken homepage `/manus-storage/...` hero reference with a repository-tracked Vite-imported hero asset, added deterministic asset-path validation, and verified the image in light/dark runtime smoke tests and the production build.
 - Added integrated UI validation for semantic light/dark contrast pairs, responsive platform behavior, native platform accessibility hooks, exact model-discovery surfaces, and the tracked hero import; corrected the light selected-status foreground to meet the minimum contrast threshold.
 - Converted Generation Profile into compact accessible Language, Direction, and Brand cues tabs so profile fields are reachable without scrolling while preserving local persistence and save behavior.
+- Restructured Settings into a dedicated compact workspace with Profile, Provider, and Privacy navigation, a responsive two-column-to-one-column layout, section targets, and one sticky Save action while preserving existing provider routing and browser-local persistence.
 
 - Beginner-friendly first-contribution guide covering setup, public-demo reproduction, safe contribution paths, validation, privacy boundaries, and the capital-D `Dev` pull-request workflow.
 - Contributor-onboarding validation included in the consolidated `pnpm verify` quality gate and linked from the README and GitHub issue chooser.
