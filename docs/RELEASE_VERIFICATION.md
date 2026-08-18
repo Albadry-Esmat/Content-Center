@@ -8,7 +8,7 @@ This record documents the final clean-checkout verification for the current publ
 |---|---|
 | Repository | `Albadry-Esmat/Content-Center` |
 | Branch | `Dev` |
-| Verified source commit | `a1b0f4d fix: align pnpm workspace configuration` |
+| Verified source commit | `49f326a feat: compact profile tabs and provider accuracy` |
 | Verification date | 2026-08-18 |
 | Checkout state | Fresh single-branch clone with frozen dependency installation |
 | Git state after verification | Clean: `## Dev...origin/Dev` |
