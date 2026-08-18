@@ -8,6 +8,7 @@ import { DEFAULT_AI_CONFIG, loadAiConfig, saveAiConfig } from '../lib/ai-config'
 import { discoverAiModels, testAiConnection, type ConnectionTestResult } from '../lib/connection-test'
 import { trpc } from '@/lib/trpc'
 import { discoverKnownProviderModels, getProviderDescriptor, PROVIDER_CATALOG } from '../lib/provider-registry'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 
 const languageSuggestions = ['English', 'Arabic', 'Arabic (Egyptian)', 'French', 'Spanish', 'Portuguese', 'German']
 
@@ -43,6 +44,7 @@ export default function Settings() {
   const [discoveredModels, setDiscoveredModels] = useState<string[]>([])
   const [discoveringModels, setDiscoveringModels] = useState(false)
   const [modelDiscoveryNotice, setModelDiscoveryNotice] = useState<ModelDiscoveryNotice | null>(null)
+  const [profileTab, setProfileTab] = useState('language')
   const provider = getProviderDescriptor(config.providerId)
   const hostedStatus = trpc.ai.providerStatus.useQuery(undefined, { enabled: config.providerMode === 'known-provider', retry: false })
   const currentHostedStatus = hostedStatus.data?.find((item) => item.providerId === config.providerId)
@@ -57,9 +59,25 @@ export default function Settings() {
   }
   async function testConnection() {
     setTesting(true); setConnectionResult(null); setModelDiscoveryNotice(null)
+    if (config.providerMode === 'known-provider') {
+      try {
+        const result = await discoverKnownProviderModels(config.providerId)
+        const hostedResult: ConnectionTestResult = { ok: true, category: 'success', message: 'Hosted provider proxy is live.', detail: result.detail, models: result.models, retryable: true, nextAction: result.models.length ? 'Choose a discovered model before generating.' : 'Enter a supported model ID manually or discover models again.' }
+        setConnectionResult(hostedResult); setDiscoveredModels(result.models); setModelDiscoveryNotice(buildDiscoveryNotice(result.models, result.detail))
+        toast.success(hostedResult.message, { description: `${result.detail} ${result.models.length ? `Found ${result.models.length} exact model ID${result.models.length === 1 ? '' : 's'}.` : 'No model IDs were returned.'}` })
+      } catch {
+        const hostedMessage = 'Hosted provider proxy is unavailable.'
+        const hostedDetail = 'The protected provider route did not return a usable response.'
+        const hostedNextAction = 'Check sign-in, server credential, and provider status, then retry.'
+        const hostedResult: ConnectionTestResult = { ok: false, category: 'server', message: hostedMessage, detail: hostedDetail, retryable: true, nextAction: hostedNextAction }
+        setConnectionResult(hostedResult); setDiscoveredModels([]); setModelDiscoveryNotice({ kind: 'error', title: hostedMessage, detail: hostedDetail, nextAction: hostedNextAction })
+        toast.error(hostedMessage, { description: `${hostedDetail} ${hostedNextAction}` })
+      } finally { setTesting(false) }
+      return
+    }
     const result = await testAiConnection(config)
     const models = result.models || []
-    setConnectionResult(result); setDiscoveredModels(models); setTesting(false)
+    setConnectionResult(result); setDiscoveredModels(models)
     if (models.length || result.ok) setModelDiscoveryNotice(buildDiscoveryNotice(models, result.detail || 'The endpoint responded.', result.warning, 'warning'))
     if (result.ok) toast.success(result.message, { description: result.warning || `${result.detail} ${models.length ? `Found ${models.length} exact model ID${models.length === 1 ? '' : 's'}.` : 'No model IDs were returned.'}` })
     else toast.error(result.message, { description: result.retryable ? `${result.detail} Retry is available. ${result.nextAction}` : `${result.detail} ${result.nextAction}` })
@@ -103,16 +121,29 @@ export default function Settings() {
       <section className="settings-card">
         <div className="card-header"><span className="section-index">GENERATION PROFILE</span><Languages size={16} /></div>
         <p className="settings-intro">The profile applies to new generation requests. You can still edit every artifact after it is created.</p>
-        <label htmlFor="script-language">Script language</label>
-        <input id="script-language" list="script-language-options" value={config.scriptLanguage} onChange={(event) => update('scriptLanguage', event.target.value)} placeholder="e.g. English, Arabic, French" />
-        <datalist id="script-language-options">{languageSuggestions.map((language) => <option key={language} value={language} />)}</datalist>
-        <p className="field-hint">Choose any language. Suggestions are provided only to speed up common creator workflows.</p>
-        <fieldset className="direction-picker"><legend>Writing direction</legend><div role="radiogroup" aria-label="Writing direction" className="direction-options">
-          {([{ value: 'auto', label: 'Auto', icon: SlidersHorizontal, detail: 'Match language' }, { value: 'ltr', label: 'LTR', icon: AlignLeft, detail: 'Left to right' }, { value: 'rtl', label: 'RTL', icon: AlignRight, detail: 'Right to left' }] as const).map(({ value, label, icon: Icon, detail }) => <button key={value} type="button" role="radio" aria-checked={config.textDirection === value} className={config.textDirection === value ? 'selected' : ''} onClick={() => update('textDirection', value)}><Icon size={15} /><span><b>{label}</b><small>{detail}</small></span></button>)}
-        </div></fieldset>
-        <label htmlFor="brand-phrases">Brand phrases <span className="field-hint">optional</span></label>
-        <textarea id="brand-phrases" value={config.brandPhrases} onChange={(event) => update('brandPhrases', event.target.value)} rows={4} placeholder="e.g. Make every idea count; Practical clarity, not noise" />
-        <p className="field-hint">Separate phrases with commas or new lines. They are optional cues—not compulsory copy—and remain independent from provider credentials.</p>
+        <Tabs value={profileTab} onValueChange={setProfileTab} className="profile-tabs">
+          <TabsList aria-label="Generation profile sections" className="profile-tabs-list">
+            <TabsTrigger value="language"><Languages size={14} /> Language</TabsTrigger>
+            <TabsTrigger value="direction"><SlidersHorizontal size={14} /> Direction</TabsTrigger>
+            <TabsTrigger value="brand"><Quote size={14} /> Brand cues</TabsTrigger>
+          </TabsList>
+          <TabsContent value="language" className="profile-tab-panel">
+            <label htmlFor="script-language">Script language</label>
+            <input id="script-language" list="script-language-options" value={config.scriptLanguage} onChange={(event) => update('scriptLanguage', event.target.value)} placeholder="e.g. English, Arabic, French" />
+            <datalist id="script-language-options">{languageSuggestions.map((language) => <option key={language} value={language} />)}</datalist>
+            <p className="field-hint">Choose any language. Suggestions speed up common creator workflows.</p>
+          </TabsContent>
+          <TabsContent value="direction" className="profile-tab-panel">
+            <fieldset className="direction-picker"><legend>Writing direction</legend><div role="radiogroup" aria-label="Writing direction" className="direction-options">
+              {([{ value: 'auto', label: 'Auto', icon: SlidersHorizontal, detail: 'Match language' }, { value: 'ltr', label: 'LTR', icon: AlignLeft, detail: 'Left to right' }, { value: 'rtl', label: 'RTL', icon: AlignRight, detail: 'Right to left' }] as const).map(({ value, label, icon: Icon, detail }) => <button key={value} type="button" role="radio" aria-checked={config.textDirection === value} className={config.textDirection === value ? 'selected' : ''} onClick={() => update('textDirection', value)}><Icon size={15} /><span><b>{label}</b><small>{detail}</small></span></button>)}
+            </div></fieldset>
+          </TabsContent>
+          <TabsContent value="brand" className="profile-tab-panel">
+            <label htmlFor="brand-phrases">Brand phrases <span className="field-hint">optional</span></label>
+            <textarea id="brand-phrases" value={config.brandPhrases} onChange={(event) => update('brandPhrases', event.target.value)} rows={4} placeholder="e.g. Make every idea count; Practical clarity, not noise" />
+            <p className="field-hint">Separate phrases with commas or new lines. They remain independent from provider credentials.</p>
+          </TabsContent>
+        </Tabs>
         <div className="profile-summary"><Quote size={16} /><span><b>{config.scriptLanguage || 'Language not selected'} · {config.textDirection.toUpperCase()}</b><small>{config.brandPhrases.trim() ? 'Brand phrases will be available to the model.' : 'No brand phrases configured.'}</small></span></div>
         <div className="connection-actions"><button className="button button-primary" onClick={persist}><Check size={15} /> {saved ? 'Preferences saved' : 'Save preferences'}</button></div>
       </section>

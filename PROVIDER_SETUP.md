@@ -23,7 +23,7 @@ Typical endpoint examples are `http://localhost:1234` for an OpenAI-compatible l
 
 ## Hosted setup
 
-Hosted providers use the protected `ai.providerStatus`, `ai.listModels`, and `ai.complete` routes. A deployment owner configures the server environment, not the browser. The settings panel reports whether the server credential is configured without returning the credential value.
+Hosted providers use the protected `ai.providerStatus`, `ai.listModels`, and `ai.complete` routes. **Discover models** and **Test connection** read the server-side model route; generation uses the protected completion route. OpenAI, Anthropic, and Google model IDs are read from their provider APIs, while Google discovery keeps only models that advertise `generateContent`. A deployment owner configures the server environment, not the browser. The settings panel reports whether the server credential is configured without returning the credential value.
 
 The supported server variables are:
 
@@ -34,7 +34,7 @@ ANTHROPIC_API_KEY
 GOOGLE_AI_API_KEY
 ```
 
-Restart the server after changing environment variables. Sign in before inspecting hosted-provider status because provider status is protected. If the status says that a server credential is not configured, do not retry repeatedly; configure the server environment or switch to a local provider.
+Restart the server after changing environment variables. Sign in before inspecting hosted-provider status because provider status is protected. Anthropic discovery uses `GET /v1/models` with the server-side `x-api-key` and `anthropic-version` headers. If the status says that a server credential is not configured, do not retry repeatedly; configure the server environment or switch to a local provider.
 
 ## Troubleshooting
 

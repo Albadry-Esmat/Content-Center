@@ -12,6 +12,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Redesigned Campaign Scope platform selection as responsive accessible tiles while preserving native checkboxes, explicit platform names, selected/available state copy, visible non-color cues, keyboard focus, and the existing campaign platform values.
 - Replaced the broken homepage `/manus-storage/...` hero reference with a repository-tracked Vite-imported hero asset, added deterministic asset-path validation, and verified the image in light/dark runtime smoke tests and the production build.
 - Added integrated UI validation for semantic light/dark contrast pairs, responsive platform behavior, native platform accessibility hooks, exact model-discovery surfaces, and the tracked hero import; corrected the light selected-status foreground to meet the minimum contrast threshold.
+- Converted Generation Profile into compact accessible Language, Direction, and Brand cues tabs so profile fields are reachable without scrolling while preserving local persistence and save behavior.
 
 - Beginner-friendly first-contribution guide covering setup, public-demo reproduction, safe contribution paths, validation, privacy boundaries, and the capital-D `Dev` pull-request workflow.
 - Contributor-onboarding validation included in the consolidated `pnpm verify` quality gate and linked from the README and GitHub issue chooser.
@@ -47,6 +48,7 @@ All notable public changes to Content Center should be documented in this file. 
 
 - Optional analytics no longer emits placeholder URLs when analytics configuration is absent; it initializes only with explicit HTTP(S) endpoint and site-ID settings.
 - Final review hardened local discovery to avoid synthetic-model warnings, sanitized browser network diagnostics, and normalized hosted-provider model IDs by trimming, filtering malformed entries, and removing duplicates at both client and server boundaries.
+- Corrected provider accuracy: hosted model IDs are now discovered from OpenAI, Anthropic, and Google APIs through the protected proxy; Google filters to `generateContent` models, Google system prompts use `systemInstruction`, and hosted Test connection exercises the protected model route.
 - Moved pnpm overrides and the wouter patch from the ignored package manifest settings into `pnpm-workspace.yaml`, pinned pnpm 10.18.1, and verified frozen installs apply the lockfile configuration without warnings.
 - Public demo query detection reliably uses the browser search string and displays accessible no-account guidance.
 

@@ -49,17 +49,28 @@ export async function listKnownProviderModels(providerId: KnownProviderId, env: 
   if (!isKnownProviderId(providerId)) throw new Error('Provider is not allowlisted for server-side routing.')
   const availability = providerAvailability(providerId, env)
   if (!availability.configured) throw new Error(availability.detail)
-  if (providerId === 'anthropic') return { providerId, models: [], detail: 'Anthropic model discovery is not exposed by this proxy yet; enter a supported model ID manually.' }
-  const url = providerId === 'openai' ? `${env.openaiBaseUrl.replace(/\/$/, '')}/v1/models` : `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(env.googleAiApiKey)}`
-  const headers: Record<string, string> = providerId === 'openai' ? { authorization: `Bearer ${env.openaiApiKey}` } : {}
+  const url = providerId === 'openai'
+    ? `${env.openaiBaseUrl.replace(/\/$/, '')}/v1/models`
+    : providerId === 'anthropic'
+      ? 'https://api.anthropic.com/v1/models'
+      : `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(env.googleAiApiKey)}`
+  const headers: Record<string, string> = providerId === 'openai'
+    ? { authorization: `Bearer ${env.openaiApiKey}` }
+    : providerId === 'anthropic'
+      ? { 'x-api-key': env.anthropicApiKey, 'anthropic-version': '2023-06-01' }
+      : {}
   const response = await fetchWithBackoff(url, { method: 'GET', headers }, fetchImpl)
   if (!response.ok) throw new Error(`Provider model discovery failed with HTTP ${response.status}.`)
   const payload = await response.json() as { data?: unknown; models?: unknown }
-  const rawModels = providerId === 'openai'
+  const rawModels = providerId === 'openai' || providerId === 'anthropic'
     ? (Array.isArray(payload.data) ? payload.data : []).map((model) => typeof model === 'object' && model !== null && 'id' in model && typeof model.id === 'string' ? model.id : '')
-    : (Array.isArray(payload.models) ? payload.models : []).map((model) => typeof model === 'object' && model !== null && 'name' in model && typeof model.name === 'string' ? model.name.replace(/^models\//, '') : '')
+    : (Array.isArray(payload.models) ? payload.models : []).map((model) => {
+      if (typeof model !== 'object' || model === null || !('name' in model) || typeof model.name !== 'string' || !('supportedGenerationMethods' in model) || !Array.isArray(model.supportedGenerationMethods) || !model.supportedGenerationMethods.includes('generateContent')) return ''
+      return model.name.replace(/^models\//, '')
+    })
   const models = Array.from(new Set(rawModels.map((model) => model.trim()).filter(Boolean)))
-  return { providerId, models, detail: models.length ? `${models.length} models discovered.` : 'The provider responded without model IDs.' }
+  const providerLabel = providerId === 'openai' ? 'OpenAI' : providerId === 'anthropic' ? 'Anthropic' : 'Google'
+  return { providerId, models, detail: models.length ? `${models.length} ${providerLabel} model IDs discovered.` : `The ${providerLabel} provider responded without model IDs.` }
 }
 
 export async function completeKnownProvider(input: KnownProviderRequest, env: ProviderProxyEnv = ENV, fetchImpl: FetchLike = fetch): Promise<{ content: string; providerId: KnownProviderId; model: string }> {
@@ -73,7 +84,10 @@ export async function completeKnownProvider(input: KnownProviderRequest, env: Pr
     const system = messages.find((message) => message.role === 'system')?.content
     endpoint.body = { ...endpoint.body, system, messages: messages.filter((message) => message.role !== 'system'), temperature: input.temperature, max_tokens: input.maxTokens }
   }
-  if (input.providerId === 'google') endpoint.body = { contents: messages.map((message) => ({ role: 'user', parts: [{ text: message.role === 'system' ? `System instructions:\n${message.content}` : message.content }] })), generationConfig: { temperature: input.temperature, maxOutputTokens: input.maxTokens } }
+  if (input.providerId === 'google') {
+    const system = messages.find((message) => message.role === 'system')?.content
+    endpoint.body = { contents: messages.filter((message) => message.role !== 'system').map((message) => ({ role: 'user', parts: [{ text: message.content }] })), generationConfig: { temperature: input.temperature, maxOutputTokens: input.maxTokens }, ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}) }
+  }
   const response = await fetchWithBackoff(endpoint.url, { method: 'POST', headers: endpoint.headers, body: JSON.stringify(endpoint.body) }, fetchImpl)
   if (!response.ok) throw new Error(`Known provider request failed with HTTP ${response.status}.`)
   const content = responseText(input.providerId, await response.json())

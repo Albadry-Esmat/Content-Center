@@ -7,6 +7,8 @@ const css = fs.readFileSync(path.join(root, 'client/src/index.css'), 'utf8')
 const dashboard = fs.readFileSync(path.join(root, 'client/src/pages/Dashboard.tsx'), 'utf8')
 const generator = fs.readFileSync(path.join(root, 'client/src/pages/Generator.tsx'), 'utf8')
 const settings = fs.readFileSync(path.join(root, 'client/src/pages/Settings.tsx'), 'utf8')
+const providerRegistry = fs.readFileSync(path.join(root, 'client/src/lib/provider-registry.ts'), 'utf8')
+const providerProxy = fs.readFileSync(path.join(root, 'server/provider-proxy.ts'), 'utf8')
 
 const failures = []
 const requiredHooks = [
@@ -18,6 +20,13 @@ const requiredHooks = [
   [generator, 'fieldset className="campaign-platforms"', 'native platform checkbox fieldset'],
   [generator, 'aria-label={platformLabels[platform]}', 'explicit platform checkbox accessible names'],
   [settings, 'model-discovery-notice', 'semantic model-discovery notices'],
+  [settings, 'className="profile-tabs"', 'compact Generation Profile tabs'],
+  [settings, '<TabsTrigger value="language">', 'language profile tab'],
+  [settings, '<TabsTrigger value="direction">', 'direction profile tab'],
+  [settings, '<TabsTrigger value="brand">', 'brand profile tab'],
+  [providerProxy, "https://api.anthropic.com/v1/models", 'Anthropic model discovery endpoint'],
+  [providerProxy, 'systemInstruction', 'Google system-instruction mapping'],
+  [providerProxy, 'generateContent', 'Google generation-capability filtering'],
   [settings, 'discovered-models', 'exact discovered model-ID list'],
   [settings, 'discoverAiModels(config)', 'model-less local discovery seam'],
   [dashboard, "import heroImage from '../assets/content-center-hero.jpg'", 'Vite hero asset import'],
@@ -27,6 +36,7 @@ for (const [source, token, description] of requiredHooks) {
 }
 if (dashboard.includes('/manus-storage/')) failures.push('Dashboard still contains the unavailable manus-storage hero path.')
 if (settings.includes('discovery-placeholder')) failures.push('Settings must not manufacture a discovery-placeholder model that creates a false warning.')
+if (/id: '(openai|anthropic|google)'[^\n]*suggestedModels: \[[^\]]+\]/.test(providerRegistry)) failures.push('Hosted provider catalog must not advertise stale static model IDs; discovery should be authoritative.')
 
 function themeTokens(selector) {
   const block = css.match(new RegExp(`${selector}\\s*\\{([^}]+)\\}`))?.[1] || ''
