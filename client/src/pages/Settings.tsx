@@ -134,7 +134,7 @@ export default function Settings() {
     <div className="settings-grid">
       <section id="settings-profile" className="settings-card">
         <div className="card-header"><span className="section-index">GENERATION PROFILE</span><Languages size={16} /></div>
-        <p className="settings-intro">The profile applies to new generation requests. You can still edit every artifact after it is created.</p>
+        <div className="profile-panel-overview"><div><b>Make new drafts sound like you.</b><p>These choices guide new AI generations. You can edit each result later.</p></div><span className="profile-local-state"><span className="status-dot" />Saved locally</span></div>
         <Tabs value={profileTab} onValueChange={setProfileTab} className="profile-tabs">
           <TabsList aria-label="Generation profile sections" className="profile-tabs-list">
             <TabsTrigger value="language"><Languages size={14} /> Language</TabsTrigger>
@@ -145,20 +145,20 @@ export default function Settings() {
             <label htmlFor="script-language">Script language</label>
             <input id="script-language" list="script-language-options" value={config.scriptLanguage} onChange={(event) => update('scriptLanguage', event.target.value)} placeholder="e.g. English, Arabic, French" />
             <datalist id="script-language-options">{languageSuggestions.map((language) => <option key={language} value={language} />)}</datalist>
-            <p className="field-hint">Choose any language. Suggestions speed up common creator workflows.</p>
+            <p className="field-hint">Used for briefs, scripts, and on-screen copy.</p>
           </TabsContent>
           <TabsContent value="direction" className="profile-tab-panel">
-            <fieldset className="direction-picker"><legend>Writing direction</legend><div role="radiogroup" aria-label="Writing direction" className="direction-options">
+            <fieldset className="direction-picker"><legend>Writing direction</legend><p className="field-hint">Auto follows the selected language.</p><div role="radiogroup" aria-label="Writing direction" className="direction-options">
               {([{ value: 'auto', label: 'Auto', icon: SlidersHorizontal, detail: 'Match language' }, { value: 'ltr', label: 'LTR', icon: AlignLeft, detail: 'Left to right' }, { value: 'rtl', label: 'RTL', icon: AlignRight, detail: 'Right to left' }] as const).map(({ value, label, icon: Icon, detail }) => <button key={value} type="button" role="radio" aria-checked={config.textDirection === value} className={config.textDirection === value ? 'selected' : ''} onClick={() => update('textDirection', value)}><Icon size={15} /><span><b>{label}</b><small>{detail}</small></span></button>)}
             </div></fieldset>
           </TabsContent>
           <TabsContent value="brand" className="profile-tab-panel">
             <label htmlFor="brand-phrases">Brand phrases <span className="field-hint">optional</span></label>
             <textarea id="brand-phrases" value={config.brandPhrases} onChange={(event) => update('brandPhrases', event.target.value)} rows={4} placeholder="e.g. Make every idea count; Practical clarity, not noise" />
-            <p className="field-hint">Separate phrases with commas or new lines. They remain independent from provider credentials.</p>
+            <p className="field-hint">Add words or phrases that should sound like your brand. Use commas or new lines.</p>
           </TabsContent>
         </Tabs>
-        <div className="profile-summary"><Quote size={16} /><span><b>{config.scriptLanguage || 'Language not selected'} · {config.textDirection.toUpperCase()}</b><small>{config.brandPhrases.trim() ? 'Brand phrases will be available to the model.' : 'No brand phrases configured.'}</small></span></div>
+        <div className="profile-readout"><Quote size={16} /><span><b>Current profile</b><small>{config.scriptLanguage || 'Language not selected'} · {config.textDirection.toUpperCase()} · {config.brandPhrases.trim() ? 'Brand cues added' : 'No brand cues yet'}</small></span></div>
       </section>
       <section id="settings-provider" className="settings-card">
         <div className="card-header"><span className="section-index">AI CONNECTION</span><ShieldCheck size={16} /></div>

@@ -28,6 +28,11 @@ const requiredHooks = [
   [settings, '<TabsTrigger value="language">', 'language profile tab'],
   [settings, '<TabsTrigger value="direction">', 'direction profile tab'],
   [settings, '<TabsTrigger value="brand">', 'brand profile tab'],
+  [settings, 'profile-panel-overview', 'Generation Profile overview'],
+  [settings, 'profile-local-state', 'local profile state'],
+  [settings, 'profile-readout', 'current profile readout'],
+  [settings, 'id="script-language"', 'persisted script language field'],
+  [settings, 'id="brand-phrases"', 'persisted brand phrases field'],
   [providerProxy, "https://api.anthropic.com/v1/models", 'Anthropic model discovery endpoint'],
   [providerProxy, 'systemInstruction', 'Google system-instruction mapping'],
   [providerProxy, 'generateContent', 'Google generation-capability filtering'],
@@ -41,6 +46,9 @@ for (const [source, token, description] of requiredHooks) {
 if (dashboard.includes('/manus-storage/')) failures.push('Dashboard still contains the unavailable manus-storage hero path.')
 if (settings.includes('discovery-placeholder')) failures.push('Settings must not manufacture a discovery-placeholder model that creates a false warning.')
 if (settings.includes('<StageSequence')) failures.push('Settings should not render the global production sequence above the compact workspace.')
+for (const field of ['scriptLanguage', 'textDirection', 'brandPhrases']) {
+  if (!settings.includes(`update('${field}'`)) failures.push(`Settings must continue to update persisted profile field ${field}.`)
+}
 if (/id: '(openai|anthropic|google)'[^\n]*suggestedModels: \[[^\]]+\]/.test(providerRegistry)) failures.push('Hosted provider catalog must not advertise stale static model IDs; discovery should be authoritative.')
 
 function themeTokens(selector) {
