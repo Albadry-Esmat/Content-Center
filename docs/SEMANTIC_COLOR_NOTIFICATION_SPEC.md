@@ -98,6 +98,10 @@ State transitions may use short opacity, border, or transform transitions to com
 | NOTIFY-04 | Reduced motion preserves all state meaning and action feedback. |
 | HANDOFF-01 | Later phases add automated structural checks, focused component tests, light/dark browser smoke, and `git diff --check`. |
 
+## Implementation status
+
+The semantic root tokens and shared light/dark palette are implemented in `client/src/index.css`. The Sonner wrapper now maps neutral, success, info, warning, and error toast states to those tokens. Settings now exposes explicit discovery loading, success, info, warning, and error states, lists exact model IDs returned by a provider, and provides a keyboard-accessible action to select a listed ID. Platform controls and the homepage asset remain scheduled for later phases.
+
 ## Batch boundary
 
-This phase defines the shared color and notification contract only. It does not yet change `index.css`, the Sonner wrapper, Settings rendering, platform controls, or the homepage asset. Those changes require the next implementation phases and explicit confirmation.
+This specification remains the contract for later implementation phases. Any new notification surface must preserve the state vocabulary, text-plus-icon requirement, appropriate `role`/`aria-live` behavior, sanitized provider feedback, and reduced-motion meaning defined above.

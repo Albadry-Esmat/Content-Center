@@ -13,6 +13,32 @@
 .connection-result.error { border-color: color-mix(in srgb, var(--color-danger) 68%, var(--color-border)); color: var(--color-danger); }
 .connection-result span { display: grid; gap: 0.2rem; }
 .connection-result small { color: var(--muted); line-height: 1.4; }
+.model-discovery-notice { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; padding: 12px; border: 1px solid var(--color-border); color: var(--color-text-subtle); background: var(--color-surface-inset); font-size: 11px; line-height: 1.5; }
+.model-discovery-notice > svg { flex: 0 0 auto; margin-top: 1px; }
+.model-discovery-notice > span { display: grid; gap: 4px; }
+.model-discovery-notice b { color: var(--color-text); }
+.model-discovery-notice small { color: var(--color-text-subtle); }
+.model-discovery-notice.success { border-color: color-mix(in srgb, var(--color-success) 58%, var(--color-border)); background: color-mix(in srgb, var(--color-success) 10%, var(--color-surface)); }
+.model-discovery-notice.success > svg { color: var(--color-success); }
+.model-discovery-notice.info, .model-discovery-notice.loading { border-color: color-mix(in srgb, var(--color-info) 58%, var(--color-border)); background: color-mix(in srgb, var(--color-info) 10%, var(--color-surface)); }
+.model-discovery-notice.info > svg, .model-discovery-notice.loading > svg { color: var(--color-info); }
+.model-discovery-notice.warning { border-color: color-mix(in srgb, var(--color-warning) 62%, var(--color-border)); background: color-mix(in srgb, var(--color-warning) 10%, var(--color-surface)); }
+.model-discovery-notice.warning > svg { color: var(--color-warning); }
+.model-discovery-notice.error { border-color: color-mix(in srgb, var(--color-danger) 68%, var(--color-border)); background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface)); color: var(--color-danger); }
+.model-discovery-notice.error > svg { color: var(--color-danger); }
+.discovered-models { margin-top: 12px; padding: 12px; border: 1px solid var(--color-border); background: var(--color-surface-raised); }
+.discovered-models-heading { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; color: var(--color-text-muted); font: 600 9px Space Grotesk, sans-serif; letter-spacing: .07em; text-transform: uppercase; }
+.discovered-models-heading span:first-child { display: grid; gap: 3px; }
+.discovered-models-heading b { color: var(--color-text); }
+.discovered-models-heading small { color: var(--color-text-muted); font: 10px Inter, sans-serif; letter-spacing: 0; text-transform: none; }
+.discovered-models ul { display: grid; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
+.discovered-models li { margin: 0; }
+.discovered-models button { display: flex; width: 100%; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid var(--color-border); color: var(--color-text-subtle); background: var(--color-surface-inset); cursor: pointer; text-align: left; transition: border-color .18s var(--ease-out), background .18s var(--ease-out), color .18s var(--ease-out); }
+.discovered-models button:hover { border-color: var(--color-border-strong); color: var(--color-text); background: color-mix(in srgb, var(--color-selected) 8%, var(--color-surface-inset)); }
+.discovered-models button.selected { border-color: var(--color-selected); color: var(--color-text); background: color-mix(in srgb, var(--color-selected) 14%, var(--color-surface-inset)); }
+.discovered-models button span { flex: 0 0 54px; color: var(--color-link); font: 600 9px Space Grotesk, sans-serif; text-transform: uppercase; }
+.discovered-models button.selected span { color: var(--color-selected); }
+.discovered-models code { overflow-wrap: anywhere; color: inherit; font: 11px/1.4 Inter, monospace; }
 html { background: var(--ink); transition: background .35s var(--ease-out); }
 body { margin: 0; min-width: 320px; background: var(--ink); color: var(--text); font-family: Inter, system-ui, sans-serif; transition: background .35s var(--ease-out), color .35s var(--ease-out); }
 button, input, textarea { font: inherit; }

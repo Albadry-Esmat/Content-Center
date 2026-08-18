@@ -1,7 +1,7 @@
 // Design philosophy: settings make creator preferences explicit, portable, and reversible without exposing secrets.
 
 import { useState } from 'react'
-import { AlignLeft, AlignRight, Check, CircleAlert, CircleCheck, Languages, Loader2, Quote, ShieldCheck, SlidersHorizontal } from 'lucide-react'
+import { AlignLeft, AlignRight, Check, CircleAlert, CircleCheck, Info, Languages, Loader2, Quote, ShieldCheck, SlidersHorizontal, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import StageSequence from '../components/StageSequence'
 import { DEFAULT_AI_CONFIG, loadAiConfig, saveAiConfig } from '../lib/ai-config'
@@ -11,6 +11,30 @@ import { discoverKnownProviderModels, getProviderDescriptor, PROVIDER_CATALOG } 
 
 const languageSuggestions = ['English', 'Arabic', 'Arabic (Egyptian)', 'French', 'Spanish', 'Portuguese', 'German']
 
+type ModelDiscoveryNotice = {
+  kind: 'loading' | 'success' | 'info' | 'warning' | 'error'
+  title: string
+  detail: string
+  nextAction?: string
+}
+
+function buildDiscoveryNotice(models: string[], detail: string, warning?: string, emptyKind: 'info' | 'warning' = 'info'): ModelDiscoveryNotice {
+  if (models.length) {
+    return {
+      kind: warning ? 'warning' : 'success',
+      title: `${models.length} ${models.length === 1 ? 'model ID' : 'model IDs'} discovered.`,
+      detail: warning || `Exact IDs returned by the provider are listed below. ${detail}`,
+      nextAction: warning ? 'Choose one of the listed IDs or verify the configured model before generating.' : 'Choose a listed ID, or keep the current model if it matches one of the returned IDs.',
+    }
+  }
+  return {
+    kind: emptyKind,
+    title: 'No model IDs were returned.',
+    detail: detail || 'The endpoint responded without a usable model list.',
+    nextAction: 'Check the provider setup, enter a model ID manually, then try discovery again.',
+  }
+}
+
 export default function Settings() {
   const [config, setConfig] = useState(() => typeof window === 'undefined' ? DEFAULT_AI_CONFIG : loadAiConfig())
   const [saved, setSaved] = useState(false)
@@ -18,7 +42,7 @@ export default function Settings() {
   const [connectionResult, setConnectionResult] = useState<ConnectionTestResult | null>(null)
   const [discoveredModels, setDiscoveredModels] = useState<string[]>([])
   const [discoveringModels, setDiscoveringModels] = useState(false)
-  const [modelDiscoveryMessage, setModelDiscoveryMessage] = useState('')
+  const [modelDiscoveryNotice, setModelDiscoveryNotice] = useState<ModelDiscoveryNotice | null>(null)
   const provider = getProviderDescriptor(config.providerId)
   const hostedStatus = trpc.ai.providerStatus.useQuery(undefined, { enabled: config.providerMode === 'known-provider', retry: false })
   const currentHostedStatus = hostedStatus.data?.find((item) => item.providerId === config.providerId)
@@ -32,24 +56,42 @@ export default function Settings() {
     window.setTimeout(() => setSaved(false), 1800)
   }
   async function testConnection() {
-    setTesting(true); setConnectionResult(null)
+    setTesting(true); setConnectionResult(null); setModelDiscoveryNotice(null)
     const result = await testAiConnection(config)
-    setConnectionResult(result); setDiscoveredModels(result.models || []); setModelDiscoveryMessage(result.models?.length ? `${result.models.length} local models discovered.` : ''); setTesting(false)
-    if (result.ok) toast.success(result.message, { description: result.warning || result.detail })
-    else toast.error(result.message, { description: result.detail })
+    const models = result.models || []
+    setConnectionResult(result); setDiscoveredModels(models); setTesting(false)
+    if (models.length || result.ok) setModelDiscoveryNotice(buildDiscoveryNotice(models, result.detail || 'The endpoint responded.', result.warning, 'warning'))
+    if (result.ok) toast.success(result.message, { description: result.warning || `${result.detail} ${models.length ? `Found ${models.length} exact model ID${models.length === 1 ? '' : 's'}.` : 'No model IDs were returned.'}` })
+    else toast.error(result.message, { description: result.retryable ? `${result.detail} Retry is available. ${result.nextAction}` : `${result.detail} ${result.nextAction}` })
+    setTesting(false)
   }
   async function discoverModels() {
-    setDiscoveringModels(true); setModelDiscoveryMessage('')
+    setDiscoveringModels(true); setModelDiscoveryNotice({ kind: 'loading', title: 'Discovering model IDs…', detail: 'Reading the provider’s models endpoint. No prompt or credential is being sent from this browser.' })
     try {
       if (config.providerMode === 'known-provider') {
         const result = await discoverKnownProviderModels(config.providerId)
-        setDiscoveredModels(result.models); setModelDiscoveryMessage(result.detail)
+        setDiscoveredModels(result.models)
+        setModelDiscoveryNotice(buildDiscoveryNotice(result.models, result.detail))
+        if (result.models.length) toast.success('Model IDs discovered.', { description: `${result.models.length} exact provider ID${result.models.length === 1 ? '' : 's'} are available below.` })
+        else toast.message('Model discovery returned no IDs.', { description: result.detail })
       } else {
-        const result = await testAiConnection(config)
-        setDiscoveredModels(result.models || []); setModelDiscoveryMessage(result.models?.length ? `${result.models.length} local models discovered.` : result.detail || 'No models were returned.')
+        const result = await testAiConnection({ ...config, model: config.model || 'discovery-placeholder' })
+        const models = result.models || []
+        setDiscoveredModels(models)
+        if (!result.ok) {
+          setModelDiscoveryNotice({ kind: 'error', title: result.message, detail: result.detail || 'The local endpoint did not return a usable response.', nextAction: result.nextAction })
+          toast.error(result.message, { description: `${result.detail || 'The local endpoint did not return a usable response.'} ${result.nextAction}` })
+        } else {
+          setModelDiscoveryNotice(buildDiscoveryNotice(models, result.detail || 'The local endpoint responded.', result.warning, 'warning'))
+          if (models.length) toast.success('Local model IDs discovered.', { description: `${models.length} exact ID${models.length === 1 ? '' : 's'} are available below.` })
+          else toast.warning('No local model IDs were returned.', { description: `${result.detail || 'The endpoint responded without model IDs.'} ${result.nextAction}` })
+        }
       }
     } catch (error) {
-      setModelDiscoveryMessage(error instanceof Error ? error.message : 'Model discovery failed.')
+      const detail = error instanceof Error ? error.message : 'The provider did not return a usable discovery response.'
+      setDiscoveredModels([])
+      setModelDiscoveryNotice({ kind: 'error', title: 'Model discovery failed.', detail, nextAction: 'Check the provider status and retry discovery.' })
+      toast.error('Model discovery failed.', { description: `${detail} Check the provider status and retry.` })
     } finally { setDiscoveringModels(false) }
   }
 
@@ -84,7 +126,8 @@ export default function Settings() {
         <label htmlFor="base-url">OpenAI-compatible base URL</label><input id="base-url" value={config.baseUrl} onChange={(event) => update('baseUrl', event.target.value)} />
         <label htmlFor="model">Model</label><input id="model" list="model-options" value={config.model} onChange={(event) => update('model', event.target.value)} /><datalist id="model-options">{modelOptions.map((model) => <option key={model} value={model} />)}</datalist>
         <div className="connection-actions"><button className="button button-quiet" onClick={testConnection} disabled={testing}>{testing ? <><Loader2 className="spin" size={15} /> Testing connection…</> : <><CircleCheck size={15} /> Test connection</>}</button><button className="button button-quiet" onClick={discoverModels} disabled={discoveringModels}>{discoveringModels ? <><Loader2 className="spin" size={15} /> Discovering models…</> : <><SlidersHorizontal size={15} /> Discover models</>}</button><button className="button button-quiet" onClick={persist}><Check size={15} /> Save all settings</button></div>
-        {modelDiscoveryMessage && <p className="field-hint" role="status">{modelDiscoveryMessage}</p>}
+        {modelDiscoveryNotice && <div className={`model-discovery-notice ${modelDiscoveryNotice.kind}`} role={modelDiscoveryNotice.kind === 'error' ? 'alert' : 'status'} aria-live="polite">{modelDiscoveryNotice.kind === 'loading' ? <Loader2 className="spin" size={16} /> : modelDiscoveryNotice.kind === 'success' ? <CircleCheck size={16} /> : modelDiscoveryNotice.kind === 'warning' ? <TriangleAlert size={16} /> : <Info size={16} />}<span><b>{modelDiscoveryNotice.title}</b><small>{modelDiscoveryNotice.detail}</small>{modelDiscoveryNotice.nextAction && <small><strong>Next:</strong> {modelDiscoveryNotice.nextAction}</small>}</span></div>}
+        {discoveredModels.length > 0 && <div className="discovered-models" aria-label="Discovered model IDs"><div className="discovered-models-heading"><span><b>Exact model IDs</b><small>Returned by the configured provider</small></span><span>{discoveredModels.length} available</span></div><ul>{discoveredModels.map((model) => <li key={model}><button type="button" className={config.model === model ? 'selected' : ''} onClick={() => update('model', model)} aria-label={`Use discovered model ${model}`}><span>{config.model === model ? 'Selected' : 'Use'}</span><code>{model}</code></button></li>)}</ul></div>}
         {connectionResult && <div className={`connection-result ${connectionResult.ok ? 'success' : 'error'}`} role={connectionResult.ok ? 'status' : 'alert'} aria-live="polite">{connectionResult.ok ? <CircleCheck size={16} /> : <CircleAlert size={16} />}<span><b>{connectionResult.message}</b><small>{connectionResult.warning || connectionResult.detail}</small><small><strong>Next:</strong> {connectionResult.nextAction}</small></span></div>}
         <div className="security-note"><ShieldCheck size={16} /><span><b>Trust boundary</b> Your notes, drafts, and profile stay in this browser unless you actively use a cloud project. This local connection supports endpoints that do not require browser-held credentials.</span></div>
       </section>

@@ -1,7 +1,7 @@
 // Design philosophy: Editorial Control Room — connection checks are deterministic enough to test without a live model server.
 
 import { describe, expect, it, vi } from 'vitest'
-import { testAiConnection } from './connection-test'
+import { discoverAiModels, testAiConnection } from './connection-test'
 
 const config = { baseUrl: 'http://localhost:1234', model: 'local-model' }
 
@@ -12,6 +12,23 @@ describe('AI connection test', () => {
     expect(result.ok).toBe(true)
     expect(result.warning).toContain('was not listed')
     expect(fetchImpl).toHaveBeenCalledWith('http://localhost:1234/v1/models', expect.objectContaining({ method: 'GET' }))
+  })
+
+  it('discovers exact model IDs without requiring a configured model', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: [{ id: 'local/llama-3' }, { id: 'local/llama-3' }, { id: 'local/qwen-2.5' }] }), { status: 200 }))
+    const result = await discoverAiModels({ baseUrl: config.baseUrl, model: '' }, fetchImpl)
+
+    expect(result.ok).toBe(true)
+    expect(result.models).toEqual(['local/llama-3', 'local/qwen-2.5'])
+    expect(result.nextAction).toContain('Choose a discovered model')
+  })
+
+  it('reports an explicit empty discovery result when the endpoint returns no IDs', async () => {
+    const result = await discoverAiModels({ baseUrl: config.baseUrl, model: '' }, vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: [] }), { status: 200 })))
+
+    expect(result.ok).toBe(true)
+    expect(result.models).toEqual([])
+    expect(result.nextAction).toContain('Enter a model ID manually')
   })
 
   it('reports HTTP failures instead of failing silently', async () => {
