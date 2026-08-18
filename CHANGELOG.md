@@ -18,6 +18,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Reconstructed the Provider panel with local/hosted route context, scoped local endpoint fields, compact provider actions, exact model-ID review surfaces, protected hosted-provider status, and sanitized recovery feedback while preserving browser-to-local and browser-to-server routing boundaries.
 - Added concise Privacy & Recovery disclosure with safe evidence guidance, explicit local/hosted prompt boundaries, server-only credential wording, and an on-demand Connection & model diagnostics disclosure that automatically opens for actionable recovery results.
 - Hardened narrow-screen application-shell behavior with a bounded primary-navigation grid, visible Settings link and active-page semantics, safe text wrapping, topbar status wrapping, horizontal-overflow containment, and additional disclosure/rail-link focus hooks while preserving reduced-motion behavior.
+- Finalized public release verification evidence for the six-batch UI/UX restructuring, including batch commit history, Settings/provider/privacy smoke coverage, mobile application-shell evidence, and the expanded integrated UI and accessibility validation scope.
 
 - Beginner-friendly first-contribution guide covering setup, public-demo reproduction, safe contribution paths, validation, privacy boundaries, and the capital-D `Dev` pull-request workflow.
 - Contributor-onboarding validation included in the consolidated `pnpm verify` quality gate and linked from the README and GitHub issue chooser.

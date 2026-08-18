@@ -45,7 +45,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | Public history and unreleased release-candidate changes are maintained in a validated changelog. | `CHANGELOG.md` and `pnpm validate:changelog` | Complete |
 | The final clean-checkout verification record is retained with the release evidence. | `docs/RELEASE_VERIFICATION.md` | Complete |
 | The public preview tag identity, scope, evidence, and announcement requirements are documented. | `docs/RELEASE_CANDIDATE.md` | Complete |
-| Integrated UI validation covers semantic contrast, responsive platform hooks, exact model discovery, native platform accessibility, and hero wiring. | `pnpm validate:integrated-ui` | Complete |
+| Integrated UI validation covers semantic contrast, responsive platform hooks, exact model discovery, native platform accessibility, hero wiring, Settings workspace structure, privacy/diagnostics disclosures, mobile navigation semantics, and horizontal-overflow containment. | `pnpm validate:integrated-ui` | Complete |
 | Tagging is blocked when release evidence, candidate metadata, or package version is incomplete. | `pnpm validate:release-readiness` | Complete |
 
 ## Release verification
@@ -58,7 +58,7 @@ pnpm verify
 git status --short --branch
 ```
 
-`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, release-readiness, semantic theme, hero-asset, and integrated UI contrast/responsive validation, production build, and whitespace validation.
+`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, release-readiness, semantic theme, hero-asset, and integrated UI contrast/responsive validation, including the Settings workspace, provider diagnostics, privacy disclosures, mobile navigation semantics, and horizontal-overflow containment, followed by the production build and whitespace validation.
 
 Then perform a manual smoke check using the public demo campaign. Confirm that the dashboard entry point opens the generator, the public-demo banner explains that no AI account is required, the campaign phase labels are visible, the simple montage and coloring guidance render, the platform selectors work as native accessible checkboxes with selected/available state copy, local mode remains available without an account, and no provider request occurs until the user explicitly chooses to generate. Also confirm that the dashboard hero image renders in both theme modes and that Settings presents actionable model-discovery recovery when the local endpoint is unavailable.
 
