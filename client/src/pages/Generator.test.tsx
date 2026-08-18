@@ -125,12 +125,41 @@ describe('Generator cloud reload recovery', () => {
 
     screen.getByRole('button', { name: 'Generate foundation draft' }).click()
     await waitFor(() => expect(mocks.generateFoundationReference).toHaveBeenCalledTimes(1))
+    fireEvent.change(screen.getByRole('textbox', { name: 'Key points · one per line' }), { target: { value: 'First point\nSecond point' } })
+    expect((screen.getByRole('textbox', { name: 'Key points · one per line' }) as HTMLTextAreaElement).value).toBe('First point\nSecond point')
     screen.getByRole('button', { name: 'Append to notes' }).click()
     expect(await screen.findByText('AI foundation accepted')).toBeTruthy()
+    expect((screen.getByLabelText('Foundation / reference') as HTMLTextAreaElement).value).toContain('\n\n## AI foundation draft')
 
     fireEvent.change(screen.getByLabelText(/Video topic/i), { target: { value: 'A changed campaign topic' } })
     expect(screen.getByText('Foundation stale · review required')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Review foundation' })).toBeTruthy()
+  })
+
+  it('shows a safe provider-not-connected state for an unsupported provider selection', () => {
+    mocks.isAuthenticated = false
+    window.localStorage.setItem('albadry_ai_config_v2', JSON.stringify({ providerMode: 'known-provider', providerId: 'unsupported-provider', model: 'secret-model' }))
+    window.history.pushState({}, '', '/generator?demo=1')
+
+    render(<Generator />)
+
+    expect(screen.getByText(/Provider not connected · choose a supported provider in Settings/)).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Open AI settings' })).toBeTruthy()
+    expect((screen.getByRole('button', { name: 'Generate foundation draft' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('sanitizes foundation failures and exposes a retry action', async () => {
+    mocks.isAuthenticated = false
+    window.localStorage.setItem('albadry_ai_config_v2', JSON.stringify({ providerMode: 'local', providerId: 'openai-compatible-local', model: 'local-model' }))
+    mocks.generateFoundationReference.mockRejectedValue(new Error('https://secret.example/api?apiKey=do-not-show'))
+    window.history.pushState({}, '', '/generator?demo=1')
+
+    render(<Generator />)
+
+    screen.getByRole('button', { name: 'Generate foundation draft' }).click()
+    expect(await screen.findByText('Foundation generation failed. Check the configured provider in Settings and retry.')).toBeTruthy()
+    expect(screen.queryByText(/secret\.example|do-not-show/)).toBeNull()
+    expect(screen.getByRole('button', { name: 'Retry foundation draft' })).toBeTruthy()
   })
 
   it('stays local-first when a stale cloud selection exists without an authenticated session', () => {

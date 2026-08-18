@@ -11,6 +11,10 @@ const checks = [
   ['client/src/components/AppShell.tsx', 'aria-label="Primary navigation"', 'primary navigation must be named'],
   ['client/src/pages/Generator.tsx', 'aria-label="Generation mode"', 'generation mode tabs must have an accessible label'],
   ['client/src/pages/Generator.tsx', 'aria-label="Public demo campaign"', 'the public demo must expose its no-account guidance to assistive technology'],
+  ['client/src/pages/Generator.tsx', 'id="foundation-action-title"', 'the foundation action card must have a named heading'],
+  ['client/src/pages/Generator.tsx', 'aria-label="Foundation review actions"', 'foundation review decisions must have a named action group'],
+  ['client/src/pages/Generator.tsx', 'Retry foundation draft', 'foundation errors must expose a retry action'],
+  ['client/src/pages/Generator.tsx', 'placeholder="Add an angle, audience, claims, examples, sources, constraints, or open questions…"', 'the foundation empty state must explain useful grounding material'],
 ]
 
 const missing = checks.filter(([file, token]) => !readFileSync(file, 'utf8').includes(token))

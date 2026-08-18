@@ -25,10 +25,14 @@ describe('combined pack backups', () => {
 
   it('preserves sanitized foundation sessions in the backup envelope and restores them', () => {
     const pack = createCombinedPack('Backup topic')
-    const raw = serializeCombinedPacks([pack], [foundationSession])
+    const linkedSession = { ...foundationSession, packId: pack.meta.id }
+    const raw = serializeCombinedPacks([pack], [linkedSession])
 
-    expect(deserializeFoundationSessions(raw)).toMatchObject([{ packId: 'pack-backup', decision: 'review' }])
+    expect(deserializeFoundationSessions(raw)).toMatchObject([{ packId: pack.meta.id, decision: 'review' }])
     expect(importCombinedPacksJson(raw).foundationSessions).toHaveLength(1)
+    window.localStorage.clear()
+    const orphan = serializeCombinedPacks([pack], [{ ...foundationSession, packId: 'missing-pack' }])
+    expect(importCombinedPacksJson(orphan).foundationSessions).toEqual([])
     expect(deserializeFoundationSessions(JSON.stringify([pack]))).toEqual([])
   })
 

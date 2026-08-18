@@ -18,6 +18,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Connected accepted foundation notes to the downstream generation handoff with a topic-plus-notes freshness snapshot, accepted/stale/review-required status messaging, a review recovery action, and non-blocking warnings before generation when the AI foundation is not accepted or has become stale.
 - Added versioned local foundation-session persistence keyed by pack ID, sanitized foundation-session backup/restore alongside saved packs, legacy pack-only compatibility, deletion cleanup, and Saved-page restore messaging; provider credentials, endpoint URLs, and authorization values are excluded from persisted foundation metadata.
 - Completed Campaign Scope and AI-foundation accessibility, responsive, public-demo, and regression validation, including native disclosure/control checks, no-request-before-action review, local-first demo safety, foundation persistence coverage, full `pnpm verify`, and browser smoke evidence.
+- Review hardening fixed multiline foundation list editing and append separators, prevented orphan foundation sessions during backup restore, added a safe provider-not-connected state, sanitized provider failures, exposed retry recovery, improved empty-state guidance, applied direction-aware foundation fields, and expanded accessibility smoke coverage to 14 checks.
 
 ## [1.0.0-rc.1] - 2026-08-17
 

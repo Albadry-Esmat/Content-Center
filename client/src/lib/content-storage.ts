@@ -45,10 +45,12 @@ export function importCombinedPacksJson(raw: string): ImportResult {
     if (!records) return { packs: [], rejected: 0, foundationSessions: [], error: 'Backup must contain a Content Center backup envelope or a JSON array of combined packs.' }
     const valid = records.map((pack) => normalizeCombinedPack(pack)).filter((pack): pack is CombinedPack => Boolean(pack && pack.schemaVersion === 2 && pack.meta?.id))
     const rejected = records.length - valid.length
-    const importedSessions = parsed && typeof parsed === 'object' && 'foundationSessions' in parsed && Array.isArray((parsed as { foundationSessions?: unknown }).foundationSessions) ? (parsed as { foundationSessions: unknown[] }).foundationSessions.map(normalizeFoundationSession).filter((session): session is FoundationSession => Boolean(session)) : []
-    importedSessions.forEach(saveFoundationSession)
+    const candidateSessions = parsed && typeof parsed === 'object' && 'foundationSessions' in parsed && Array.isArray((parsed as { foundationSessions?: unknown }).foundationSessions) ? (parsed as { foundationSessions: unknown[] }).foundationSessions.map(normalizeFoundationSession).filter((session): session is FoundationSession => Boolean(session)) : []
     const merged = [...valid, ...loadCombinedPacks().filter((existing) => !valid.some((pack) => pack.meta.id === existing.meta.id))].slice(0, 50)
-    const foundationSessions = loadFoundationSessions()
+    const validPackIds = new Set(merged.map((pack) => pack.meta.id))
+    const importedSessions = candidateSessions.filter((session) => validPackIds.has(session.packId))
+    importedSessions.forEach(saveFoundationSession)
+    const foundationSessions = loadFoundationSessions().filter((session) => validPackIds.has(session.packId))
     window.localStorage.setItem(COMBINED_PACKS_KEY, serializeCombinedPacks(merged, foundationSessions))
     return { packs: merged, rejected, foundationSessions }
   } catch (error) { return { packs: [], rejected: 0, foundationSessions: [], error: error instanceof Error ? error.message : 'Could not read this backup.' } }
