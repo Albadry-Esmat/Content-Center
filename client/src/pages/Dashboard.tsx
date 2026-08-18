@@ -3,6 +3,7 @@
 import { Link } from 'wouter'
 import { ArrowUpRight, Clock3, FileText, Sparkles } from 'lucide-react'
 import StageSequence from '../components/StageSequence'
+import heroImage from '../assets/content-center-hero.jpg'
 
 const metrics = [
   { value: '01', label: 'Active brief', note: 'Ready to shape' },
@@ -21,7 +22,7 @@ export default function Dashboard() {
         <p>Turn any topic into a reviewable brief, script, visual plan, and hand-off—without losing your source material, voice, or decision trail.</p>
         <div className="hero-actions"><Link href="/generator" className="button button-primary"><Sparkles size={16} /> Create a content pack <ArrowUpRight size={15} /></Link><Link href="/generator?demo=1" className="button button-quiet">Try demo campaign</Link><Link href="/workspace" className="text-link">Open workspace <ArrowUpRight size={14} /></Link></div>
       </div>
-      <div className="hero-art"><img src="/manus-storage/content-center-saas-hero_18ca8934.png" alt="A creative content planning workspace with a storyboard, camera, and production notes" /><div className="hero-art-label"><span className="signal-bar" /> CONTENT OPS / READY WHEN YOU ARE</div></div>
+      <div className="hero-art"><img src={heroImage} alt="A creative content planning workspace with a storyboard, camera, and production notes" /><div className="hero-art-label"><span className="signal-bar" /> CONTENT OPS / READY WHEN YOU ARE</div></div>
     </section>
     <section className="metric-strip" aria-label="Workspace metrics">{metrics.map((metric) => <div key={metric.label} className="metric"><strong>{metric.value}</strong><span><b>{metric.label}</b>{metric.note}</span></div>)}</section>
     <section className="dashboard-lower">
