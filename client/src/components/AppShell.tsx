@@ -44,7 +44,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="rail-spacer" />
-        <Link href="/settings" className={`rail-link ${location === '/settings' ? 'active' : ''}`}>
+        <Link href="/settings" className={`rail-link rail-settings-link ${location === '/settings' ? 'active' : ''}`} aria-current={location === '/settings' ? 'page' : undefined}>
           <Settings2 size={17} strokeWidth={1.8} />
           <span><strong>Settings</strong><small>Voice & connection</small></span>
         </Link>

@@ -7,6 +7,7 @@ const css = fs.readFileSync(path.join(root, 'client/src/index.css'), 'utf8')
 const dashboard = fs.readFileSync(path.join(root, 'client/src/pages/Dashboard.tsx'), 'utf8')
 const generator = fs.readFileSync(path.join(root, 'client/src/pages/Generator.tsx'), 'utf8')
 const settings = fs.readFileSync(path.join(root, 'client/src/pages/Settings.tsx'), 'utf8')
+const appShell = fs.readFileSync(path.join(root, 'client/src/components/AppShell.tsx'), 'utf8')
 const providerRegistry = fs.readFileSync(path.join(root, 'client/src/lib/provider-registry.ts'), 'utf8')
 const providerProxy = fs.readFileSync(path.join(root, 'server/provider-proxy.ts'), 'utf8')
 
@@ -46,6 +47,10 @@ const requiredHooks = [
   [settings, 'discovered-models', 'exact discovered model-ID list'],
   [settings, 'discoverAiModels(config)', 'model-less local discovery seam'],
   [dashboard, "import heroImage from '../assets/content-center-hero.jpg'", 'Vite hero asset import'],
+  [appShell, 'rail-settings-link', 'mobile-visible Settings rail link'],
+  [appShell, 'aria-current={location === \'/settings\' ? \'page\' : undefined}', 'Settings active-page semantics'],
+  [css, 'html, body { overflow-x: clip; }', 'horizontal overflow containment'],
+  [css, '.rail-nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));', 'mobile primary navigation grid'],
 ]
 for (const [source, token, description] of requiredHooks) {
   if (!source.includes(token)) failures.push(`${description} is missing.`)
