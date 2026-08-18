@@ -7,6 +7,7 @@ import { createCombinedPack, getPart, packReducer, type CombinedPack, type Field
 import { objectiveLabel, SHORT_OBJECTIVES, shortSlotDescription, SUPPORTED_PLATFORMS, type PlatformId, type ShortObjective } from '../lib/campaign-config'
 import type { GenerationStage } from '../lib/content-types'
 import { saveCombinedPack } from '../lib/content-storage'
+import { loadFoundationSession, saveFoundationSession } from '../lib/foundation-session'
 import { packToMarkdown } from '../lib/pack-export'
 import { countWords } from '../lib/validators'
 import { reviewCampaign } from '../lib/campaign-review'
@@ -124,6 +125,27 @@ export default function Generator() {
     setPack(next)
   }
 
+  function hydrateFoundationSession(packId: string) {
+    const session = loadFoundationSession(packId)
+    if (!session) {
+      setFoundationDraft(null)
+      setFoundationWarnings([])
+      setFoundationProvenance(null)
+      setFoundationDraftEdited(false)
+      setFoundationDecision('review')
+      setAcceptedFoundationSnapshot(null)
+      setFoundationStatus('idle')
+      return
+    }
+    setFoundationDraft(session.draft)
+    setFoundationWarnings(session.warnings)
+    setFoundationProvenance(session.provenance)
+    setFoundationDraftEdited(session.edited)
+    setFoundationDecision(session.decision)
+    setAcceptedFoundationSnapshot(session.acceptedSnapshot)
+    setFoundationStatus(session.draft ? session.warnings.length ? 'warning' : 'success' : 'idle')
+  }
+
   useEffect(() => {
     const demoRequested = new URLSearchParams(window.location.search).get('demo') === '1'
     if (demoRequested && !demoAppliedRef.current && !cloudSyncActive) {
@@ -132,6 +154,7 @@ export default function Generator() {
       const demoNotes = 'Show a beginner-friendly workflow: one practical long-form lesson, two curiosity-building teasers before publication, and five simple follow-up shorts after publication. Keep the editing guidance simple for CapCut montage and DaVinci Resolve correction.'
       const demoPack = createCombinedPack(demoTopic)
       replacePack(demoPack)
+      hydrateFoundationSession(demoPack.meta.id)
       setTopic(demoTopic)
       setNotes(demoNotes)
       setAcceptedFoundationSnapshot(null)
@@ -150,7 +173,7 @@ export default function Generator() {
     packRef.current = restored
     setTopic(restored.meta.topic || '')
     setNotes(restored.meta.notes || '')
-    setAcceptedFoundationSnapshot(null)
+    hydrateFoundationSession(restored.meta.id)
   }, [cloudProject.data?.id, cloudProject.data?.updatedAt])
 
   async function runTask(task: GenerationTask, signal: AbortSignal) {
@@ -206,6 +229,13 @@ export default function Generator() {
   useEffect(() => { if (!pack.parts.some((item) => item.key === activePart)) setActivePart('long') }, [activePart, pack.parts])
 
   useEffect(() => {
+    if (!pack.meta.id) return
+    const hasSession = Boolean(foundationDraft || foundationWarnings.length || foundationProvenance || acceptedFoundationSnapshot || foundationDecision !== 'review')
+    if (!hasSession) return
+    saveFoundationSession({ schemaVersion: 1, packId: pack.meta.id, topicSnapshot: topic, notesSnapshot: notes, draft: foundationDraft, warnings: foundationWarnings, provenance: foundationProvenance, edited: foundationDraftEdited, decision: foundationDecision, acceptedSnapshot: acceptedFoundationSnapshot, updatedAt: new Date().toISOString() })
+  }, [acceptedFoundationSnapshot, foundationDecision, foundationDraft, foundationDraftEdited, foundationProvenance, foundationWarnings, notes, pack.meta.id, topic])
+
+  useEffect(() => {
     if (!run || run.status === 'idle' || !cloudSyncActive || !workspaceId || !projectId) return
     const persistenceKey = `${run.id}:${run.status}:${run.tasks.map((task) => task.outcome).join(':')}`
     if (persistedRunRef.current === persistenceKey) return
@@ -233,6 +263,7 @@ export default function Generator() {
     if (!recovered || recoveredCloudRunRef.current === recovered.run.id) return
     recoveredCloudRunRef.current = recovered.run.id
     replacePack(recovered.pack)
+    hydrateFoundationSession(recovered.pack.meta.id)
     setTopic(recovered.pack.meta.topic || '')
     setNotes(recovered.pack.meta.notes || '')
     recover(recovered.run)
@@ -398,6 +429,7 @@ export default function Generator() {
       const restoredPack = restored.packData as unknown as CombinedPack
       setCloudRevision(restored.revision)
       replacePack(restoredPack)
+      hydrateFoundationSession(restoredPack.meta.id)
       setTopic(restoredPack.meta.topic || '')
       setNotes(restoredPack.meta.notes || '')
       saveCombinedPack(restoredPack)

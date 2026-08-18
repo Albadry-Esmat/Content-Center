@@ -3,14 +3,27 @@
 import type { ContentPack } from './content-types'
 import { normalizeCampaignConfig, type CampaignConfig } from './campaign-config'
 import { normalizeCombinedPack, type CombinedPack } from './pack-domain'
+import { deleteFoundationSession, loadFoundationSessions, normalizeFoundationSession, saveFoundationSession, type FoundationSession } from './foundation-session'
 
 const PACKS_KEY = 'albadry_content_packs_v1'
 const COMBINED_PACKS_KEY = 'albadry_combined_packs_v2'
 
-export type ImportResult = { packs: CombinedPack[]; rejected: number; error?: string }
-export type BackupEnvelope = { format: 'content-center-backup'; version: 1; exportedAt: string; packs: CombinedPack[] }
+export type ImportResult = { packs: CombinedPack[]; rejected: number; foundationSessions: FoundationSession[]; error?: string }
+export type BackupEnvelope = { format: 'content-center-backup'; version: 1; exportedAt: string; packs: CombinedPack[]; foundationSessions?: FoundationSession[] }
 
-export function serializeCombinedPacks(packs: CombinedPack[]): string { return JSON.stringify({ format: 'content-center-backup', version: 1, exportedAt: new Date().toISOString(), packs }) satisfies string }
+export function serializeCombinedPacks(packs: CombinedPack[], foundationSessions: FoundationSession[] = []): string {
+  const envelope: BackupEnvelope = { format: 'content-center-backup', version: 1, exportedAt: new Date().toISOString(), packs }
+  if (foundationSessions.length) envelope.foundationSessions = foundationSessions
+  return JSON.stringify(envelope) satisfies string
+}
+
+export function deserializeFoundationSessions(raw: string): FoundationSession[] {
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    const records = parsed && typeof parsed === 'object' && 'foundationSessions' in parsed && Array.isArray((parsed as { foundationSessions?: unknown }).foundationSessions) ? (parsed as { foundationSessions: unknown[] }).foundationSessions : []
+    return records.map(normalizeFoundationSession).filter((session): session is FoundationSession => Boolean(session))
+  } catch { return [] }
+}
 
 export function deserializeCombinedPacks(raw: string): CombinedPack[] {
   try {
@@ -23,19 +36,22 @@ export function deserializeCombinedPacks(raw: string): CombinedPack[] {
   } catch { return [] }
 }
 
-export function exportCombinedPacksJson(): string { return serializeCombinedPacks(loadCombinedPacks()) }
+export function exportCombinedPacksJson(): string { return serializeCombinedPacks(loadCombinedPacks(), loadFoundationSessions()) }
 
 export function importCombinedPacksJson(raw: string): ImportResult {
   try {
     const parsed = JSON.parse(raw) as unknown
     const records = Array.isArray(parsed) ? parsed : parsed && typeof parsed === 'object' && 'packs' in parsed && Array.isArray((parsed as { packs?: unknown }).packs) ? (parsed as { packs: unknown[] }).packs : null
-    if (!records) return { packs: [], rejected: 0, error: 'Backup must contain a Content Center backup envelope or a JSON array of combined packs.' }
+    if (!records) return { packs: [], rejected: 0, foundationSessions: [], error: 'Backup must contain a Content Center backup envelope or a JSON array of combined packs.' }
     const valid = records.map((pack) => normalizeCombinedPack(pack)).filter((pack): pack is CombinedPack => Boolean(pack && pack.schemaVersion === 2 && pack.meta?.id))
     const rejected = records.length - valid.length
+    const importedSessions = parsed && typeof parsed === 'object' && 'foundationSessions' in parsed && Array.isArray((parsed as { foundationSessions?: unknown }).foundationSessions) ? (parsed as { foundationSessions: unknown[] }).foundationSessions.map(normalizeFoundationSession).filter((session): session is FoundationSession => Boolean(session)) : []
+    importedSessions.forEach(saveFoundationSession)
     const merged = [...valid, ...loadCombinedPacks().filter((existing) => !valid.some((pack) => pack.meta.id === existing.meta.id))].slice(0, 50)
-    window.localStorage.setItem(COMBINED_PACKS_KEY, serializeCombinedPacks(merged))
-    return { packs: merged, rejected }
-  } catch (error) { return { packs: [], rejected: 0, error: error instanceof Error ? error.message : 'Could not read this backup.' } }
+    const foundationSessions = loadFoundationSessions()
+    window.localStorage.setItem(COMBINED_PACKS_KEY, serializeCombinedPacks(merged, foundationSessions))
+    return { packs: merged, rejected, foundationSessions }
+  } catch (error) { return { packs: [], rejected: 0, foundationSessions: [], error: error instanceof Error ? error.message : 'Could not read this backup.' } }
 }
 
 export function loadPacks(): ContentPack[] {
@@ -62,12 +78,13 @@ export function loadCombinedPacks(): CombinedPack[] {
 
 export function saveCombinedPack(pack: CombinedPack): CombinedPack[] {
   const next = [pack, ...loadCombinedPacks().filter((item) => item.meta.id !== pack.meta.id)].slice(0, 50)
-  try { window.localStorage.setItem(COMBINED_PACKS_KEY, serializeCombinedPacks(next)) } catch { /* UI remains usable when storage is unavailable. */ }
+  try { window.localStorage.setItem(COMBINED_PACKS_KEY, serializeCombinedPacks(next, loadFoundationSessions())) } catch { /* UI remains usable when storage is unavailable. */ }
   return next
 }
 
 export function deleteCombinedPack(id: string): CombinedPack[] {
   const next = loadCombinedPacks().filter((pack) => pack.meta.id !== id)
+  deleteFoundationSession(id)
   try { window.localStorage.setItem(COMBINED_PACKS_KEY, serializeCombinedPacks(next)) } catch { /* no-op */ }
   return next
 }

@@ -16,6 +16,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Added an explicit Campaign Scope foundation-draft action with local/remote provider status, no-request-before-action messaging, loading, cancellation, success, warning, error, and read-only review-preview states; keep, append, replace, and discard controls remain gated for the next batch.
 - Added editable foundation review with explicit keep-existing-notes, append-to-notes, replace-notes, and discard-draft decisions, plus persistent grounding warnings for unverified AI planning text, verification placeholders, open questions, and locally edited drafts.
 - Connected accepted foundation notes to the downstream generation handoff with a topic-plus-notes freshness snapshot, accepted/stale/review-required status messaging, a review recovery action, and non-blocking warnings before generation when the AI foundation is not accepted or has become stale.
+- Added versioned local foundation-session persistence keyed by pack ID, sanitized foundation-session backup/restore alongside saved packs, legacy pack-only compatibility, deletion cleanup, and Saved-page restore messaging; provider credentials, endpoint URLs, and authorization values are excluded from persisted foundation metadata.
 
 ## [1.0.0-rc.1] - 2026-08-17
 
