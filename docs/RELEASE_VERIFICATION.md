@@ -8,16 +8,24 @@ This record documents the final clean-checkout verification for the current publ
 |---|---|
 | Repository | `Albadry-Esmat/Content-Center` |
 | Branch | `Dev` |
-| Verified source commit | `49f326a feat: compact profile tabs and provider accuracy` |
+| Verified source commit | `414757e feat: restructure settings workspace shell` |
 | Verification date | 2026-08-18 |
-| Checkout state | Fresh single-branch clone with frozen dependency installation |
-| Git state after verification | Clean: `## Dev...origin/Dev` |
+| Checkout state | Working checkout verified after commit and push; clean state recheck follows documentation update |
+| Git state after verification | `Dev` pushed to `origin/Dev`; final documentation-only update requires the next gate |
 
 ## Automated verification
 
-The clean checkout passed `pnpm install --frozen-lockfile` and `pnpm verify`. The gate completed typecheck, 96 tests across 25 files, security scanning, 14 accessibility smoke checks, demo-fixture validation, release-notes validation, CODEOWNERS validation, branching-guide validation, license validation, support-guide validation, changelog validation, semantic theme validation, hero-asset validation, integrated UI contrast/responsive validation, production build, and whitespace validation.
+The Batch 1 checkout passed `pnpm verify`. The gate completed typecheck, 96 tests across 25 files, security scanning, 14 accessibility smoke checks, demo-fixture validation, release-notes validation, CODEOWNERS validation, branching-guide validation, license validation, support-guide validation, changelog validation, semantic theme validation, hero-asset validation, integrated UI contrast/responsive validation, production build, and whitespace validation.
 
-The integrated UI validator checks required light/dark semantic contrast pairs, responsive platform hooks, native platform accessibility hooks, exact model-discovery surfaces, the Vite hero import, and absence of the old `/manus-storage/` path. A clean checkout also emitted the tracked hero image as a hashed production asset.
+The integrated UI validator now checks the dedicated Settings workspace shell, Settings section navigation, active-section `aria-current` semantics, sticky action-bar hook, compact Generation Profile tabs, responsive platform hooks, native platform accessibility hooks, exact model-discovery surfaces, the Vite hero import, and absence of the old `/manus-storage/` path. A production build emitted the tracked hero image as a hashed asset.
+
+## Settings workspace smoke review
+
+The desktop route `/settings` rendered the compact `SETTINGS / WORKSPACE` header, a local-first status panel, Profile/Provider/Privacy navigation, side-by-side Generation Profile and AI Connection cards, existing profile tabs, provider controls, model discovery controls, and one sticky **Save changes** action. The old global StageSequence and Settings source strip no longer render above the route.
+
+A hydrated Chromium smoke run at 390×844 confirmed that the Settings header wraps cleanly, the local-first status becomes full width, section navigation becomes a horizontally scrollable row with an active Profile indicator, cards collapse to one column, and the Save action becomes full width. The existing global application navigation still has pre-existing horizontal overflow at this narrow width; broader application-shell responsive hardening remains intentionally deferred to the later UI/UX batch.
+
+The sticky action bar includes workspace bottom breathing room and section scroll margins so it does not obscure the final focused or anchor-targeted Settings content. Reduced-motion styling remains present for the new workspace controls.
 
 ## Public-demo smoke review
 
@@ -27,7 +35,7 @@ The demo banner returned to `/` through **Back to dashboard**. The dashboard exp
 
 ## Release decision
 
-The clean-checkout automated gate and public-demo smoke review passed for the verified source commit. This evidence supports marking the public-demo and release-scan checks complete in [`PUBLIC_RELEASE_CHECKLIST.md`](../PUBLIC_RELEASE_CHECKLIST.md). Any source change after the verified commit must repeat the clean-checkout verification before promotion.
+The Batch 1 automated gate and Settings desktop/mobile smoke review passed for commit `414757e`. This evidence supports marking the Settings workspace restructure as verified for the current development batch. Any source change after the verified commit must repeat the clean-checkout verification before promotion.
 
 The dashboard hero rendered in both light and dark themes. Settings exposed semantic model-discovery loading, empty, success, and recovery states; the public Generator demo exposed native platform checkboxes with exact accessible names, selected/available state copy, and responsive tile hooks. No provider request was made before explicit generation.
 
