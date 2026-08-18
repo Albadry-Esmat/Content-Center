@@ -5,7 +5,7 @@ import { AlignLeft, AlignRight, Check, CircleAlert, CircleCheck, Info, Languages
 import { toast } from 'sonner'
 import StageSequence from '../components/StageSequence'
 import { DEFAULT_AI_CONFIG, loadAiConfig, saveAiConfig } from '../lib/ai-config'
-import { testAiConnection, type ConnectionTestResult } from '../lib/connection-test'
+import { discoverAiModels, testAiConnection, type ConnectionTestResult } from '../lib/connection-test'
 import { trpc } from '@/lib/trpc'
 import { discoverKnownProviderModels, getProviderDescriptor, PROVIDER_CATALOG } from '../lib/provider-registry'
 
@@ -75,7 +75,7 @@ export default function Settings() {
         if (result.models.length) toast.success('Model IDs discovered.', { description: `${result.models.length} exact provider ID${result.models.length === 1 ? '' : 's'} are available below.` })
         else toast.message('Model discovery returned no IDs.', { description: result.detail })
       } else {
-        const result = await testAiConnection({ ...config, model: config.model || 'discovery-placeholder' })
+        const result = await discoverAiModels(config)
         const models = result.models || []
         setDiscoveredModels(models)
         if (!result.ok) {
@@ -88,7 +88,7 @@ export default function Settings() {
         }
       }
     } catch (error) {
-      const detail = error instanceof Error ? error.message : 'The provider did not return a usable discovery response.'
+      const detail = 'The provider did not return a usable discovery response.'
       setDiscoveredModels([])
       setModelDiscoveryNotice({ kind: 'error', title: 'Model discovery failed.', detail, nextAction: 'Check the provider status and retry discovery.' })
       toast.error('Model discovery failed.', { description: `${detail} Check the provider status and retry.` })

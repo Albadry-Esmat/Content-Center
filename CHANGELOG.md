@@ -46,6 +46,7 @@ All notable public changes to Content Center should be documented in this file. 
 ### Fixed
 
 - Optional analytics no longer emits placeholder URLs when analytics configuration is absent; it initializes only with explicit HTTP(S) endpoint and site-ID settings.
+- Final review hardened local discovery to avoid synthetic-model warnings, sanitized browser network diagnostics, and normalized hosted-provider model IDs by trimming, filtering malformed entries, and removing duplicates at both client and server boundaries.
 - Public demo query detection reliably uses the browser search string and displays accessible no-account guidance.
 
 ## Release notes

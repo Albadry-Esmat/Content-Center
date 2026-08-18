@@ -48,8 +48,11 @@ export async function discoverKnownProviderModels(providerId: string, fetchImpl:
   const input = encodeURIComponent(JSON.stringify({ json: { providerId } }))
   const response = await fetchImpl(`/api/trpc/ai.listModels?input=${input}`, { method: 'GET', credentials: 'include' })
   if (!response.ok) throw new Error(`Model discovery failed with HTTP ${response.status}.`)
-  const payload = await response.json() as { result?: { data?: { json?: { models?: string[]; detail?: string } } } }
-  return { models: payload.result?.data?.json?.models || [], detail: payload.result?.data?.json?.detail || 'No model discovery detail was returned.' }
+  const payload = await response.json() as { result?: { data?: { json?: { models?: unknown; detail?: unknown } } } }
+  const rawModels = payload.result?.data?.json?.models
+  const models = Array.from(new Set((Array.isArray(rawModels) ? rawModels : []).filter((model): model is string => typeof model === 'string').map((model) => model.trim()).filter(Boolean)))
+  const detail = typeof payload.result?.data?.json?.detail === 'string' && payload.result.data.json.detail.trim() ? payload.result.data.json.detail : 'No model discovery detail was returned.'
+  return { models, detail }
 }
 
 export function createProviderForConfig(config: Pick<AiConfig, 'providerMode' | 'providerId'>): AiProvider {

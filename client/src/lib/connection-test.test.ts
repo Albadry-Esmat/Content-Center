@@ -37,6 +37,13 @@ describe('AI connection test', () => {
     expect(result.message).toContain('HTTP 401')
   })
 
+  it('sanitizes network error details returned by the browser fetch boundary', async () => {
+    const result = await discoverAiModels({ baseUrl: config.baseUrl, model: '' }, vi.fn().mockRejectedValue(new Error('secret endpoint diagnostic')))
+    expect(result.ok).toBe(false)
+    expect(result.detail).not.toContain('secret endpoint diagnostic')
+    expect(result.detail).toContain('could not reach')
+  })
+
   it('refuses known-provider browser routing without making a request', async () => {
     const fetchImpl = vi.fn()
     const result = await testAiConnection({ ...config, providerMode: 'known-provider', providerId: 'openai' }, fetchImpl)

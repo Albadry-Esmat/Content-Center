@@ -12,11 +12,11 @@ describe('provider registry', () => {
   })
 
   it('reads discovered models from the protected server route', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({ result: { data: { json: { models: ['gpt-a'], detail: '1 model discovered.' } } } }), { status: 200 }))
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({ result: { data: { json: { models: [' gpt-a ', 'gpt-a', '', 42, null], detail: '5 raw entries returned.' } } } }), { status: 200 }))
 
     const result = await discoverKnownProviderModels('openai', fetchImpl)
 
-    expect(result).toEqual({ models: ['gpt-a'], detail: '1 model discovered.' })
+    expect(result).toEqual({ models: ['gpt-a'], detail: '5 raw entries returned.' })
     expect(fetchImpl).toHaveBeenCalledWith(expect.stringContaining('/api/trpc/ai.listModels?input='), expect.objectContaining({ credentials: 'include' }))
   })
 

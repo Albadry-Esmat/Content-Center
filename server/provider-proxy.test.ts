@@ -32,7 +32,7 @@ describe('known-provider proxy', () => {
   })
 
   it('normalizes OpenAI model IDs from server-side discovery', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: [{ id: 'gpt-a' }, { id: 'gpt-b' }] }), { status: 200 }))
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: [{ id: ' gpt-a ' }, { id: 'gpt-a' }, { id: 'gpt-b' }, { id: 42 }, {}] }), { status: 200 }))
 
     const result = await (await import('./provider-proxy')).listKnownProviderModels('openai', configuredEnv, fetchImpl)
 

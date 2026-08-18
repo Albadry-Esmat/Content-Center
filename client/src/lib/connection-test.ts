@@ -54,7 +54,7 @@ async function fetchModelList(config: Pick<ModelConfig, 'baseUrl'>, fetchImpl: F
   } catch (error) {
     const timedOut = error instanceof DOMException && error.name === 'AbortError'
     if (timedOut) return failure('timeout', 'The AI model discovery timed out.', 'The endpoint did not respond within 8 seconds.', true, 'Confirm the local model server is running, then retry once.')
-    return failure('network', 'AI model discovery failed.', error instanceof Error ? error.message : 'The browser could not reach the endpoint.', true, 'Confirm the endpoint URL, CORS policy, and local server status, then retry.')
+    return failure('network', 'AI model discovery failed.', 'The browser could not reach the endpoint.', true, 'Confirm the endpoint URL, CORS policy, and local server status, then retry.')
   } finally { globalThis.clearTimeout(timeout) }
 }
 

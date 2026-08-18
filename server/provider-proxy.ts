@@ -54,8 +54,11 @@ export async function listKnownProviderModels(providerId: KnownProviderId, env: 
   const headers: Record<string, string> = providerId === 'openai' ? { authorization: `Bearer ${env.openaiApiKey}` } : {}
   const response = await fetchWithBackoff(url, { method: 'GET', headers }, fetchImpl)
   if (!response.ok) throw new Error(`Provider model discovery failed with HTTP ${response.status}.`)
-  const payload = await response.json() as { data?: Array<{ id?: string }>; models?: Array<{ name?: string }> }
-  const models = providerId === 'openai' ? (payload.data || []).map((model) => model.id).filter(Boolean) as string[] : (payload.models || []).map((model) => model.name?.replace(/^models\//, '')).filter(Boolean) as string[]
+  const payload = await response.json() as { data?: unknown; models?: unknown }
+  const rawModels = providerId === 'openai'
+    ? (Array.isArray(payload.data) ? payload.data : []).map((model) => typeof model === 'object' && model !== null && 'id' in model && typeof model.id === 'string' ? model.id : '')
+    : (Array.isArray(payload.models) ? payload.models : []).map((model) => typeof model === 'object' && model !== null && 'name' in model && typeof model.name === 'string' ? model.name.replace(/^models\//, '') : '')
+  const models = Array.from(new Set(rawModels.map((model) => model.trim()).filter(Boolean)))
   return { providerId, models, detail: models.length ? `${models.length} models discovered.` : 'The provider responded without model IDs.' }
 }
 

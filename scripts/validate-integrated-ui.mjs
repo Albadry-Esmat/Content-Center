@@ -19,12 +19,14 @@ const requiredHooks = [
   [generator, 'aria-label={platformLabels[platform]}', 'explicit platform checkbox accessible names'],
   [settings, 'model-discovery-notice', 'semantic model-discovery notices'],
   [settings, 'discovered-models', 'exact discovered model-ID list'],
+  [settings, 'discoverAiModels(config)', 'model-less local discovery seam'],
   [dashboard, "import heroImage from '../assets/content-center-hero.jpg'", 'Vite hero asset import'],
 ]
 for (const [source, token, description] of requiredHooks) {
   if (!source.includes(token)) failures.push(`${description} is missing.`)
 }
 if (dashboard.includes('/manus-storage/')) failures.push('Dashboard still contains the unavailable manus-storage hero path.')
+if (settings.includes('discovery-placeholder')) failures.push('Settings must not manufacture a discovery-placeholder model that creates a false warning.')
 
 function themeTokens(selector) {
   const block = css.match(new RegExp(`${selector}\\s*\\{([^}]+)\\}`))?.[1] || ''
