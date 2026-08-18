@@ -24,9 +24,10 @@
     "validate:semantic-color-notifications": "node scripts/validate-semantic-color-notifications.mjs",
     "validate:theme-tokens": "node scripts/validate-theme-tokens.mjs",
     "validate:hero-asset": "node scripts/validate-hero-asset.mjs",
+    "validate:integrated-ui": "node scripts/validate-integrated-ui.mjs",
     "sanitize:reference-secrets": "node scripts/sanitize-reference-secrets.mjs",
     "a11y:smoke": "node scripts/a11y-smoke.mjs",
-    "verify": "pnpm check && pnpm test && pnpm security && pnpm a11y:smoke && pnpm validate:demo-fixture && pnpm validate:release-notes && pnpm validate:codeowners && pnpm validate:branching && pnpm validate:license && pnpm validate:support && pnpm validate:changelog && pnpm validate:release-candidate && pnpm validate:release-readiness && pnpm validate:contributor-onboarding && pnpm validate:campaign-scope-ux && pnpm validate:semantic-color-notifications && pnpm validate:theme-tokens && pnpm validate:hero-asset && pnpm build && git diff --check",
+    "verify": "pnpm check && pnpm test && pnpm security && pnpm a11y:smoke && pnpm validate:demo-fixture && pnpm validate:release-notes && pnpm validate:codeowners && pnpm validate:branching && pnpm validate:license && pnpm validate:support && pnpm validate:changelog && pnpm validate:release-candidate && pnpm validate:release-readiness && pnpm validate:contributor-onboarding && pnpm validate:campaign-scope-ux && pnpm validate:semantic-color-notifications && pnpm validate:theme-tokens && pnpm validate:hero-asset && pnpm validate:integrated-ui && pnpm build && git diff --check",
     "bundle:audit": "vite build --sourcemap && node scripts/bundle-audit.mjs $(find dist/public/assets -name 'index-*.js.map' -printf '%s %p\\n' | sort -nr | head -1 | cut -d' ' -f2-)",
     "format": "prettier --write .",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"

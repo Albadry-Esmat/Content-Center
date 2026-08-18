@@ -11,6 +11,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Improved notification presentation with semantic neutral, success, info, warning, loading, and error states; mapped global Sonner toasts to the shared palette; and added exact local/hosted model-ID discovery with duplicate removal, empty-state guidance, sanitized recovery actions, and one-click model selection in Settings.
 - Redesigned Campaign Scope platform selection as responsive accessible tiles while preserving native checkboxes, explicit platform names, selected/available state copy, visible non-color cues, keyboard focus, and the existing campaign platform values.
 - Replaced the broken homepage `/manus-storage/...` hero reference with a repository-tracked Vite-imported hero asset, added deterministic asset-path validation, and verified the image in light/dark runtime smoke tests and the production build.
+- Added integrated UI validation for semantic light/dark contrast pairs, responsive platform behavior, native platform accessibility hooks, exact model-discovery surfaces, and the tracked hero import; corrected the light selected-status foreground to meet the minimum contrast threshold.
 
 - Beginner-friendly first-contribution guide covering setup, public-demo reproduction, safe contribution paths, validation, privacy boundaries, and the capital-D `Dev` pull-request workflow.
 - Contributor-onboarding validation included in the consolidated `pnpm verify` quality gate and linked from the README and GitHub issue chooser.
