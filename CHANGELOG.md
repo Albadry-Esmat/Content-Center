@@ -15,6 +15,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Added a structured foundation/reference AI draft contract with deterministic normalization, missing-section warnings, verification reminders, campaign context, local/remote provenance, and explicit no-browsing or no-invented-source safety rules; the visible generation action remains gated for the next batch.
 - Added an explicit Campaign Scope foundation-draft action with local/remote provider status, no-request-before-action messaging, loading, cancellation, success, warning, error, and read-only review-preview states; keep, append, replace, and discard controls remain gated for the next batch.
 - Added editable foundation review with explicit keep-existing-notes, append-to-notes, replace-notes, and discard-draft decisions, plus persistent grounding warnings for unverified AI planning text, verification placeholders, open questions, and locally edited drafts.
+- Connected accepted foundation notes to the downstream generation handoff with a topic-plus-notes freshness snapshot, accepted/stale/review-required status messaging, a review recovery action, and non-blocking warnings before generation when the AI foundation is not accepted or has become stale.
 
 ## [1.0.0-rc.1] - 2026-08-17
 

@@ -147,6 +147,12 @@ a { color: inherit; text-decoration: none; }
 .notes-label span { color: var(--muted); font: 10px Space Grotesk, sans-serif; }
 .grounding-note { display: flex; gap: 8px; align-items: start; margin-top: 16px; padding: 10px; color: var(--muted); background: rgba(158,182,199,.06); font-size: 10px; line-height: 1.5; }
 .grounding-note svg { flex: 0 0 auto; color: var(--steel); }
+.grounding-note { justify-content: flex-start; flex-wrap: wrap; }
+.grounding-note b { color: var(--text); margin-inline-end: 4px; }
+.grounding-note .text-button { margin-inline-start: auto; padding: 0; color: var(--amber-soft); }
+.grounding-accepted-ai { border-inline-start: 2px solid var(--steel); }
+.grounding-stale, .grounding-review-required { border-inline-start: 2px solid var(--amber); }
+.grounding-user-notes { border-inline-start: 2px solid var(--muted); }
 .foundation-action-card { display: grid; gap: 12px; margin-top: 16px; padding: 16px; border: 1px solid color-mix(in srgb, var(--amber) 38%, var(--line)); background: color-mix(in srgb, var(--wash) 74%, var(--ink)); }
 .foundation-action-card.foundation-success { border-color: color-mix(in srgb, var(--steel) 48%, var(--line)); }
 .foundation-action-card.foundation-warning, .foundation-action-card.foundation-error { border-color: color-mix(in srgb, var(--danger) 44%, var(--line)); }

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createCombinedPack } from '../lib/pack-domain'
@@ -113,6 +113,24 @@ describe('Generator cloud reload recovery', () => {
     expect(await screen.findByText('AI draft · review required')).toBeTruthy()
     expect(screen.getByText('Review foundation draft')).toBeTruthy()
     expect(screen.getByText('A practical creator workflow')).toBeTruthy()
+  })
+
+  it('marks accepted foundation context as stale when the topic changes', async () => {
+    mocks.isAuthenticated = false
+    window.localStorage.setItem('albadry_ai_config_v2', JSON.stringify({ providerMode: 'local', providerId: 'openai-compatible-local', model: 'local-model' }))
+    mocks.generateFoundationReference.mockResolvedValue({ foundation: { workingAngle: 'A practical creator workflow', audienceProblem: 'Creators need a clear repeatable plan.', intendedPromise: 'Leave with a usable planning method.', keyPoints: ['Start with the audience problem.'], evidenceToCollect: ['A real workflow example.'], sourcesToCheck: ['[source to verify]'], termsToDefine: ['Foundation notes'], openQuestions: ['Which constraint matters most?'], verificationReminders: ['Verify every specific claim before publishing.'] }, warnings: [], truncated: false, provenance: { providerId: 'openai-compatible-local', providerMode: 'local', model: 'local-model', source: 'ai', generatedAt: new Date().toISOString() } })
+    window.history.pushState({}, '', '/generator?demo=1')
+
+    render(<Generator />)
+
+    screen.getByRole('button', { name: 'Generate foundation draft' }).click()
+    await waitFor(() => expect(mocks.generateFoundationReference).toHaveBeenCalledTimes(1))
+    screen.getByRole('button', { name: 'Append to notes' }).click()
+    expect(await screen.findByText('AI foundation accepted')).toBeTruthy()
+
+    fireEvent.change(screen.getByLabelText(/Video topic/i), { target: { value: 'A changed campaign topic' } })
+    expect(screen.getByText('Foundation stale · review required')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Review foundation' })).toBeTruthy()
   })
 
   it('stays local-first when a stale cloud selection exists without an authenticated session', () => {
