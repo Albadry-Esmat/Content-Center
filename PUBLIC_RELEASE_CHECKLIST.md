@@ -8,6 +8,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 |---|---|---|
 | A new user can understand the product promise and non-goals from `README.md`. | README and scope-aligned plan | Complete |
 | README includes public-safe screenshots of the dashboard and demo generator. | `docs/screenshots/` and README preview | Complete |
+| Dashboard hero art is repository-tracked and survives a fresh Vite build. | `client/src/assets/content-center-hero.jpg` and `pnpm validate:hero-asset` | Complete |
 | The no-provider demo path works through `/generator?demo=1` and the Dashboard action. | `docs/RELEASE_VERIFICATION.md` and manual browser check | Complete |
 | The public fixture contains no credentials, private notes, or generated factual claims. | `pnpm validate:demo-fixture` | Complete |
 | The default campaign supports one long-form asset, configurable pre-launch shorts, and configurable post-launch shorts. | Campaign configuration and Generator UI | Complete |
@@ -44,6 +45,7 @@ This checklist is the maintainer hand-off for the first public GitHub release of
 | Public history and unreleased release-candidate changes are maintained in a validated changelog. | `CHANGELOG.md` and `pnpm validate:changelog` | Complete |
 | The final clean-checkout verification record is retained with the release evidence. | `docs/RELEASE_VERIFICATION.md` | Complete |
 | The public preview tag identity, scope, evidence, and announcement requirements are documented. | `docs/RELEASE_CANDIDATE.md` | Complete |
+| Integrated UI validation covers semantic contrast, responsive platform hooks, exact model discovery, native platform accessibility, and hero wiring. | `pnpm validate:integrated-ui` | Complete |
 | Tagging is blocked when release evidence, candidate metadata, or package version is incomplete. | `pnpm validate:release-readiness` | Complete |
 
 ## Release verification
@@ -56,9 +58,9 @@ pnpm verify
 git status --short --branch
 ```
 
-`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, and release-readiness validation, production build, and whitespace validation.
+`pnpm verify` is the repository’s consolidated gate for typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, release-readiness, semantic theme, hero-asset, and integrated UI contrast/responsive validation, production build, and whitespace validation.
 
-Then perform a manual smoke check using the public demo campaign. Confirm that the dashboard entry point opens the generator, the public-demo banner explains that no AI account is required, the campaign phase labels are visible, the simple montage and coloring guidance render, the platform selectors work, local mode remains available without an account, and no provider request occurs until the user explicitly chooses to generate.
+Then perform a manual smoke check using the public demo campaign. Confirm that the dashboard entry point opens the generator, the public-demo banner explains that no AI account is required, the campaign phase labels are visible, the simple montage and coloring guidance render, the platform selectors work as native accessible checkboxes with selected/available state copy, local mode remains available without an account, and no provider request occurs until the user explicitly chooses to generate. Also confirm that the dashboard hero image renders in both theme modes and that Settings presents actionable model-discovery recovery when the local endpoint is unavailable.
 
 ## Release notes and recovery
 

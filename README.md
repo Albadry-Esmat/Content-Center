@@ -44,7 +44,7 @@ The supported runtime is **React 19 + Vite + TypeScript** with the existing Expr
 | Long and short artifacts | Editable fields and production artifacts are supported in the current workflow. |
 | Local persistence | Browser-local saving, backup, restore, and migration support are available. |
 | Local AI | OpenAI-compatible browser-local endpoints are supported without browser-held credentials. |
-| Known providers | Provider adapters, secure server-side routing, status, and model discovery are available in staged releases. |
+| Known providers | Provider adapters, secure server-side routing, status, and exact model-ID discovery are available when the provider exposes a model-list endpoint. |
 | Montage and coloring | Simple CapCut and DaVinci Resolve guidance is available by default. |
 | Cloud workspaces | Optional and deferred behind explicit authentication and data-integrity gates. |
 
@@ -65,7 +65,7 @@ The complete local quality gate is available as one command:
 pnpm verify
 ```
 
-It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, and release-readiness validation, the production build, and whitespace validation. The individual commands remain useful when narrowing down a failure.
+It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, release-readiness, semantic theme, hero-asset, and integrated UI contrast/responsive validation, followed by the production build and whitespace validation. The individual commands remain useful when narrowing down a failure.
 
 ### Try the public demo
 
@@ -102,6 +102,14 @@ A local endpoint is not automatically private: users should verify how their cho
 Known providers are routed through documented server-side adapters. Provider credentials must never be committed to GitHub, placed in public frontend environment variables, stored in ordinary browser storage, or written to logs or exports. Hosted-provider support uses a protected server boundary, privacy status, rate-aware diagnostics, sanitized errors, and model discovery where the provider exposes it.
 
 The application should show whether a request is local or remote before generation, test the connection with a small request, and preserve clear error messages when a provider is unavailable.
+
+## UI quality and public assets
+
+The runtime uses semantic light and dark theme tokens for background, surface, border, text, link, focus, selected, and notification states. Status feedback uses text and icon cues in addition to color, and the integrated validator checks the required contrast pairs before the production build.
+
+Settings can discover and display exact model IDs returned by a configured endpoint, including explicit loading, empty, success, and recovery states. Campaign Scope presents platforms as responsive accessible tiles backed by native checkboxes, with selected and available state copy that remains understandable without color alone.
+
+The dashboard hero is a repository-tracked Vite asset at `client/src/assets/content-center-hero.jpg`; `pnpm validate:hero-asset` prevents a return to the unavailable `/manus-storage/` path. These checks keep a fresh GitHub checkout self-contained rather than dependent on session-only assets.
 
 ## Default campaign
 
@@ -165,6 +173,7 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 | `RELEASE_NOTES_TEMPLATE.md` | Maintainer template for public release announcements and safety notes. |
 | `.github/dependabot.yml` | Weekly npm dependency-update configuration. |
 | `.github/CODEOWNERS` | Default maintainer review ownership for repository changes. |
+| `client/src/assets/content-center-hero.jpg` | Repository-tracked dashboard hero asset imported through Vite. |
 | `docs/screenshots/` | Public-safe dashboard and demo-generator screenshots for documentation. |
 | `docs/PRESET_AUTHORING.md` | Contributor contract for platform, CapCut, and DaVinci presets. |
 | `docs/FIRST_CONTRIBUTION.md` | Beginner-friendly setup, demo-first reproduction, contribution paths, and validation checklist. |
@@ -177,6 +186,8 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 | `docs/RELEASE_VERIFICATION.md` | Clean-checkout automation and public-demo smoke evidence. |
 | `docs/RELEASE_CANDIDATE.md` | Candidate tag identity, scope, evidence, and announcement requirements. |
 | `scripts/validate-release-readiness.mjs` | Prevents tagging with incomplete release evidence or metadata. |
+| `scripts/validate-hero-asset.mjs` | Verifies the tracked dashboard hero import and asset path. |
+| `scripts/validate-integrated-ui.mjs` | Verifies semantic contrast, responsive platform hooks, accessibility hooks, model-discovery surfaces, and hero wiring. |
 
 ## Contributing
 

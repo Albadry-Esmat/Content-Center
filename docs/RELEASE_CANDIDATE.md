@@ -15,7 +15,7 @@ The candidate tag should point to the final verified `Dev` commit after this pre
 
 ## Included scope
 
-The candidate includes the supported public workflow: one long-form video, configurable pre-launch and post-launch shorts, simple CapCut montage guidance, simple DaVinci Resolve coloring guidance, multi-platform adaptation, local AI connectivity, documented known-provider connectivity, review gates, local persistence, backup/revision safety, accessible public-demo onboarding, and public contributor workflows.
+The candidate includes the supported public workflow: one long-form video, configurable pre-launch and post-launch shorts, simple CapCut montage guidance, simple DaVinci Resolve coloring guidance, multi-platform adaptation, local AI connectivity, documented known-provider connectivity with exact model-ID discovery where exposed, review gates, local persistence, backup/revision safety, semantic light/dark theme and notification states, accessible responsive platform selection, a repository-backed dashboard hero asset, integrated contrast/accessibility validation, accessible public-demo onboarding, and public contributor workflows.
 
 ## Explicit non-goals
 
@@ -29,6 +29,7 @@ This candidate does not add advanced montage, advanced color grading, rendering 
 - [x] [`PUBLIC_RELEASE_CHECKLIST.md`](../PUBLIC_RELEASE_CHECKLIST.md) is complete.
 - [x] [`CHANGELOG.md`](../CHANGELOG.md) and [`RELEASE_NOTES_TEMPLATE.md`](../RELEASE_NOTES_TEMPLATE.md) are ready for the candidate announcement.
 - [x] No secrets, private notes, unsupported claims, or unrelated generated artifacts are present.
+- [x] Integrated UI validation covers semantic contrast, responsive platform hooks, exact model-discovery surfaces, native platform accessibility, and the tracked hero asset.
 
 ## Candidate announcement
 

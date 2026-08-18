@@ -41,6 +41,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Consolidated the contributor and release verification commands under `pnpm verify`.
 - Added accessibility smoke checks, demo-fixture validation, release-notes validation, CODEOWNERS validation, branching-guide validation, license validation, and support-guide validation to the verification gate.
 - CI now verifies pushes to `main`, capital-D `Dev`, and version tags matching `v*`.
+- Public README, release checklist, candidate record, and release verification evidence now describe semantic themes and notifications, exact model discovery, accessible platform tiles, the repository-backed hero asset, integrated contrast/responsive checks, and the current clean-checkout evidence.
 
 ### Fixed
 

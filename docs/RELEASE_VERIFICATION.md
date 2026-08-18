@@ -8,14 +8,16 @@ This record documents the final clean-checkout verification for the current publ
 |---|---|
 | Repository | `Albadry-Esmat/Content-Center` |
 | Branch | `Dev` |
-| Verified source commit | `1e31eae docs: add public changelog workflow` |
-| Verification date | 2026-08-17 |
+| Verified source commit | `a778132 test: add integrated UI validation` |
+| Verification date | 2026-08-18 |
 | Checkout state | Fresh single-branch clone with frozen dependency installation |
 | Git state after verification | Clean: `## Dev...origin/Dev` |
 
 ## Automated verification
 
-The clean checkout passed `pnpm install --frozen-lockfile` and `pnpm verify`. The gate completed typecheck, 74 tests across 23 files, security scanning, 10 accessibility smoke checks, demo-fixture validation, release-notes validation, CODEOWNERS validation, branching-guide validation, license validation, support-guide validation, changelog validation, production build, and whitespace validation.
+The clean checkout passed `pnpm install --frozen-lockfile` and `pnpm verify`. The gate completed typecheck, 91 tests across 25 files, security scanning, 14 accessibility smoke checks, demo-fixture validation, release-notes validation, CODEOWNERS validation, branching-guide validation, license validation, support-guide validation, changelog validation, semantic theme validation, hero-asset validation, integrated UI contrast/responsive validation, production build, and whitespace validation.
+
+The integrated UI validator checks required light/dark semantic contrast pairs, responsive platform hooks, native platform accessibility hooks, exact model-discovery surfaces, the Vite hero import, and absence of the old `/manus-storage/` path. A clean checkout also emitted the tracked hero image as a hashed production asset.
 
 ## Public-demo smoke review
 
@@ -26,6 +28,8 @@ The demo banner returned to `/` through **Back to dashboard**. The dashboard exp
 ## Release decision
 
 The clean-checkout automated gate and public-demo smoke review passed for the verified source commit. This evidence supports marking the public-demo and release-scan checks complete in [`PUBLIC_RELEASE_CHECKLIST.md`](../PUBLIC_RELEASE_CHECKLIST.md). Any source change after the verified commit must repeat the clean-checkout verification before promotion.
+
+The dashboard hero rendered in both light and dark themes. Settings exposed semantic model-discovery loading, empty, success, and recovery states; the public Generator demo exposed native platform checkboxes with exact accessible names, selected/available state copy, and responsive tile hooks. No provider request was made before explicit generation.
 
 ## Candidate-preparation recheck
 
