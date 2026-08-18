@@ -510,6 +510,31 @@ a { color: inherit; text-decoration: none; }
 .provider-action-panel b { color: var(--text); font: 600 11px Space Grotesk, sans-serif; }
 .provider-action-panel small { max-width: 260px; margin-top: 3px; color: var(--muted); font-size: 9px; line-height: 1.4; }
 .provider-action-panel .connection-actions { flex: 0 0 auto; margin-top: 0; }
+.provider-diagnostics { margin-top: 14px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.provider-diagnostics summary, .privacy-details summary { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 11px 0; color: var(--text); cursor: pointer; list-style: none; }
+.provider-diagnostics summary::-webkit-details-marker, .privacy-details summary::-webkit-details-marker { display: none; }
+.provider-diagnostics summary > span:first-child, .privacy-details summary > span:first-child { display: grid; gap: 3px; }
+.provider-diagnostics summary b, .provider-diagnostics summary small { display: block; }
+.provider-diagnostics summary b { font: 600 11px Space Grotesk, sans-serif; }
+.provider-diagnostics summary small { color: var(--muted); font-size: 9px; line-height: 1.4; }
+.provider-diagnostics-toggle { flex: 0 0 auto; color: var(--amber-soft); font: 600 9px Space Grotesk, sans-serif; letter-spacing: .05em; text-transform: uppercase; }
+.provider-diagnostics[open] .provider-diagnostics-toggle::after { content: ' opened'; color: var(--muted); font-weight: 400; text-transform: none; }
+.provider-diagnostics-content { padding: 0 0 12px; }
+.provider-diagnostics-content .model-discovery-notice, .provider-diagnostics-content .discovered-models, .provider-diagnostics-content .connection-result { margin-top: 0; }
+.provider-diagnostics-content > * + * { margin-top: 10px; }
+.privacy-panel { margin-top: 14px; padding: 13px; border: 1px solid var(--line); background: var(--wash); color: var(--muted); font-size: 10px; line-height: 1.5; }
+.privacy-panel-heading { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; color: var(--amber); }
+.privacy-panel-heading > span { display: grid; gap: 5px; }
+.privacy-panel-heading b { color: var(--text); font: 600 12px Space Grotesk, sans-serif; }
+.privacy-panel-heading svg { flex: 0 0 auto; }
+.privacy-panel p { margin: 9px 0 0; }
+.privacy-panel p strong { color: var(--text); }
+.privacy-details { margin-top: 7px; border-top: 1px solid color-mix(in srgb, var(--line) 75%, transparent); }
+.privacy-details summary { padding-bottom: 0; color: var(--amber-soft); font: 600 10px Space Grotesk, sans-serif; }
+.privacy-details summary::after { content: '+'; color: var(--muted); font-size: 14px; font-weight: 400; }
+.privacy-details[open] summary::after { content: '−'; }
+.privacy-details ul { display: grid; gap: 5px; margin: 8px 0 0; padding-left: 18px; }
+.privacy-details li { padding-left: 2px; }
 .provider-status-card { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0; padding: 12px; border: 1px solid var(--line); background: var(--ink); }
 .provider-status-card > span:last-child { display: grid; gap: 4px; }
 .provider-status-card small { color: var(--muted); line-height: 1.45; }
@@ -622,6 +647,9 @@ a { color: inherit; text-decoration: none; }
   .provider-action-panel { align-items: stretch; flex-direction: column; }
   .provider-action-panel .connection-actions { width: 100%; }
   .provider-action-panel .button { flex: 1 1 auto; }
+  .provider-diagnostics summary { align-items: flex-start; }
+  .provider-diagnostics-toggle { text-align: right; }
+  .privacy-panel { margin-top: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .settings-section-nav button, .settings-action-bar { scroll-behavior: auto; transition: none; }

@@ -35,6 +35,9 @@ const requiredHooks = [
   [settings, 'provider-route-summary', 'provider route summary'],
   [settings, 'provider-field-group', 'provider field group'],
   [settings, 'provider-action-panel', 'provider action panel'],
+  [settings, 'provider-diagnostics', 'provider diagnostics disclosure'],
+  [settings, 'privacy-panel', 'Privacy & Recovery panel'],
+  [settings, 'privacy-details', 'privacy detail disclosure'],
   [settings, 'id="script-language"', 'persisted script language field'],
   [settings, 'id="brand-phrases"', 'persisted brand phrases field'],
   [providerProxy, "https://api.anthropic.com/v1/models", 'Anthropic model discovery endpoint'],
@@ -55,6 +58,8 @@ for (const field of ['scriptLanguage', 'textDirection', 'brandPhrases']) {
 }
 if (/id: '(openai|anthropic|google)'[^\n]*suggestedModels: \[[^\]]+\]/.test(providerRegistry)) failures.push('Hosted provider catalog must not advertise stale static model IDs; discovery should be authoritative.')
 if (!settings.includes("config.providerMode === 'local' && <div className=\"provider-field\"")) failures.push('The Provider panel must keep the local endpoint field scoped to local routing.')
+if (!settings.includes('open={Boolean(modelDiscoveryNotice || connectionResult || discoveredModels.length)}')) failures.push('Provider diagnostics should open automatically when actionable results are present.')
+if (settings.includes('Your notes, drafts, and profile stay in this browser unless you actively use a cloud project.')) failures.push('Privacy copy must not imply local prompts never leave the browser.')
 
 function themeTokens(selector) {
   const block = css.match(new RegExp(`${selector}\\s*\\{([^}]+)\\}`))?.[1] || ''
