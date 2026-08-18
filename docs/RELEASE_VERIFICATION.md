@@ -8,7 +8,7 @@ This record documents the final clean-checkout verification for the current publ
 |---|---|
 | Repository | `Albadry-Esmat/Content-Center` |
 | Branch | `Dev` |
-| Verified source commit | `5d7ad63 docs: clarify integrated validation commands` |
+| Verified source commit | `0a7d983 fix: harden model discovery review findings` |
 | Verification date | 2026-08-18 |
 | Checkout state | Fresh single-branch clone with frozen dependency installation |
 | Git state after verification | Clean: `## Dev...origin/Dev` |
