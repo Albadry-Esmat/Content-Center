@@ -14,6 +14,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Campaign Scope now uses a clearer summary, grouped editing defaults, short timeline, objectives, and platform sections with native progressive disclosure while preserving the existing campaign values and local-first demo behavior.
 - Added a structured foundation/reference AI draft contract with deterministic normalization, missing-section warnings, verification reminders, campaign context, local/remote provenance, and explicit no-browsing or no-invented-source safety rules; the visible generation action remains gated for the next batch.
 - Added an explicit Campaign Scope foundation-draft action with local/remote provider status, no-request-before-action messaging, loading, cancellation, success, warning, error, and read-only review-preview states; keep, append, replace, and discard controls remain gated for the next batch.
+- Added editable foundation review with explicit keep-existing-notes, append-to-notes, replace-notes, and discard-draft decisions, plus persistent grounding warnings for unverified AI planning text, verification placeholders, open questions, and locally edited drafts.
 
 ## [1.0.0-rc.1] - 2026-08-17
 

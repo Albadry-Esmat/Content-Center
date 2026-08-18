@@ -111,7 +111,7 @@ describe('Generator cloud reload recovery', () => {
     screen.getByRole('button', { name: 'Generate foundation draft' }).click()
     await waitFor(() => expect(mocks.generateFoundationReference).toHaveBeenCalledTimes(1))
     expect(await screen.findByText('AI draft · review required')).toBeTruthy()
-    expect(screen.getByText('Foundation draft preview')).toBeTruthy()
+    expect(screen.getByText('Review foundation draft')).toBeTruthy()
     expect(screen.getByText('A practical creator workflow')).toBeTruthy()
   })
 
