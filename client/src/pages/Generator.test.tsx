@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
   getProjectQuery: vi.fn(() => ({ data: null })),
   packVersionsQuery: vi.fn(() => ({ data: mocks.versions, isLoading: false })),
   generationRunsQuery: vi.fn(() => ({ data: mocks.runs, isLoading: false })),
+  generateFoundationReference: vi.fn(),
 }))
 
 vi.mock('@/lib/trpc', () => ({
@@ -43,6 +44,10 @@ vi.mock('sonner', () => ({ toast: { message: mocks.toastMessage, success: vi.fn(
 vi.mock('../components/ArtifactEditor', () => ({ default: () => <div data-testid="artifact-editor" /> }))
 vi.mock('../components/GenerationProgressHeader', () => ({ default: () => <div data-testid="progress-header" /> }))
 vi.mock('../components/GenerationRunPanel', () => ({ default: ({ run }: { run: { status?: string; tasks?: unknown[] } | null }) => <div data-testid="run-state">{run ? `${run.status}:${run.tasks?.length}` : 'none'}</div> }))
+vi.mock('../lib/generation-service', async () => {
+  const actual = await vi.importActual<typeof import('../lib/generation-service')>('../lib/generation-service')
+  return { ...actual, generateFoundationReference: mocks.generateFoundationReference }
+})
 
 import Generator from './Generator'
 
@@ -91,6 +96,23 @@ describe('Generator cloud reload recovery', () => {
     expect(screen.getByText('Short objectives')).toBeTruthy()
     expect(screen.getByText('Platforms')).toBeTruthy()
     expect(screen.getByText('4 platforms')).toBeTruthy()
+  })
+
+  it('requires an explicit action before requesting a foundation draft and shows the review preview', async () => {
+    mocks.isAuthenticated = false
+    window.localStorage.setItem('albadry_ai_config_v2', JSON.stringify({ providerMode: 'local', providerId: 'openai-compatible-local', model: 'local-model' }))
+    mocks.generateFoundationReference.mockResolvedValue({ foundation: { workingAngle: 'A practical creator workflow', audienceProblem: 'Creators need a clear repeatable plan.', intendedPromise: 'Leave with a usable planning method.', keyPoints: ['Start with the audience problem.'], evidenceToCollect: ['A real workflow example.'], sourcesToCheck: ['[source to verify]'], termsToDefine: ['Foundation notes'], openQuestions: ['Which constraint matters most?'], verificationReminders: ['Verify every specific claim before publishing.'] }, warnings: [], truncated: false, provenance: { providerId: 'openai-compatible-local', providerMode: 'local', model: 'local-model', source: 'ai', generatedAt: new Date().toISOString() } })
+    window.history.pushState({}, '', '/generator?demo=1')
+
+    render(<Generator />)
+
+    expect(mocks.generateFoundationReference).not.toHaveBeenCalled()
+    expect(screen.getByText(/Local provider · stays on this device/)).toBeTruthy()
+    screen.getByRole('button', { name: 'Generate foundation draft' }).click()
+    await waitFor(() => expect(mocks.generateFoundationReference).toHaveBeenCalledTimes(1))
+    expect(await screen.findByText('AI draft · review required')).toBeTruthy()
+    expect(screen.getByText('Foundation draft preview')).toBeTruthy()
+    expect(screen.getByText('A practical creator workflow')).toBeTruthy()
   })
 
   it('stays local-first when a stale cloud selection exists without an authenticated session', () => {
