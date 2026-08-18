@@ -7,6 +7,7 @@ All notable public changes to Content Center should be documented in this file. 
 ### Added
 
 - Added the semantic color and notification-state contract for light/dark themes, readable status feedback, focus, disabled states, reduced motion, provider privacy, and platform-selection handoff; added `validate:semantic-color-notifications` to the quality gate.
+- Applied the semantic palette to the shared light/dark runtime theme, improved text and status contrast, updated focus and connection feedback colors, preserved legacy aliases for compatibility, and added `validate:theme-tokens` to `pnpm verify`.
 
 - Beginner-friendly first-contribution guide covering setup, public-demo reproduction, safe contribution paths, validation, privacy boundaries, and the capital-D `Dev` pull-request workflow.
 - Contributor-onboarding validation included in the consolidated `pnpm verify` quality gate and linked from the README and GitHub issue chooser.
