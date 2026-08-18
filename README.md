@@ -169,6 +169,7 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 | `docs/PRESET_AUTHORING.md` | Contributor contract for platform, CapCut, and DaVinci presets. |
 | `docs/FIRST_CONTRIBUTION.md` | Beginner-friendly setup, demo-first reproduction, contribution paths, and validation checklist. |
 | `docs/CAMPAIGN_SCOPE_UX_SPEC.md` | Campaign Scope information architecture, interaction states, accessibility, and responsive UX contract. |
+| `docs/SEMANTIC_COLOR_NOTIFICATION_SPEC.md` | Shared light/dark semantic color, notification-state, contrast, focus, and reduced-motion contract. |
 | `docs/BRANCHING_AND_RELEASE.md` | Dev, main, version-tag, and recovery workflow. |
 | `LICENSE` | MIT license for public use and contribution. |
 | `SUPPORT.md` | Public-safe troubleshooting and issue-routing guidance. |
@@ -179,7 +180,7 @@ Optional analytics is disabled unless both `VITE_ANALYTICS_ENDPOINT` and `VITE_A
 
 ## Contributing
 
-Start with the [first-contribution guide](docs/FIRST_CONTRIBUTION.md), then read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. UX contributions to Campaign Scope should follow the [Campaign Scope UX specification](docs/CAMPAIGN_SCOPE_UX_SPEC.md). New platform or editing-tool presets should be data-driven, documented, and covered by tests; see the [preset authoring guide](docs/PRESET_AUTHORING.md) for the contract. New provider integrations must include privacy behavior, credential handling, normalized errors, and contract fixtures. Maintainers should use the [branching and release workflow](docs/BRANCHING_AND_RELEASE.md), [public-release checklist](PUBLIC_RELEASE_CHECKLIST.md), [release verification record](docs/RELEASE_VERIFICATION.md), [release candidate record](docs/RELEASE_CANDIDATE.md), and [release-notes template](RELEASE_NOTES_TEMPLATE.md) before tagging or announcing a release.
+Start with the [first-contribution guide](docs/FIRST_CONTRIBUTION.md), then read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. UX contributions to Campaign Scope should follow the [Campaign Scope UX specification](docs/CAMPAIGN_SCOPE_UX_SPEC.md) and the [semantic color and notification contract](docs/SEMANTIC_COLOR_NOTIFICATION_SPEC.md). New platform or editing-tool presets should be data-driven, documented, and covered by tests; see the [preset authoring guide](docs/PRESET_AUTHORING.md) for the contract. New provider integrations must include privacy behavior, credential handling, normalized errors, and contract fixtures. Maintainers should use the [branching and release workflow](docs/BRANCHING_AND_RELEASE.md), [public-release checklist](PUBLIC_RELEASE_CHECKLIST.md), [release verification record](docs/RELEASE_VERIFICATION.md), [release candidate record](docs/RELEASE_CANDIDATE.md), and [release-notes template](RELEASE_NOTES_TEMPLATE.md) before tagging or announcing a release.
 
 ## License and community status
 

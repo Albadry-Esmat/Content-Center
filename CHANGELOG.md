@@ -6,6 +6,8 @@ All notable public changes to Content Center should be documented in this file. 
 
 ### Added
 
+- Added the semantic color and notification-state contract for light/dark themes, readable status feedback, focus, disabled states, reduced motion, provider privacy, and platform-selection handoff; added `validate:semantic-color-notifications` to the quality gate.
+
 - Beginner-friendly first-contribution guide covering setup, public-demo reproduction, safe contribution paths, validation, privacy boundaries, and the capital-D `Dev` pull-request workflow.
 - Contributor-onboarding validation included in the consolidated `pnpm verify` quality gate and linked from the README and GitHub issue chooser.
 - Versioned Facebook Reels platform preset with simple 9:16 guidance for title, captions, calls to action, safe zones, and phone review before sharing.
