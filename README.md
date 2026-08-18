@@ -50,7 +50,7 @@ The supported runtime is **React 19 + Vite + TypeScript** with the existing Expr
 
 ## Getting started
 
-Requirements are Node.js 18+ and pnpm.
+Requirements are Node.js 18+ and pnpm 10.18.1 or a compatible pnpm 10 release. The repository pins its package-manager version and keeps dependency overrides and patches in `pnpm-workspace.yaml` so fresh installs apply the same settings.
 
 ```bash
 pnpm install --frozen-lockfile

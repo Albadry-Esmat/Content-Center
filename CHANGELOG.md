@@ -47,6 +47,7 @@ All notable public changes to Content Center should be documented in this file. 
 
 - Optional analytics no longer emits placeholder URLs when analytics configuration is absent; it initializes only with explicit HTTP(S) endpoint and site-ID settings.
 - Final review hardened local discovery to avoid synthetic-model warnings, sanitized browser network diagnostics, and normalized hosted-provider model IDs by trimming, filtering malformed entries, and removing duplicates at both client and server boundaries.
+- Moved pnpm overrides and the wouter patch from the ignored package manifest settings into `pnpm-workspace.yaml`, pinned pnpm 10.18.1, and verified frozen installs apply the lockfile configuration without warnings.
 - Public demo query detection reliably uses the browser search string and displays accessible no-account guidance.
 
 ## Release notes
