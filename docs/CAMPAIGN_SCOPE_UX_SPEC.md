@@ -87,9 +87,13 @@ Text direction must follow the existing language preference behavior. Labels and
 
 On narrow screens, groups stack vertically and never require horizontal scrolling. The summary stays near the top of the compose panel. Editing defaults use one column when space is limited. Short objectives may be grouped by publication phase, with before and after labels remaining visible. The foundation textarea and generation/recovery actions must remain fully usable without clipping or requiring a desktop-only hover state.
 
+## Implementation status
+
+The platform group now renders a responsive selection grid with native checkboxes, explicit accessible names, selected and available state copy, visible checkmark/plus cues, keyboard focus treatment, and a narrow-screen single-column layout. The existing `PlatformId` values, defaults, normalization, campaign context, and update action remain unchanged.
+
 ## Batch boundaries
 
-This batch defines the contract only. It does not implement the visual redesign, add AI prompts or provider calls, add new persisted fields, change generation queue behavior, or alter the public demo. Those changes are gated behind the subsequent batches in the approved roadmap.
+The platform selector implementation does not add new persisted fields, change generation queue behavior, alter platform presets, or alter the public demo campaign values. Future platform-control work must preserve the native checkbox semantics and accessible state requirements defined above.
 
 ## Traceability
 

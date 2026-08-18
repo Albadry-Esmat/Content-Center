@@ -98,6 +98,29 @@ describe('Generator cloud reload recovery', () => {
     expect(screen.getByText('4 platforms')).toBeTruthy()
   })
 
+  it('renders accessible platform tiles with native checkboxes and updates selection state', async () => {
+    mocks.isAuthenticated = false
+    window.history.pushState({}, '', '/generator?demo=1')
+
+    render(<Generator />)
+
+    expect(screen.getAllByRole('checkbox')).toHaveLength(7)
+    const youtube = screen.getByRole('checkbox', { name: 'YouTube' }) as HTMLInputElement
+    const linkedin = screen.getByRole('checkbox', { name: 'LinkedIn' }) as HTMLInputElement
+    expect(youtube.checked).toBe(true)
+    expect(linkedin.checked).toBe(false)
+    expect(screen.getByText('4 platforms')).toBeTruthy()
+
+    fireEvent.click(linkedin)
+    await waitFor(() => expect(linkedin.checked).toBe(true))
+    expect(screen.getByText('5 platforms')).toBeTruthy()
+    expect(screen.getByRole('checkbox', { name: 'LinkedIn' })).toBeTruthy()
+
+    fireEvent.click(youtube)
+    await waitFor(() => expect(youtube.checked).toBe(false))
+    expect(screen.getByText('4 platforms')).toBeTruthy()
+  })
+
   it('requires an explicit action before requesting a foundation draft and shows the review preview', async () => {
     mocks.isAuthenticated = false
     window.localStorage.setItem('albadry_ai_config_v2', JSON.stringify({ providerMode: 'local', providerId: 'openai-compatible-local', model: 'local-model' }))

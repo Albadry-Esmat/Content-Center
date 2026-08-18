@@ -492,18 +492,32 @@ a { color: inherit; text-decoration: none; }
 .campaign-selects label, .campaign-counts label, .campaign-objectives label { background: color-mix(in srgb, var(--ink) 68%, transparent); padding: 9px; border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
 .campaign-selects label { display: grid; gap: 6px; margin: 0; color: var(--muted); font-size: 10px; }
 .campaign-selects select { width: 100%; padding: 9px; color: var(--text); background: var(--ink); border: 1px solid var(--line); }
-.campaign-platforms { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; color: var(--muted); font-size: 10px; }
+.campaign-platforms { min-inline-size: 0; margin: 0; padding: 8px 0 4px; border: 0; color: var(--muted); }
+.campaign-platforms legend { display: grid; gap: 3px; width: 100%; padding: 0; color: var(--text); font-size: 11px; }
+.campaign-platforms legend span { font-weight: 700; }
+.campaign-platforms legend small { color: var(--muted); font: 9px/1.4 IBM Plex Mono, monospace; }
+.campaign-platform-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.platform-option { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 9px; align-items: start; min-height: 62px; margin: 0; padding: 10px; border: 1px solid var(--line); color: var(--muted); background: color-mix(in srgb, var(--ink) 68%, transparent); cursor: pointer; transition: border-color .18s var(--ease-out), background .18s var(--ease-out), color .18s var(--ease-out), transform .18s var(--ease-out); }
+.platform-option:hover { border-color: var(--color-border-strong); color: var(--text); transform: translateY(-1px); }
+.platform-option:focus-within { border-color: var(--color-focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus) 16%, transparent); }
+.platform-option.selected { border-color: var(--color-selected); color: var(--text); background: color-mix(in srgb, var(--color-selected) 12%, var(--surface)); }
+.platform-option input { width: 17px; height: 17px; margin: 1px 0 0; accent-color: var(--amber); }
+.platform-option-copy { display: grid; min-width: 0; gap: 3px; }
+.platform-option-copy b { color: var(--text); font-size: 11px; line-height: 1.3; }
+.platform-option-copy small { color: var(--muted); font-size: 9px; line-height: 1.35; }
+.platform-option-state { display: grid; place-items: center; width: 20px; height: 20px; color: var(--color-text-muted); border: 1px solid var(--line); font: 600 13px/1 Space Grotesk, sans-serif; }
+.platform-option.selected .platform-option-state { color: var(--color-on-status); background: var(--color-selected); border-color: var(--color-selected); }
 .campaign-counts, .campaign-objectives > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
 .campaign-counts label, .campaign-objectives label { display: grid; gap: 5px; margin: 0; color: var(--muted); font-size: 10px; }
 .campaign-counts select, .campaign-objectives select { width: 100%; padding: 8px 9px; color: var(--text); background: var(--ink); border: 1px solid var(--line); }
 .campaign-objectives { margin-top: 14px; }
 .campaign-objectives > span { display: block; color: var(--text); font-size: 11px; }
 .campaign-platforms > span { color: var(--text); font-weight: 700; }
-.campaign-platforms label { display: inline-flex; gap: 5px; align-items: center; margin: 0; }
+.campaign-platforms > label { display: inline-flex; gap: 5px; align-items: center; margin: 0; }
 .production-guide-card { display: grid; gap: 8px; margin: 18px 0; }
 .production-guide-card p { margin: 0; color: var(--muted); line-height: 1.6; }
 .production-guide-card ol { display: grid; gap: 6px; margin: 0; padding-inline-start: 1.35rem; color: var(--text); line-height: 1.5; }
-@media (max-width: 720px) { .campaign-selects, .campaign-counts, .campaign-objectives > div, .foundation-preview-grid { grid-template-columns: 1fr; } .foundation-action-header { display: block; } .foundation-status-label { display: inline-block; margin-top: 12px; text-align: start; } .campaign-scope-header { display: block; } .campaign-scope-count { display: inline-block; margin-top: 12px; } .campaign-scope-group summary, .foundation-draft-preview summary { align-items: flex-start; flex-wrap: wrap; } .campaign-scope-group summary small, .foundation-draft-preview summary small { flex: 1 1 100%; margin-inline-start: 20px; text-align: start; } .campaign-review-panel, .demo-banner { align-items: flex-start; flex-direction: column; } .campaign-review-issues { justify-content: flex-start; } }
+@media (max-width: 720px) { .campaign-selects, .campaign-counts, .campaign-objectives > div, .campaign-platform-grid, .foundation-preview-grid { grid-template-columns: 1fr; } .foundation-action-header { display: block; } .foundation-status-label { display: inline-block; margin-top: 12px; text-align: start; } .campaign-scope-header { display: block; } .campaign-scope-count { display: inline-block; margin-top: 12px; } .campaign-scope-group summary, .foundation-draft-preview summary { align-items: flex-start; flex-wrap: wrap; } .campaign-scope-group summary small, .foundation-draft-preview summary small { flex: 1 1 100%; margin-inline-start: 20px; text-align: start; } .campaign-review-panel, .demo-banner { align-items: flex-start; flex-direction: column; } .campaign-review-issues { justify-content: flex-start; } }
 @media (prefers-reduced-motion: reduce) { *, *:before, *:after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
 
 .skip-link { position: fixed; top: 10px; left: 10px; z-index: 1000; padding: 10px 14px; color: var(--ink); background: var(--amber); transform: translateY(-180%); transition: transform .18s ease; }

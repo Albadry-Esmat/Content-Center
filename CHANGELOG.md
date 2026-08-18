@@ -9,6 +9,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Added the semantic color and notification-state contract for light/dark themes, readable status feedback, focus, disabled states, reduced motion, provider privacy, and platform-selection handoff; added `validate:semantic-color-notifications` to the quality gate.
 - Applied the semantic palette to the shared light/dark runtime theme, improved text and status contrast, updated focus and connection feedback colors, preserved legacy aliases for compatibility, and added `validate:theme-tokens` to `pnpm verify`.
 - Improved notification presentation with semantic neutral, success, info, warning, loading, and error states; mapped global Sonner toasts to the shared palette; and added exact local/hosted model-ID discovery with duplicate removal, empty-state guidance, sanitized recovery actions, and one-click model selection in Settings.
+- Redesigned Campaign Scope platform selection as responsive accessible tiles while preserving native checkboxes, explicit platform names, selected/available state copy, visible non-color cues, keyboard focus, and the existing campaign platform values.
 
 - Beginner-friendly first-contribution guide covering setup, public-demo reproduction, safe contribution paths, validation, privacy boundaries, and the capital-D `Dev` pull-request workflow.
 - Contributor-onboarding validation included in the consolidated `pnpm verify` quality gate and linked from the README and GitHub issue chooser.
