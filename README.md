@@ -65,7 +65,7 @@ The complete local quality gate is available as one command:
 pnpm verify
 ```
 
-It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, release-readiness, semantic theme, hero-asset, and integrated UI contrast/responsive validation, followed by the production build and whitespace validation. The individual commands remain useful when narrowing down a failure.
+It runs typecheck, tests, security scanning, accessibility smoke checks, public-fixture, release-notes-template, CODEOWNERS, branching-guide, license, support-guide, changelog, release-candidate, release-readiness, semantic theme, `pnpm validate:hero-asset`, and `pnpm validate:integrated-ui` contrast/responsive validation, followed by the production build and whitespace validation. The individual commands remain useful when narrowing down a failure.
 
 ### Try the public demo
 
