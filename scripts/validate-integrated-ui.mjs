@@ -31,6 +31,10 @@ const requiredHooks = [
   [settings, 'profile-panel-overview', 'Generation Profile overview'],
   [settings, 'profile-local-state', 'local profile state'],
   [settings, 'profile-readout', 'current profile readout'],
+  [settings, 'provider-panel-overview', 'provider panel overview'],
+  [settings, 'provider-route-summary', 'provider route summary'],
+  [settings, 'provider-field-group', 'provider field group'],
+  [settings, 'provider-action-panel', 'provider action panel'],
   [settings, 'id="script-language"', 'persisted script language field'],
   [settings, 'id="brand-phrases"', 'persisted brand phrases field'],
   [providerProxy, "https://api.anthropic.com/v1/models", 'Anthropic model discovery endpoint'],
@@ -50,6 +54,7 @@ for (const field of ['scriptLanguage', 'textDirection', 'brandPhrases']) {
   if (!settings.includes(`update('${field}'`)) failures.push(`Settings must continue to update persisted profile field ${field}.`)
 }
 if (/id: '(openai|anthropic|google)'[^\n]*suggestedModels: \[[^\]]+\]/.test(providerRegistry)) failures.push('Hosted provider catalog must not advertise stale static model IDs; discovery should be authoritative.')
+if (!settings.includes("config.providerMode === 'local' && <div className=\"provider-field\"")) failures.push('The Provider panel must keep the local endpoint field scoped to local routing.')
 
 function themeTokens(selector) {
   const block = css.match(new RegExp(`${selector}\\s*\\{([^}]+)\\}`))?.[1] || ''

@@ -15,6 +15,7 @@ All notable public changes to Content Center should be documented in this file. 
 - Converted Generation Profile into compact accessible Language, Direction, and Brand cues tabs so profile fields are reachable without scrolling while preserving local persistence and save behavior.
 - Restructured Settings into a dedicated compact workspace with Profile, Provider, and Privacy navigation, a responsive two-column-to-one-column layout, section targets, and one sticky Save action while preserving existing provider routing and browser-local persistence.
 - Reconstructed the Generation Profile panel with a compact overview, local-save state, simpler language/direction/brand-cue guidance, and a current-profile readout while preserving the `scriptLanguage`, `textDirection`, and `brandPhrases` persistence contract.
+- Reconstructed the Provider panel with local/hosted route context, scoped local endpoint fields, compact provider actions, exact model-ID review surfaces, protected hosted-provider status, and sanitized recovery feedback while preserving browser-to-local and browser-to-server routing boundaries.
 
 - Beginner-friendly first-contribution guide covering setup, public-demo reproduction, safe contribution paths, validation, privacy boundaries, and the capital-D `Dev` pull-request workflow.
 - Contributor-onboarding validation included in the consolidated `pnpm verify` quality gate and linked from the README and GitHub issue chooser.
