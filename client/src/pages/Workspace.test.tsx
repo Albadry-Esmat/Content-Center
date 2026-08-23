@@ -52,4 +52,12 @@ describe('local-first workspace', () => {
     expect(mocks.startLogin).toHaveBeenCalledOnce()
     expect(mocks.toastMessage).toHaveBeenCalledWith('Cloud sync is optional.', expect.objectContaining({ description: expect.stringContaining('VITE_OAUTH_PORTAL_URL') }))
   })
+
+  it('opens a selected recent local pack in the generator instead of routing only to the library', () => {
+    render(<Workspace />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Local workspace pack/i }))
+
+    expect(mocks.setLocation).toHaveBeenCalledWith('/generator')
+  })
 })

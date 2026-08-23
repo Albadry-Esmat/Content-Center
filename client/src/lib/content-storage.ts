@@ -7,6 +7,7 @@ import { deleteFoundationSession, loadFoundationSessions, normalizeFoundationSes
 
 const PACKS_KEY = 'albadry_content_packs_v1'
 const COMBINED_PACKS_KEY = 'albadry_combined_packs_v2'
+const ACTIVE_LOCAL_PACK_KEY = 'albadry_active_local_pack_v1'
 
 export type ImportResult = { packs: CombinedPack[]; rejected: number; foundationSessions: FoundationSession[]; error?: string }
 export type BackupEnvelope = { format: 'content-center-backup'; version: 1; exportedAt: string; packs: CombinedPack[]; foundationSessions?: FoundationSession[] }
@@ -76,6 +77,20 @@ export function deletePack(createdAt: string): ContentPack[] {
 export function loadCombinedPacks(): CombinedPack[] {
   if (typeof window === 'undefined') return []
   try { const raw = window.localStorage.getItem(COMBINED_PACKS_KEY); return raw ? deserializeCombinedPacks(raw) : [] } catch { return [] }
+}
+
+export function selectLocalPack(pack: CombinedPack): void {
+  if (typeof window === 'undefined') return
+  try { window.localStorage.setItem(ACTIVE_LOCAL_PACK_KEY, JSON.stringify(pack)) } catch { /* Selecting a pack remains optional when storage is unavailable. */ }
+}
+
+export function consumeSelectedLocalPack(): CombinedPack | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = window.localStorage.getItem(ACTIVE_LOCAL_PACK_KEY)
+    window.localStorage.removeItem(ACTIVE_LOCAL_PACK_KEY)
+    return raw ? normalizeCombinedPack(JSON.parse(raw)) : null
+  } catch { return null }
 }
 
 export function saveCombinedPack(pack: CombinedPack): CombinedPack[] {

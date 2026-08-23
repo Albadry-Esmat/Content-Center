@@ -6,7 +6,7 @@ import { Check, CircleAlert, Download, FileText, Loader2, Plus, Save, Sparkles }
 import { createCombinedPack, getPart, packReducer, type CombinedPack, type FieldSet, type PartKey } from '../lib/pack-domain'
 import { objectiveLabel, SHORT_OBJECTIVES, shortSlotDescription, SUPPORTED_PLATFORMS, type PlatformId, type ShortObjective } from '../lib/campaign-config'
 import type { GenerationStage } from '../lib/content-types'
-import { saveCombinedPack } from '../lib/content-storage'
+import { consumeSelectedLocalPack, saveCombinedPack } from '../lib/content-storage'
 import { loadFoundationSession, saveFoundationSession } from '../lib/foundation-session'
 import { packToMarkdown } from '../lib/pack-export'
 import { countWords } from '../lib/validators'
@@ -86,9 +86,9 @@ function foundationGroundingWarnings(draft: FoundationReference): string[] {
 export default function Generator() {
   const [location] = useLocation()
   const [mode, setMode] = useState<'long' | 'short' | 'combined'>('combined')
-  const [topic, setTopic] = useState('')
-  const [notes, setNotes] = useState('')
-  const [pack, setPack] = useState<CombinedPack>(() => createCombinedPack())
+  const [pack, setPack] = useState<CombinedPack>(() => consumeSelectedLocalPack() || createCombinedPack())
+  const [topic, setTopic] = useState(() => pack.meta.topic)
+  const [notes, setNotes] = useState(() => pack.meta.notes)
   const [activeStage, setActiveStage] = useState<GenerationStage>('fields')
   const [activePart, setActivePart] = useState<PartKey>('long')
   const [saved, setSaved] = useState(false)
@@ -152,6 +152,8 @@ export default function Generator() {
     setAcceptedFoundationSnapshot(session.acceptedSnapshot)
     setFoundationStatus(session.draft ? session.warnings.length ? 'warning' : 'success' : 'idle')
   }
+
+  useEffect(() => { hydrateFoundationSession(pack.meta.id) }, [])
 
   useEffect(() => {
     const demoRequested = new URLSearchParams(window.location.search).get('demo') === '1'

@@ -2,7 +2,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createCombinedPack } from './pack-domain'
-import { deserializeCombinedPacks, deserializeFoundationSessions, importCombinedPacksJson, serializeCombinedPacks } from './content-storage'
+import { consumeSelectedLocalPack, deserializeCombinedPacks, deserializeFoundationSessions, importCombinedPacksJson, selectLocalPack, serializeCombinedPacks } from './content-storage'
 
 beforeEach(() => window.localStorage.clear())
 
@@ -43,5 +43,13 @@ describe('combined pack backups', () => {
     expect(result.packs).toHaveLength(1)
     expect(result.rejected).toBe(1)
     expect(result.packs[0]?.meta.topic).toBe('Accepted')
+  })
+
+  it('selects a valid local pack for the generator and consumes the selection once', () => {
+    const pack = createCombinedPack('Resume this local pack')
+
+    selectLocalPack(pack)
+    expect(consumeSelectedLocalPack()?.meta.topic).toBe('Resume this local pack')
+    expect(consumeSelectedLocalPack()).toBeNull()
   })
 })
