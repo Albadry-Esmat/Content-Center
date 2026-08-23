@@ -1,0 +1,122 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Runtime harness</title></head>
+<body>
+<div id="results">RUNNING</div>
+<iframe id="app" src="/deepseek_html_20260810_71c0d4.html" style="width:1px;height:1px;border:0"></iframe>
+<script>
+(async function () {
+  const results = [];
+  const out = document.getElementById('results');
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const record = (name, ok, detail) => results.push({ name, ok, detail: detail || '' });
+  const iframe = document.getElementById('app');
+  await new Promise(resolve => iframe.addEventListener('load', resolve, { once: true }));
+  const win = iframe.contentWindow;
+  const doc = iframe.contentDocument;
+  const errors = [];
+  win.addEventListener('error', e => errors.push(e.message || 'window error'));
+  win.addEventListener('unhandledrejection', e => errors.push(String(e.reason || 'unhandled rejection')));
+  const click = id => { const el = doc.getElementById(id); if (!el) throw new Error('missing #' + id); el.click(); };
+  const setValue = (id, value) => { const el = doc.getElementById(id); if (!el) throw new Error('missing #' + id); el.value = value; el.dispatchEvent(new win.Event('input', { bubbles: true })); };
+  try {
+    record('initialization', !!doc.getElementById('panel-long') && !errors.length);
+    click('openAISettingsBtn');
+    record('settings navigation', doc.getElementById('panel-settings').classList.contains('active'));
+    setValue('ai_baseURL', 'http://127.0.0.1:1234');
+    win.fetch = async () => new Response(JSON.stringify({choices:[{message:{content:'OK'},finish_reason:'stop'}]}), {status:200,headers:{'Content-Type':'application/json'}});
+    click('aiSettingsTestBtn');
+    await wait(30);
+    record('settings connection test', doc.getElementById('aiSettingsTestResult').textContent.includes('successful'));
+    click('aiSettingsSaveBtn');
+    record('settings save/back', doc.getElementById('panel-generator').classList.contains('active'));
+    click('openModalBtn');
+    record('export modal opens', doc.getElementById('exportModal').classList.contains('open'));
+    click('closeModalBtn');
+    record('export modal closes', !doc.getElementById('exportModal').classList.contains('open'));
+    click('tabNav');
+    const savedTab = [...doc.querySelectorAll('[data-tab=saved]')][0];
+    if (!savedTab) throw new Error('missing saved tab');
+    savedTab.click();
+    record('saved tab navigation', doc.getElementById('panel-saved').classList.contains('active'));
+    const combinedTab = [...doc.querySelectorAll('[data-tab=combined]')][0];
+    combinedTab.click();
+    record('combined tab navigation', doc.getElementById('panel-combined').classList.contains('active'));
+
+    const fields = {
+      long: {title:'Long title',promise:'Promise',audience:'Audience',hook:'Hook',story:'Story',tech:'Tech',demo:'Demo',twist:'Twist',take:'Take',verdict:'Verdict',takeaways:'Takeaways',comment:'Comment',subscribe:'Subscribe',next:'Next'},
+      short: {title:'Short title',idea:'Idea',type:'Insight',audience:'Audience',hook:'Hook',problem:'Problem',context:'Context',insight:'Insight',proof:'Proof',payoff:'Payoff',cta:'CTA',onscreen:'On screen',caption:'Caption'}
+    };
+    const short = fields.short;
+    win.fetch = async function(url, options) {
+      const body = JSON.parse(options.body || '{}');
+      const prompt = body.messages?.[1]?.content || '';
+      let content;
+      if (prompt.includes('"shots"') || prompt.includes('EXACT schema')) content = JSON.stringify({shots:[{t_start:'0:00',t_end:'0:10',shot:'talking-head',camera:'medium',on_screen:'Hook',transition:'cut',audio_cue:'music',note:'note',capcut_tip:'Use keyframes'}]});
+      else if (prompt.includes('"global"') || prompt.includes('colorist')) content = JSON.stringify({global:{filter:{name:'Cinematic',intensity:60},exposure:1,contrast:2,saturation:3,temperature:1,tint:0,highlights:-2,shadows:2,vignette:10,skin_saturation:-2,text:{color:'#f5b342',size:11,safe:true}},scenes:[{t_start:'0:00',t_end:'0:10',notes:'warm'}],tips:['Use Curves']});
+      else if (prompt.includes('"promise"')) content = JSON.stringify(fields.long);
+      else if (prompt.includes('"idea"')) content = JSON.stringify(short);
+      else content = '# Hook\n\nGenerated test script.\n\n## 📚 References / المصادر\n- https://example.com';
+      return new Response(JSON.stringify({choices:[{message:{content},finish_reason:'stop'}]}), {status:200,headers:{'Content-Type':'application/json'}});
+    };
+    const generatorTab = [...doc.querySelectorAll('[data-tab=generator]')][0];
+    generatorTab.click();
+    doc.querySelector('[data-gen-type="long"]').click();
+    setValue('gf_topic', 'Legacy long test');
+    click('genFieldsBtn');
+    await wait(30);
+    record('legacy long fields', doc.getElementById('genFieldsContainer').style.display !== 'none' && doc.getElementById('gf_long_title').value === 'Long title');
+    click('genAIBtn');
+    await wait(30);
+    record('legacy long script', doc.getElementById('genPreviewContent').value.includes('Generated test script'));
+    click('pvPreviewTab');
+    record('legacy preview rendering', !doc.getElementById('genPreviewRendered').hidden && doc.getElementById('genPreviewRendered').textContent.includes('Generated test script'));
+    click('genSaveBtn');
+    record('legacy long save', JSON.parse(win.localStorage.getItem('albadry_saved_scripts') || '[]').some(x => x.type === 'long'));
+    doc.querySelector('[data-gen-type="short"]').click();
+    setValue('gf_topic_short', 'Legacy short test');
+    click('genFieldsBtnShort');
+    await wait(30);
+    record('legacy short fields', doc.getElementById('genFieldsContainerShort').style.display !== 'none' && doc.getElementById('gf_short_title').value === 'Short title');
+    click('genAIBtn');
+    await wait(30);
+    record('legacy short script', doc.getElementById('genPreviewContent').value.includes('Generated test script'));
+    setValue('videoUrlInput', 'https://youtu.be/dQw4w9WgXcQ');
+    click('embedVideoBtn');
+    record('video embedding', doc.getElementById('videoPreviewContainer').style.display !== 'none' && doc.getElementById('videoIframe').src.includes('youtube.com/embed'));
+    click('openModalBtn');
+    click('confirmExportBtn');
+    record('legacy export confirmation', !doc.getElementById('exportModal').classList.contains('open'));
+
+    combinedTab.click();
+    setValue('gf_topic_long_cb', 'Test topic');
+    const generateFields = doc.getElementById('genFieldsBtnCombined');
+    generateFields.click();
+    await wait(100);
+    record('combined fields generation', doc.getElementById('genFieldsContainerCombined').style.display !== 'none' && doc.getElementById('combinedShortCards').children.length > 0);
+    click('cbGenScriptsBtn');
+    await wait(100);
+    record('combined scripts generation', !!doc.getElementById('cbOutcome').textContent.includes('Generated test script'));
+    click('cbGenGradeBtn');
+    await wait(20);
+    record('grade stage guard', doc.getElementById('cbStatus').textContent.includes('Generate montage'));
+    const regenScript = doc.querySelector('#cbOutcome [data-cbregen="scripts"][data-cbpart="long"]');
+    if (!regenScript) throw new Error('missing per-part script regeneration control');
+    regenScript.click();
+    await wait(50);
+    record('per-part script regeneration', doc.getElementById('cbOutcome').textContent.includes('Generated test script'), doc.getElementById('cbStatus').textContent + ' | ' + doc.getElementById('cbOutcome').textContent.slice(0, 180));
+    click('cbGenMontageBtn');
+    await wait(100);
+    record('combined montage generation', doc.getElementById('cbOutcome').textContent.includes('CapCut tip'), doc.getElementById('cbStatus').textContent + ' | ' + doc.getElementById('cbOutcome').textContent.slice(0, 180));
+    click('cbGenGradeBtn');
+    await wait(100);
+    record('combined grade generation', doc.getElementById('cbOutcome').textContent.includes('Global Grade'), doc.getElementById('cbStatus').textContent + ' | ' + doc.getElementById('cbOutcome').textContent.slice(0, 180));
+    click('cbSavePackBtn');
+    record('combined save', JSON.parse(win.localStorage.getItem('albadry_saved_scripts') || '[]').some(x => x.type === 'combined'));
+  } catch (e) {
+    record('harness exception', false, e.stack || String(e));
+  }
+  record('runtime errors', errors.length === 0, errors.join(' | '));
+  out.textContent = JSON.stringify({results}, null, 2);
+})();
+</script>
+</body></html>

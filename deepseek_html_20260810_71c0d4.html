@@ -2669,6 +2669,9 @@
         <button type="button" class="tab-btn" data-tab="saved">
             <span class="icon">📚</span> Saved Scripts
         </button>
+        <button type="button" class="tab-btn" data-tab="settings">
+            <span class="icon">⚙️</span> Settings
+        </button>
     </nav>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
@@ -3697,6 +3700,10 @@
                         <input type="text" class="form-control" id="ai_model" placeholder="local-model" />
                         <span class="invalid-feedback"></span>
                     </div>
+                    <div class="card-actions">
+                        <button type="button" class="btn btn-secondary btn-sm" id="aiSettingsTestBtn">🔌 Test Connection</button>
+                        <span id="aiSettingsTestResult" class="text-muted" role="status" aria-live="polite"></span>
+                    </div>
                 </div>
 
                 <!-- Model & Generation -->
@@ -3768,68 +3775,6 @@
             </div>
         </div>
     </div>
-
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- DOWNLOAD BAR & EXPORT MODAL (unchanged)                      -->
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <div class="download-bar" id="downloadBar">
-        <div class="info">
-            <span>📄 <strong>Complete System</strong></span>
-            <span style="color:var(--text3);">Long‑Form + Short/Reel · Markdown</span>
-            <span style="color:var(--text3);font-size:0.8rem;">|</span>
-            <span style="color:var(--text3);font-size:0.8rem;">v8.0 (AI‑Powered)</span>
-        </div>
-        <button type="button" class="btn btn-primary btn-lg rounded-pill" id="openModalBtn">
-            <span>⬇</span> Export
-        </button>
-    </div>
-
-    <div class="modal-overlay" id="exportModal">
-        <div class="modal">
-            <h2>📦 Export Options</h2>
-            <p class="sub">Select which parts of the system you want to include in the Markdown export.</p>
-            <div class="select-all">
-                <input type="checkbox" id="selectAllToggle" />
-                <label for="selectAllToggle"><strong>Select All</strong></label>
-            </div>
-            <div class="export-option-group">
-                <label class="option">
-                    <input type="checkbox" class="export-option" value="long" checked />
-                    <span>
-                        <span class="label">🎬 Long‑Form System</span>
-                        <span class="desc">– Core philosophy, DNA, timeline, rules, formula</span>
-                    </span>
-                </label>
-                <label class="option">
-                    <input type="checkbox" class="export-option" value="short" checked />
-                    <span>
-                        <span class="label">📱 Short / Reel System</span>
-                        <span class="desc">– Strategy, publishing cycle, hooks, CTAs, rules, template</span>
-                    </span>
-                </label>
-                <label class="option">
-                    <input type="checkbox" class="export-option" value="combined" checked />
-                    <span>
-                        <span class="label">⚡ Combined View</span>
-                        <span class="desc">– All system content + AI script templates</span>
-                    </span>
-                </label>
-                <label class="option">
-                    <input type="checkbox" class="export-option" value="references" checked />
-                    <span>
-                        <span class="label">📚 References</span>
-                        <span class="desc">– Key documents, source material, references</span>
-                    </span>
-                </label>
-            </div>
-            <div class="export-actions">
-                <button type="button" class="btn btn-primary btn-lg rounded-pill" id="openExportBtn">
-                    <span>⬇</span> Export
-                </button>
-            </div>
-        </div>
-    </div>
-
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- DOWNLOAD BAR & EXPORT MODAL (unchanged)                      -->
@@ -3927,9 +3872,10 @@
             short: document.getElementById('panel-short'),
             combined: document.getElementById('panel-combined'),
             generator: document.getElementById('panel-generator'),
-            saved: document.getElementById('panel-saved')
+            saved: document.getElementById('panel-saved'),
+            settings: document.getElementById('panel-settings')
         };
-        if (!panels.long || !panels.short || !panels.combined || !panels.generator || !panels.saved) {
+        if (!panels.long || !panels.short || !panels.combined || !panels.generator || !panels.saved || !panels.settings) {
             console.warn('[INIT] One or more tab panels missing:', panels);
         }
 
@@ -4405,8 +4351,26 @@
         }
 
         function saveSavedScripts(scripts) {
-            localStorage.setItem(SAVED_SCRIPTS_KEY, JSON.stringify(scripts));
-            updateSavedScriptsCount();
+            try {
+                localStorage.setItem(SAVED_SCRIPTS_KEY, JSON.stringify(scripts));
+                updateSavedScriptsCount();
+                return true;
+            } catch (err) {
+                console.error('[STORAGE] Unable to save scripts:', err);
+                if (err && (err.name === 'QuotaExceededError' || err.code === 22) && scripts.length > 1) {
+                    try {
+                        const pruned = scripts.slice(1);
+                        localStorage.setItem(SAVED_SCRIPTS_KEY, JSON.stringify(pruned));
+                        updateSavedScriptsCount();
+                        showToast('Storage was full; the oldest saved item was removed.', 'error');
+                        return true;
+                    } catch (retryErr) {
+                        console.error('[STORAGE] Prune retry failed:', retryErr);
+                    }
+                }
+                showToast('Unable to save. Browser storage may be full or blocked.', 'error');
+                return false;
+            }
         }
 
         const savedSearchInput = document.getElementById('savedSearchInput');
@@ -4694,7 +4658,7 @@
         function saveCurrentScript() {
             const scriptText = previewEl.value;
             if (!scriptText || !fieldsGenerated) {
-                alert('Please generate a script first before saving.');
+                showToast('Generate a script first before saving.', 'error');
                 return;
             }
 
@@ -4966,7 +4930,7 @@
                 editTab.setAttribute('aria-selected', String(isEdit));
                 prevTab.setAttribute('aria-selected', String(!isEdit));
                 previewEl.style.display = isEdit ? '' : 'none';
-                renderedEl.hidden = !isEdit;
+                renderedEl.hidden = isEdit;
                 renderedEl.classList.toggle('visible', !isEdit);
                 if (!isEdit) {
                     renderedEl.innerHTML = renderMarkdown(previewEl.value);
@@ -5240,7 +5204,7 @@ Topic: ${topic}`;
                 }
                 console.log('%c[GENERATE FIELDS] JSON being parsed:', 'color:#4ade80;', jsonStr.slice(0, 2000));
 
-                const fields = parseModelJSON(jsonStr, truncationHint);
+                const fields = cbValidateFields(parseModelJSON(jsonStr, truncationHint), isLong ? CB_LONG_FIELD_KEYS : CB_SHORT_FIELD_KEYS, isLong ? 'Long fields' : 'Short fields');
                 console.log('%c[GENERATE FIELDS] parsed fields:', 'color:#4ade80;', fields);
 
                 if (isLong) {
@@ -5441,10 +5405,15 @@ Topic: ${topic}`;
 
         const defaultConfig = {
             baseURL: 'http://localhost:1234',
-            apiKey: 'sk-lm-GfXHhnNU:tp8OFpzeu5OG2KVQmJSE',
+            apiKey: '',
             model: 'qwen/qwen3.6-35b-a3b',
             temperature: 0.6,
             maxTokens: 262144,
+            reviewPass: true,
+            arabicQA: true,
+            factAudit: true,
+            maxReferences: 3,
+            blockOnFail: true,
             systemPrompt: `You are an expert YouTube scriptwriter specialized in technical content (D365, Power Platform, AI, SaaS, Software Engineering) writing in Egyptian Arabic slang (العامية المصرية). You follow the Albadry Video Content System.
 
 LANGUAGE RULES:
@@ -5568,10 +5537,29 @@ RULES:
 
         let aiConfig = { ...defaultConfig };
 
+        const ACCURACY_CONTRACT = [
+            '',
+            '---',
+            'ACCURACY & EVIDENCE PROTOCOL (MANDATORY):',
+            '1. Analyze the topic internally before writing and support only the claims needed for the piece.',
+            '2. Never invent version numbers, dates, statistics, quotes, official statements, or success claims.',
+            '3. Ground specific claims in the supplied foundation when present and tag them as (من المرجع).',
+            '4. If a detail cannot be supported, omit it or frame it as opinion / [يتطلب التحقق].',
+            '5. End every script with a "## 📚 References / المصادر" section listing sources actually used.'
+        ].join('\n');
+
+        function buildAnalysisBlock(topic) {
+            return 'STEP 0 — ANALYZE FIRST (keep this analysis internal):\n'
+                + 'Restate the topic precisely and identify the 2–4 claims this piece must support.\n'
+                + 'For each claim, decide whether it comes from the supplied foundation, high-confidence knowledge, or opinion.\n'
+                + 'Topic: ' + topic + '\n';
+        }
+
         function buildSystemPrompt() {
             const base = aiConfig.systemPrompt || defaultConfig.systemPrompt;
             const identity = (aiConfig.identity || defaultConfig.identity || '').trim();
-            return identity ? base + '\n\n---\n\n' + identity : base;
+            const prompt = identity ? base + '\n\n---\n\n' + identity : base;
+            return prompt + '\n\n' + ACCURACY_CONTRACT;
         }
 
         function loadAIConfig() {
@@ -5590,6 +5578,16 @@ RULES:
             document.getElementById('ai_maxTokens').value = aiConfig.maxTokens ?? 2048;
             document.getElementById('ai_systemPrompt').value = aiConfig.systemPrompt || defaultConfig.systemPrompt;
             document.getElementById('ai_identity').value = aiConfig.identity || defaultConfig.identity;
+            const reviewPass = document.getElementById('ai_reviewPass');
+            const arabicQA = document.getElementById('ai_arabicQA');
+            const factAudit = document.getElementById('ai_factAudit');
+            const maxReferences = document.getElementById('ai_maxReferences');
+            const blockOnFail = document.getElementById('ai_blockOnFail');
+            if (reviewPass) reviewPass.checked = aiConfig.reviewPass !== false;
+            if (arabicQA) arabicQA.checked = aiConfig.arabicQA !== false;
+            if (factAudit) factAudit.checked = aiConfig.factAudit !== false;
+            if (maxReferences) maxReferences.value = aiConfig.maxReferences ?? 3;
+            if (blockOnFail) blockOnFail.checked = aiConfig.blockOnFail !== false;
         }
 
         function saveAIConfig() {
@@ -5597,155 +5595,100 @@ RULES:
                 baseURL: document.getElementById('ai_baseURL').value.trim(),
                 apiKey: document.getElementById('ai_apiKey').value.trim(),
                 model: document.getElementById('ai_model').value.trim(),
-                temperature: parseFloat(document.getElementById('ai_temperature').value) || 0.7,
-                maxTokens: parseInt(document.getElementById('ai_maxTokens').value) || 2048,
+                temperature: Number.isFinite(parseFloat(document.getElementById('ai_temperature').value)) ? parseFloat(document.getElementById('ai_temperature').value) : 0.7,
+                maxTokens: Number.isFinite(parseInt(document.getElementById('ai_maxTokens').value, 10)) ? parseInt(document.getElementById('ai_maxTokens').value, 10) : 2048,
                 systemPrompt: document.getElementById('ai_systemPrompt').value.trim() || defaultConfig.systemPrompt,
-                identity: document.getElementById('ai_identity').value.trim() || defaultConfig.identity
+                identity: document.getElementById('ai_identity').value.trim() || defaultConfig.identity,
+                reviewPass: document.getElementById('ai_reviewPass')?.checked !== false,
+                arabicQA: document.getElementById('ai_arabicQA')?.checked !== false,
+                factAudit: document.getElementById('ai_factAudit')?.checked !== false,
+                maxReferences: Math.min(10, Math.max(1, parseInt(document.getElementById('ai_maxReferences')?.value, 10) || 3)),
+                blockOnFail: document.getElementById('ai_blockOnFail')?.checked !== false
             };
             aiConfig = config;
             localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(config));
         }
 
-        // ─── AI SETTINGS MODAL ───
-        const aiSettingsModal = document.getElementById('aiSettingsModal');
+        // ─── AI SETTINGS PAGE ───
         const openAISettingsBtn = document.getElementById('openAISettingsBtn');
-        const aiSettingsCancel = document.getElementById('aiSettingsCancel');
-        const aiSettingsSave = document.getElementById('aiSettingsSave');
-        const aiTestBtn = document.getElementById('aiTestBtn');
-        const aiTestResult = document.getElementById('aiTestResult');
+        const aiSettingsSaveBtn = document.getElementById('aiSettingsSaveBtn');
+        const aiSettingsResetBtn = document.getElementById('aiSettingsResetBtn');
+        const aiSettingsBackBtn = document.getElementById('aiSettingsBackBtn');
+        const aiSettingsTestBtn = document.getElementById('aiSettingsTestBtn');
+        const aiSettingsTestResult = document.getElementById('aiSettingsTestResult');
+
+        function showSettingsResult(message, kind) {
+            if (!aiSettingsTestResult) return;
+            aiSettingsTestResult.textContent = message || '';
+            aiSettingsTestResult.className = kind ? 'text-muted ' + kind : 'text-muted';
+        }
 
         function openAISettings() {
             loadAIConfig();
-            aiSettingsModal.classList.add('open');
-            aiTestResult.className = 'test-result';
-            aiTestResult.textContent = '';
-            aiTestResult.style.display = 'none';
+            if (typeof activateTab === 'function') activateTab('settings');
+            showSettingsResult('', '');
         }
 
-        function closeAISettings() {
-            aiSettingsModal.classList.remove('open');
+        function validateAISettings() {
+            const baseURL = document.getElementById('ai_baseURL')?.value.trim() || '';
+            const temperature = parseFloat(document.getElementById('ai_temperature')?.value);
+            const maxTokens = parseInt(document.getElementById('ai_maxTokens')?.value, 10);
+            if (!baseURL) return 'Please enter a Base URL.';
+            try {
+                const parsed = new URL(baseURL);
+                if (!['http:', 'https:'].includes(parsed.protocol)) return 'Base URL must use http:// or https://.';
+            } catch { return 'Base URL must be a valid http:// or https:// URL.'; }
+            if (!Number.isFinite(temperature) || temperature < 0 || temperature > 2) return 'Temperature must be between 0 and 2.';
+            if (!Number.isFinite(maxTokens) || maxTokens < 1) return 'Max tokens must be a positive number.';
+            return '';
         }
 
-        openAISettingsBtn.addEventListener('click', openAISettings);
-        aiSettingsCancel.addEventListener('click', closeAISettings);
-        aiSettingsSave.addEventListener('click', function() {
+        if (openAISettingsBtn) openAISettingsBtn.addEventListener('click', openAISettings);
+        if (aiSettingsSaveBtn) aiSettingsSaveBtn.addEventListener('click', function() {
+            const error = validateAISettings();
+            if (error) { showToast(error, 'error'); showSettingsResult('❌ ' + error, 'error'); return; }
             saveAIConfig();
-            closeAISettings();
-            genStatus.textContent = '✅ Settings saved';
-            setTimeout(() => genStatus.textContent = '', 3000);
+            showToast('Settings saved.', 'success');
+            if (typeof activateTab === 'function') activateTab('generator');
+        });
+        if (aiSettingsBackBtn) aiSettingsBackBtn.addEventListener('click', function() {
+            if (typeof activateTab === 'function') activateTab('generator');
+        });
+        if (aiSettingsResetBtn) aiSettingsResetBtn.addEventListener('click', function() {
+            localStorage.removeItem(AI_CONFIG_KEY);
+            aiConfig = { ...defaultConfig };
+            loadAIConfig();
+            showSettingsResult('Settings reset to defaults.', 'success');
+            showToast('Settings reset.', 'success');
         });
 
-        // Test connection
-        aiTestBtn.addEventListener('click', async function() {
+        if (aiSettingsTestBtn) aiSettingsTestBtn.addEventListener('click', async function() {
+            const error = validateAISettings();
+            if (error) { showSettingsResult('❌ ' + error, 'error'); return; }
             const baseURL = document.getElementById('ai_baseURL').value.trim();
             const apiKey = document.getElementById('ai_apiKey').value.trim();
             const model = document.getElementById('ai_model').value.trim() || 'local-model';
-
-            console.log('%c[AI TEST] ========================================', 'color: #f5b342; font-weight: bold; font-size: 14px;');
-            console.log('%c[AI TEST] Starting connection test...', 'color: #b0c4de;');
-            console.log('%c[AI TEST] Base URL:', 'color: #7a93af; font-weight: bold;', baseURL);
-            console.log('%c[AI TEST] Model:', 'color: #7a93af; font-weight: bold;', model);
-            console.log('%c[AI TEST] API Key provided:', 'color: #7a93af; font-weight: bold;', apiKey ? 'Yes (hidden)' : 'No (empty)');
-            console.log('%c[AI TEST] API Key length:', 'color: #7a93af;', apiKey ? apiKey.length : 0);
-
-            if (!baseURL) {
-                console.warn('%c[AI TEST] FAILED: No Base URL provided', 'color: #ef4444;');
-                aiTestResult.className = 'test-result error';
-                aiTestResult.textContent = '❌ Please enter a Base URL.';
-                aiTestResult.style.display = 'block';
-                return;
-            }
-
-            aiTestBtn.disabled = true;
-            aiTestBtn.textContent = '⏳ Testing...';
-            aiTestResult.className = 'test-result';
-            aiTestResult.textContent = '';
-            aiTestResult.style.display = 'none';
-
-            const requestBody = {
-                model: model,
-                messages: [
-                    { role: 'user', content: 'Hello, this is a test.' }
-                ],
-                max_tokens: 5,
-                stream: false
-            };
-            const requestHeaders = {
-                'Content-Type': 'application/json',
-                ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {})
-            };
-
-            console.log('%c[AI TEST] Request payload:', 'color: #f5b342; font-weight: bold;');
-            console.log(JSON.stringify(requestBody, null, 2));
-            console.log('%c[AI TEST] Request headers (sanitized):', 'color: #f5b342; font-weight: bold;');
-            console.log(JSON.stringify({
-                'Content-Type': 'application/json',
-                ...(apiKey ? { 'Authorization': 'Bearer [HIDDEN]' } : {})
-            }, null, 2));
-
-            const fullUrl = new URL('/v1/chat/completions', baseURL).toString();
-            console.log('%c[AI TEST] Full request URL:', 'color: #4f9cf7; font-weight: bold;', fullUrl);
-
-            const startTime = performance.now();
-
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 15000);
+            aiSettingsTestBtn.disabled = true;
+            aiSettingsTestBtn.textContent = '⏳ Testing…';
+            showSettingsResult('Testing connection…', '');
             try {
-                const response = await fetch(fullUrl, {
+                const response = await fetch(new URL('/v1/chat/completions', baseURL).toString(), {
                     method: 'POST',
-                    headers: requestHeaders,
-                    body: JSON.stringify(requestBody)
+                    headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {}) },
+                    body: JSON.stringify({ model, messages: [{ role: 'user', content: 'Connection test. Reply with OK.' }], max_tokens: 5, stream: false }),
+                    signal: controller.signal
                 });
-
-                const endTime = performance.now();
-                const duration = (endTime - startTime).toFixed(2);
-
-                console.log('%c[AI TEST] Response received!', 'color: #4ade80; font-weight: bold;');
-                console.log('%c[AI TEST] Status:', 'color: #7a93af; font-weight: bold;', response.status, response.statusText);
-                console.log('%c[AI TEST] Response headers:', 'color: #7a93af;');
-                console.log(Object.fromEntries(response.headers.entries()));
-                console.log('%c[AI TEST] Response time:', 'color: #7a93af; font-weight: bold;', `${duration}ms`);
-                console.log('%c[AI TEST] Response OK:', 'color: #7a93af; font-weight: bold;', response.ok);
-
-                const responseText = await response.text();
-                console.log('%c[AI TEST] Raw response body:', 'color: #f5b342;');
-                console.log(responseText);
-
-                try {
-                    const jsonResponse = JSON.parse(responseText);
-                    console.log('%c[AI TEST] Parsed response:', 'color: #4ade80;');
-                    console.log(JSON.stringify(jsonResponse, null, 2));
-                } catch {
-                    console.warn('%c[AI TEST] Response is not valid JSON', 'color: #eab308;');
-                }
-
-                if (response.ok) {
-                    console.log('%c[AI TEST] ✅ SUCCESS: Connection test passed!', 'color: #4ade80; font-weight: bold; font-size: 12px;');
-                    aiTestResult.className = 'test-result success';
-                    aiTestResult.textContent = '✅ Connection successful! Your LM Studio is reachable.';
-                } else {
-                    console.warn('%c[AI TEST] ❌ FAILED: HTTP error', 'color: #ef4444; font-weight: bold;');
-                    console.log('%c[AI TEST] Error details:', 'color: #ef4444;', `HTTP ${response.status}: ${responseText}`);
-                    aiTestResult.className = 'test-result error';
-                    aiTestResult.textContent = `❌ Error ${response.status}: ${responseText || response.statusText}`;
-                }
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                showSettingsResult('✅ Connection successful.', 'success');
             } catch (err) {
-                const endTime = performance.now();
-                const duration = (endTime - startTime).toFixed(2);
-                console.error('%c[AI TEST] ❌ Network/Exception error occurred', 'color: #ef4444; font-weight: bold;');
-                console.error('%c[AI TEST] Error details:', 'color: #ef4444;');
-                console.error(err);
-                console.log('%c[AI TEST] Time before failure:', 'color: #ef4444;', `${duration}ms`);
-                console.log('%c[AI TEST] Troubleshooting tips:', 'color: #eab308;');
-                console.log('  1. Ensure LM Studio / local server is running');
-                console.log('  2. Check the Base URL is correct (protocol, host, port)');
-                console.log('  3. Verify CORS is enabled on the server');
-                console.log('  4. Check browser console (F12) for detailed CORS errors');
-                aiTestResult.className = 'test-result error';
-                aiTestResult.textContent = `❌ Network error: ${err.message}. Ensure LM Studio is running and the URL is correct.`;
+                showSettingsResult(err.name === 'AbortError' ? '❌ Connection timed out after 15 seconds.' : '❌ Connection failed: ' + err.message, 'error');
+            } finally {
+                clearTimeout(timer);
+                aiSettingsTestBtn.disabled = false;
+                aiSettingsTestBtn.textContent = '🔌 Test Connection';
             }
-            aiTestResult.style.display = 'block';
-            aiTestBtn.disabled = false;
-            aiTestBtn.textContent = '🔌 Test Connection';
-            console.log('%c[AI TEST] ========================================', 'color: #f5b342; font-weight: bold;');
         });
 
         // ─── AI GENERATE SCRIPT ───
@@ -5933,8 +5876,7 @@ Caption: ${fields.caption || '(not provided)'}
                 console.log('%c[AI GENERATE] Response OK:', 'color: #7a93af; font-weight: bold;', response.ok);
 
                 const responseText = await response.text();
-                console.log('%c[AI GENERATE] Raw response body:', 'color: #f5b342;');
-                console.log(responseText);
+                console.log('%c[AI GENERATE] Response body length:', 'color: #f5b342;', responseText.length);
 
                 let jsonResponse;
                 try {
@@ -6112,7 +6054,7 @@ Caption: ${fields.caption || '(not provided)'}
             });
 
             if (selected.length === 0) {
-                alert('Please select at least one section to export.');
+                showToast('Select at least one section to export.', 'error');
                 return;
             }
 
@@ -6327,6 +6269,25 @@ Caption: ${fields.caption || '(not provided)'}
             });
         }
 
+        // Keep the in-memory pack synchronized with edits in the rendered fields.
+        if (cbFieldsContainer) cbFieldsContainer.addEventListener('input', function(e) {
+            const id = e.target && e.target.id ? e.target.id : '';
+            let part = null;
+            let key = null;
+            if (id.indexOf('cbl_') === 0) { part = 'long'; key = id.slice(4); }
+            else {
+                const m = id.match(/^cbs(\d+)_(.+)$/);
+                if (m) { part = 's' + parseInt(m[1], 10); key = m[2]; }
+            }
+            if (!part || !key) return;
+            const target = part === 'long' ? generatedPack.long : generatedPack.shorts[parseInt(part.slice(1), 10)];
+            if (!target) return;
+            target.fields[key] = e.target.value;
+            generatedPack.done.scripts = false;
+            generatedPack.done.montage = false;
+            generatedPack.done.grade = false;
+        });
+
         // Mini actions: regenerate one short / clear one short
         if (cbShortCardsEl) {
             cbShortCardsEl.addEventListener('click', async function(e) {
@@ -6353,8 +6314,11 @@ Caption: ${fields.caption || '(not provided)'}
             cbGenFieldsStatus.textContent = '⏳ Re-generating Short #' + n + ' fields…';
             try {
                 const prompt = cbShortFieldsPrompt(topic, meta, generatedPack.ref);
-                const fields = await cbChatJSON(prompt, '');
-                generatedPack.shorts[n].fields = fields;
+                    const fields = cbValidateFields(await cbChatJSON(prompt, ''), CB_SHORT_FIELD_KEYS, 'Short #' + n + ' fields');
+                    generatedPack.shorts[n].fields = fields;
+                    generatedPack.done.scripts = false;
+                    generatedPack.done.montage = false;
+                    generatedPack.done.grade = false;
                 if (fields.type) generatedPack.shorts[n].fields.type = fields.type;
                 renderCombinedFields();
                 cbGenFieldsStatus.textContent = '✅ Short #' + n + ' regenerated.';
@@ -6433,16 +6397,127 @@ Caption: ${fields.caption || '(not provided)'}
             return parseModelJSON(cbExtractJSON(content), label ? (label + '. ') : '');
         }
 
+        const CB_LONG_FIELD_KEYS = CB_FIELDS_LONG.map(f => f[0]);
+        const CB_SHORT_FIELD_KEYS = CB_FIELDS_SHORT.map(f => f[0]);
+        const CB_SHOT_TYPES = new Set(['talking-head', 'screen', 'code', 'b-roll', 'demo', 'graphic']);
+        const CB_TIME_RE = /^(\d{1,3}):([0-5]\d)$/;
+
+        function cbTimecodeSeconds(value) {
+            const m = String(value || '').trim().match(CB_TIME_RE);
+            return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : NaN;
+        }
+
+        function cbValidateFields(fields, keys, label) {
+            if (!fields || typeof fields !== 'object' || Array.isArray(fields)) throw new Error(label + ': model did not return an object.');
+            const missing = keys.filter(key => fields[key] == null || String(fields[key]).trim() === '');
+            if (missing.length) throw new Error(label + ': missing required fields: ' + missing.join(', ') + '.');
+            return Object.fromEntries(keys.map(key => [key, String(fields[key]).trim()]));
+        }
+
+        function cbNormalizeMontage(data, label) {
+            const shots = Array.isArray(data) ? data : (data && Array.isArray(data.shots) ? data.shots : []);
+            if (!shots.length) throw new Error(label + ': no shots were returned.');
+            const errors = [];
+            const normalized = shots.map((shot, index) => {
+                const item = shot && typeof shot === 'object' ? { ...shot } : {};
+                const start = String(item.t_start || '').trim();
+                const end = String(item.t_end || '').trim();
+                const startSec = cbTimecodeSeconds(start);
+                const endSec = cbTimecodeSeconds(end);
+                if (!Number.isFinite(startSec) || !Number.isFinite(endSec) || endSec <= startSec) errors.push('shot ' + (index + 1) + ' has invalid timecodes');
+                if (!CB_SHOT_TYPES.has(String(item.shot || '').trim())) errors.push('shot ' + (index + 1) + ' has an unsupported shot type');
+                return {
+                    t_start: start,
+                    t_end: end,
+                    shot: String(item.shot || '').trim(),
+                    camera: String(item.camera || '').trim(),
+                    on_screen: String(item.on_screen || '').trim(),
+                    transition: String(item.transition || '').trim(),
+                    audio_cue: String(item.audio_cue || '').trim(),
+                    note: String(item.note || '').trim(),
+                    capcut_tip: String(item.capcut_tip || '').trim()
+                };
+            });
+            if (errors.length && aiConfig.blockOnFail !== false) throw new Error(label + ': ' + errors.slice(0, 3).join('; ') + (errors.length > 3 ? '…' : ''));
+            if (errors.length) console.warn('[VALIDATION]', label, errors);
+            return { shots: normalized, warnings: errors };
+        }
+
+        function cbClampNumber(value, min, max, fallback) {
+            const n = Number(value);
+            return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+        }
+
+        function cbNormalizeGrade(data, label) {
+            const source = data && typeof data === 'object' ? data : {};
+            const global = source.global && typeof source.global === 'object' ? source.global : {};
+            const filter = global.filter && typeof global.filter === 'object' ? global.filter : {};
+            const text = global.text && typeof global.text === 'object' ? global.text : {};
+            const warnings = [];
+            const filterName = String(filter.name || '').trim();
+            if (!filterName) warnings.push('filter name is missing');
+            const normalized = {
+                global: {
+                    filter: { name: filterName || 'No filter', intensity: cbClampNumber(filter.intensity, 0, 100, 0) },
+                    exposure: cbClampNumber(global.exposure, -10, 10, 0),
+                    contrast: cbClampNumber(global.contrast, -50, 50, 0),
+                    saturation: cbClampNumber(global.saturation, -50, 50, 0),
+                    temperature: cbClampNumber(global.temperature, -50, 50, 0),
+                    tint: cbClampNumber(global.tint, -50, 50, 0),
+                    highlights: cbClampNumber(global.highlights, -50, 50, 0),
+                    shadows: cbClampNumber(global.shadows, -50, 50, 0),
+                    vignette: cbClampNumber(global.vignette, 0, 100, 0),
+                    skin_saturation: cbClampNumber(global.skin_saturation, -50, 50, 0),
+                    text: { color: /^#[0-9a-f]{6}$/i.test(String(text.color || '')) ? text.color : '#f5b342', size: cbClampNumber(text.size, 0, 25, 11), safe: text.safe !== false }
+                },
+                scenes: Array.isArray(source.scenes) ? source.scenes.map((scene, index) => {
+                    const start = String(scene?.t_start || '').trim();
+                    const end = String(scene?.t_end || '').trim();
+                    if (!Number.isFinite(cbTimecodeSeconds(start)) || !Number.isFinite(cbTimecodeSeconds(end)) || cbTimecodeSeconds(end) <= cbTimecodeSeconds(start)) warnings.push('scene ' + (index + 1) + ' has invalid timecodes');
+                    return { t_start: start, t_end: end, notes: String(scene?.notes || '').trim() };
+                }) : [],
+                tips: Array.isArray(source.tips) ? source.tips.map(tip => String(tip || '').trim()).filter(Boolean) : []
+            };
+            if (warnings.length && aiConfig.blockOnFail !== false) throw new Error(label + ': ' + warnings.slice(0, 3).join('; ') + (warnings.length > 3 ? '…' : ''));
+            if (warnings.length) console.warn('[VALIDATION]', label, warnings);
+            return { ...normalized, warnings };
+        }
+
         // ─── PROMPT BUILDERS ───
+
+        function extractReferences(text) {
+            const source = String(text || '');
+            const lines = source.split(/\r?\n/);
+            const found = [];
+            let active = false;
+            for (const line of lines) {
+                if (/^#{1,4}\s+.*(references|المصادر)/i.test(line)) { active = true; continue; }
+                if (active && /^#{1,4}\s+/.test(line)) break;
+                if (active && line.trim()) found.push(line.trim());
+            }
+            const urls = source.match(/https?:\/\/[^\s)]+/g) || [];
+            urls.forEach(url => { if (!found.some(item => item.includes(url))) found.push(url); });
+            return [...new Set(found)];
+        }
+
+        function buildEvidenceBlock(text) {
+            const source = String(text || '').trim();
+            if (!source) return '';
+            const refs = extractReferences(source);
+            return '\n\n--- EVIDENCE / GROUNDING ---\nUse the supplied foundation as the authority for specific names, versions, dates, numbers, and claims. Do not contradict it. Tag source-backed details as (من المرجع).'
+                + (refs.length ? '\nKnown source references:\n- ' + refs.slice(0, aiConfig.maxReferences || 3).join('\n- ') : '')
+                + '\n--- END EVIDENCE ---';
+        }
 
         function cbRefBlock() {
             if (!generatedPack.ref) return '';
             return '\n\n--- GROUNDING / FOUNDATION (stay true to this; never contradict it; mark assumptions as opinion) ---\n'
-                + generatedPack.ref + '\n--- END OF FOUNDATION ---';
+                + generatedPack.ref + '\n--- END OF FOUNDATION ---' + buildEvidenceBlock(generatedPack.ref);
         }
 
         function cbLongFieldsPrompt(topic) {
             return 'You are a YouTube script planner for "Albadry · AI & Tech Reviewer" (D365, Power Platform, AI, SaaS, Software Engineering). Write all content in Egyptian Arabic (العامية المصرية). Technical terms may stay in English.\n\n'
+                + buildAnalysisBlock(topic)
                 + 'Given the topic below, infer ALL script sections. Return ONLY valid JSON (no markdown, no explanations). STRICT RULES: escape every inner double quote as \\" (e.g. Command \\"and\\" Control), never put unescaped " inside a value, no trailing commas.\n\n'
                 + '{\n  "title": "عنوان الفيديو بالعامية المصرية",\n  "promise": "الوعد الأساسي",\n  "audience": "الجمهور المستهدف",\n  "hook": "هوك البداية 0:20",\n  "story": "القصة/المشكلة 0:50-2:00",\n  "tech": "التفكيك التقني 2:00-4:00",\n  "demo": "الديمو/الإثبات 4:00-5:30",\n  "twist": "المنعطف 7:00-8:30",\n  "take": "رأيك 10:30-12:00",\n  "verdict": "الحكم النهائي",\n  "takeaways": "3 نقاط رئيسية",\n  "comment": "دعوة للتعليق",\n  "subscribe": "دعوة للاشتراك",\n  "next": "الفيديو التالي"\n}\n\nTopic: ' + topic + cbRefBlock();
         }
@@ -6450,12 +6525,14 @@ Caption: ${fields.caption || '(not provided)'}
         function cbShortFieldsPrompt(topic, slot, ref) {
             const angle = slot && slot.angle ? 'SLOT ANGLE: ' + slot.angle : '';
             return 'You are a YouTube Shorts/Reel script planner for "Albadry · AI & Tech Reviewer". Write content in Egyptian Arabic (العامية المصرية). ' + angle + '\n\n'
+                + buildAnalysisBlock(topic)
                 + 'Given the topic below, infer ALL script sections. Return ONLY valid JSON (no markdown, no explanations). STRICT RULES: escape every inner double quote as \\", never leave unescaped " inside a value, no trailing commas.\n\n'
                 + '{\n  "title": "عنوان الشورت بالعامية المصرية",\n  "idea": "الفكرة الأساسية",\n  "type": "Post-Launch or Pre-Launch or the short name",\n  "audience": "الجمهور المستهدف",\n  "hook": "نص الهوك 0-3s",\n  "problem": "المشكلة/التشويق 3-10s",\n  "context": "السياق 5-15s",\n  "insight": "الرئيسية 10-35s",\n  "proof": "الإثبات/الديمو",\n  "payoff": "الخلاصة 35-50s",\n  "cta": "دعوة للعمل",\n  "onscreen": "النصوص على الشاشة",\n  "caption": "الكابشن"\n}\n\nTopic: ' + topic + (generatedPack.ref ? cbRefBlock() : '');
         }
 
         function cbLongScriptPrompt(fields) {
             return 'You are writing a long-form YouTube script for "Albadry · AI & Tech Reviewer" in Egyptian Arabic.\n\n'
+                + buildAnalysisBlock(generatedPack.topics.long || '')
                 + 'Structure (timeline): 0:00 Hook, 0:20 Brand, 0:30 Promise, 0:50 Story, 2:00 Concept #1, 4:00 Demo, 5:30 Concept #2, 7:00 Twist, 8:30 Deep Dive, 10:30 My Take, 12:00 Takeaways, 13:00 Comment CTA, 13:30 Subscribe, 14:00 Next.\n'
                 + 'Expand each section into detailed natural spoken-word content. Do NOT skip any section. Include the "Albadry Says" moment at the right point.\n\n--- User Input ---\n'
                 + Object.keys(fields).map(k => k.toUpperCase() + ': ' + (fields[k] || '(not provided)')).join('\n') + '\n\n--- Begin Script (Egyptian Arabic) ---';
@@ -6464,6 +6541,7 @@ Caption: ${fields.caption || '(not provided)'}
         function cbShortScriptPrompt(fields, slot) {
             const angle = slot && slot.angle ? 'SLOT: ' + slot.name + ' — ' + slot.angle + '\n' : '';
             return 'You are writing a short-form script (YouTube Shorts/Reel, ≤60s) for "Albadry · AI & Tech Reviewer" in Egyptian Arabic.\n\n' + angle
+                + buildAnalysisBlock(generatedPack.topics.short || generatedPack.topics.long || '')
                 + 'Structure: HOOK (0-3s) → PROBLEM (3-10s) → CONTEXT (5-15s) → CORE INSIGHT (10-35s) → PROOF → PAYOFF (35-50s) → CTA. Concise, no filler, standalone value.\n\n--- User Input ---\n'
                 + Object.keys(fields).map(k => k.toUpperCase() + ': ' + (fields[k] || '(not provided)')).join('\n') + '\n\n--- Begin Script (Egyptian Arabic) ---';
         }
@@ -6515,7 +6593,7 @@ Caption: ${fields.caption || '(not provided)'}
                     const label = isLong ? 'Long' : ('Short #' + n + (meta ? ' ' + meta.name : ''));
                     cbGenFieldsStatus.textContent = '⏳ Stage ' + i + '/' + total + ' — ' + label + ' fields…';
                     const prompt = isLong ? cbLongFieldsPrompt(topic) : cbShortFieldsPrompt(shortTopic, meta, generatedPack.ref);
-                    const fields = await cbChatJSON(prompt, label + ' fields');
+                    const fields = cbValidateFields(await cbChatJSON(prompt, label + ' fields'), isLong ? CB_LONG_FIELD_KEYS : CB_SHORT_FIELD_KEYS, label + ' fields');
                     if (isLong) generatedPack.long.fields = fields;
                     else generatedPack.shorts[n] = { fields: fields, script: '', montage: null, grade: null };
                 }
@@ -6559,6 +6637,7 @@ Caption: ${fields.caption || '(not provided)'}
                 generatedPack.done.scripts = true;
                 cbStatus('✅ All scripts generated.');
                 cbCurrentView = 'long';
+                cbViewState.part = 'long';
                 buildCBViewerTabs();
                 renderCBViewer(cbCurrentView);
                 window.__stepAdvance && window.__stepAdvance(3);
@@ -6588,14 +6667,14 @@ Caption: ${fields.caption || '(not provided)'}
                     cbStatus('⏳ Montage ' + i + '/' + total + ' — ' + label + '…');
                     const script = isLong ? generatedPack.long.script : generatedPack.shorts[n].script;
                     const prompt = cbMontagePrompt(script, label, !isLong);
-                    const data = await cbChatJSON(prompt, label + ' montage');
-                    const shots = data.shots || (Array.isArray(data) ? data : []);
-                    if (isLong) generatedPack.long.montage = { shots: shots };
-                    else generatedPack.shorts[n].montage = { shots: shots };
+                    const montage = cbNormalizeMontage(await cbChatJSON(prompt, label + ' montage'), label + ' montage');
+                    if (isLong) generatedPack.long.montage = montage;
+                    else generatedPack.shorts[n].montage = montage;
                 }
                 generatedPack.done.montage = true;
                 cbStatus('✅ Montage plans generated (CapCut tips included).');
                 cbCurrentView = 'montage';
+                cbViewState.part = 'long';
                 buildCBViewerTabs();
                 renderCBViewer(cbCurrentView);
                 window.__stepAdvance && window.__stepAdvance(4);
@@ -6610,6 +6689,7 @@ Caption: ${fields.caption || '(not provided)'}
 
         async function handleCombinedGenerateGrade() {
             if (!generatedPack.done.scripts) { cbStatus('⚠️ Generate scripts first.'); return; }
+            if (!generatedPack.done.montage) { cbStatus('⚠️ Generate montage before generating grade.'); return; }
             cbGenGradeBtn.disabled = true;
             cbBusy(true);
             const keys = cbPartKeys();
@@ -6625,13 +6705,14 @@ Caption: ${fields.caption || '(not provided)'}
                     cbStatus('⏳ Grade ' + i + '/' + total + ' — ' + label + '…');
                     const montage = isLong ? generatedPack.long.montage : generatedPack.shorts[n].montage;
                     const prompt = cbGradePrompt(label, !isLong, montage);
-                    const data = await cbChatJSON(prompt, label + ' grade');
-                    if (isLong) generatedPack.long.grade = data;
-                    else generatedPack.shorts[n].grade = data;
+                    const grade = cbNormalizeGrade(await cbChatJSON(prompt, label + ' grade'), label + ' grade');
+                    if (isLong) generatedPack.long.grade = grade;
+                    else generatedPack.shorts[n].grade = grade;
                 }
                 generatedPack.done.grade = true;
                 cbStatus('✅ Grade cards generated (CapCut coloring tips included).');
                 cbCurrentView = 'grade';
+                cbViewState.part = 'long';
                 buildCBViewerTabs();
                 renderCBViewer(cbCurrentView);
                 window.__stepAdvance && window.__stepAdvance(5);
@@ -6716,8 +6797,9 @@ Caption: ${fields.caption || '(not provided)'}
                 '<p style="color:var(--text3);font-size:0.8rem;margin-top:8px;">Use the tabs above to read each part, then Save/Export the pack.</p>';
         }
 
-        function renderCBViewer(view) {
+        function renderCBViewer(view, partOverride) {
             if (!cbOutcomeEl) return;
+            if (partOverride) cbViewState.part = partOverride;
             const isPartTab = view === 'long' || (typeof view === 'string' && view.charAt(0) === 's');
             if (isPartTab) cbViewState.part = view;
             const top = cbViewState.top;
@@ -6737,7 +6819,7 @@ Caption: ${fields.caption || '(not provided)'}
                     return;
                 }
                 const dir = cbIsArabic(script) ? ' dir="rtl"' : '';
-                cbOutcomeEl.innerHTML = '<div class="pv-panel-title">📝 ' + label + '</div>' +
+                cbOutcomeEl.innerHTML = cbViewerActions(part) + '<div class="pv-panel-title">📝 ' + label + '</div>' +
                     '<div class="pv-metrics" id="cbMetrics"></div>' +
                     '<div class="md-content" ' + dir + '>' + renderMarkdown(script) + '</div>';
                 renderMetrics(document.getElementById('cbMetrics'), script, isLong ? 'long' : 'short');
@@ -6749,7 +6831,7 @@ Caption: ${fields.caption || '(not provided)'}
                     cbOutcomeEl.innerHTML = '<div class="cb-empty">No montage for ' + label + ' yet — click "Generate Montage".</div>';
                     return;
                 }
-                cbOutcomeEl.innerHTML = '<div class="pv-panel-title">🎞 Montage — ' + label + '</div>' + cbMontageTable(mont.shots);
+                cbOutcomeEl.innerHTML = cbViewerActions(part) + '<div class="pv-panel-title">🎞 Montage — ' + label + '</div>' + cbMontageTable(mont.shots);
                 return;
             }
             if (top === 'grade') {
@@ -6758,7 +6840,7 @@ Caption: ${fields.caption || '(not provided)'}
                     cbOutcomeEl.innerHTML = '<div class="cb-empty">No grade for ' + label + ' yet — click "Generate Grade".</div>';
                     return;
                 }
-                cbOutcomeEl.innerHTML = '<div class="pv-panel-title">🎨 Grade — ' + label + '</div>' + cbGradeCard(g);
+                cbOutcomeEl.innerHTML = cbViewerActions(part) + '<div class="pv-panel-title">🎨 Grade — ' + label + '</div>' + cbGradeCard(g);
             }
         }
 
@@ -6800,12 +6882,96 @@ Caption: ${fields.caption || '(not provided)'}
             return out;
         }
 
+        function cbPartObject(part) {
+            if (part === 'long') return generatedPack.long;
+            const n = Number(String(part).replace(/^s/, ''));
+            return generatedPack.shorts[n];
+        }
+
+        function cbStageComplete(stage) {
+            return cbPartKeys().every(part => {
+                const item = cbPartObject(part);
+                if (!item) return false;
+                if (stage === 'fields') return CB_LONG_FIELD_KEYS.every(k => part !== 'long' || item.fields?.[k]) && (part === 'long' || CB_SHORT_FIELD_KEYS.every(k => item.fields?.[k]));
+                if (stage === 'scripts') return !!item.script;
+                if (stage === 'montage') return !!(item.montage && item.montage.shots && item.montage.shots.length);
+                if (stage === 'grade') return !!item.grade;
+                return false;
+            });
+        }
+
+        async function cbRegeneratePart(stage, part) {
+            const item = cbPartObject(part);
+            if (!item) { cbStatus('❌ Part not found.'); return; }
+            const isLong = part === 'long';
+            const n = isLong ? null : Number(String(part).replace(/^s/, ''));
+            const meta = isLong ? null : (CB_SHORT_META[n] || {});
+            const label = isLong ? 'Long' : 'Short #' + n + (meta.name ? ' ' + meta.name : '');
+            if (stage === 'fields' && !generatedPack.topics.long) { cbStatus('⚠️ Enter a topic first.'); return; }
+            if (stage !== 'fields' && !item.fields) { cbStatus('⚠️ Generate fields for this part first.'); return; }
+            if ((stage === 'montage' || stage === 'grade') && !item.script) { cbStatus('⚠️ Generate the script for this part first.'); return; }
+            if (stage === 'grade' && !item.montage) { cbStatus('⚠️ Generate montage for this part first.'); return; }
+            cbBusy(true);
+            cbStatus('⏳ Regenerating ' + stage + ' for ' + label + '…');
+            try {
+                if (stage === 'fields') {
+                    const topic = isLong ? generatedPack.topics.long : (generatedPack.topics.short || generatedPack.topics.long);
+                    const raw = await cbChatJSON(isLong ? cbLongFieldsPrompt(topic) : cbShortFieldsPrompt(topic, meta, generatedPack.ref), label + ' fields');
+                    item.fields = cbValidateFields(raw, isLong ? CB_LONG_FIELD_KEYS : CB_SHORT_FIELD_KEYS, label + ' fields');
+                    item.script = '';
+                    item.montage = null;
+                    item.grade = null;
+                    renderCombinedFields();
+                } else if (stage === 'scripts') {
+                    item.script = await cbChat(isLong ? cbLongScriptPrompt(item.fields) : cbShortScriptPrompt(item.fields, meta), label + ' script');
+                    item.montage = null;
+                    item.grade = null;
+                } else if (stage === 'montage') {
+                    item.montage = cbNormalizeMontage(await cbChatJSON(cbMontagePrompt(item.script, label, !isLong), label + ' montage'), label + ' montage');
+                    item.grade = null;
+                } else if (stage === 'grade') {
+                    item.grade = cbNormalizeGrade(await cbChatJSON(cbGradePrompt(label, !isLong, item.montage), label + ' grade'), label + ' grade');
+                }
+                generatedPack.done[stage] = cbStageComplete(stage);
+                if (stage === 'fields') { generatedPack.done.scripts = false; generatedPack.done.montage = false; generatedPack.done.grade = false; }
+                if (stage === 'scripts') { generatedPack.done.montage = false; generatedPack.done.grade = false; }
+                if (stage === 'montage') generatedPack.done.grade = false;
+                cbViewState.part = part;
+                cbCurrentView = stage === 'fields' ? 'scripts' : stage;
+                cbBuildAndRenderCurrentView(part);
+                cbStatus('✅ ' + stage.charAt(0).toUpperCase() + stage.slice(1) + ' regenerated for ' + label + '.');
+            } catch (err) {
+                cbStatus('❌ ' + err.message);
+            } finally {
+                cbBusy(false);
+            }
+        }
+
+        function cbViewerActions(part) {
+            const stages = [['scripts', '↻ Script'], ['montage', '↻ Montage'], ['grade', '↻ Grade']];
+            return '<div class="cb-part-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;">' + stages.map(([stage, text]) => '<button type="button" class="cb-mini-btn" data-cbregen="' + stage + '" data-cbpart="' + part + '">' + text + '</button>').join('') + '</div>';
+        }
+
+        function cbBuildAndRenderCurrentView(partOverride) {
+            if (partOverride) cbViewState.part = partOverride;
+            if (['scripts', 'montage', 'grade', 'overview'].includes(cbCurrentView)) cbViewState.top = cbCurrentView;
+            buildCBViewerTabs();
+            renderCBViewer(partOverride || cbViewState.top || cbCurrentView, partOverride);
+        }
+
+        if (cbOutcomeEl) cbOutcomeEl.addEventListener('click', function(e) {
+            const button = e.target.closest('[data-cbregen]');
+            if (!button) return;
+            e.preventDefault();
+            cbRegeneratePart(button.dataset.cbregen, button.dataset.cbpart);
+        });
+
         // ─── SAVE & EXPORT PACK ───
 
         function cbExportMarkdown() {
             const d = new Date().toISOString().slice(0, 10);
             let md = '# ALBADRY CONTENT PACK\n\n';
-            md += 'Topic: ' + generatedPack.topics.long + '\nDate: ' + d + '\nModel: ' + (aiConfig.model || 'local-model') + '\nRules: v1\nShorts: ' + generatedPack.packCount + (generatedPack.includeZero ? ' + #0' : '') + '\n\n---\n\n';
+            md += 'Topic: ' + generatedPack.topics.long + '\nDate: ' + d + '\nModel: ' + (aiConfig.model || 'local-model') + '\nRules: v3\nPack: v1\nShorts: ' + generatedPack.packCount + (generatedPack.includeZero ? ' + #0' : '') + '\n\n---\n\n';
             md += '## 📅 Publishing Schedule\n\n| Slot | Day | Piece |\n|---|---|---|\n';
             md += '| 🎬 Long | ' + CB_LONG_DAY + ' | Long-Form YouTube Video |\n';
             cbSlotList().forEach(n => {
@@ -6857,7 +7023,9 @@ Caption: ${fields.caption || '(not provided)'}
                 if (g.tips && g.tips.length) md += 'CapCut tips: ' + g.tips.join(' · ') + '\n';
                 md += '\n';
             });
-            md += '\n---\n*Generated by Albadry Content Engine.*\n';
+            const refs = extractReferences(generatedPack.long.script || '');
+            if (refs.length) md += '\n## 📚 References / المصادر\n\n' + refs.map(ref => '- ' + ref).join('\n') + '\n';
+            md += '\n---\n*Generated by Albadry Content Engine · Rules v3 · Pack v1.*\n';
             return md;
         }
 
@@ -6869,6 +7037,10 @@ Caption: ${fields.caption || '(not provided)'}
                 id: generateId(),
                 title: title,
                 type: 'combined',
+                entryVersion: 1,
+                packVersion: 1,
+                rulesVersion: 3,
+                model: aiConfig.model || 'local-model',
                 fullScript: md,
                 fields: { long: generatedPack.long.fields, shorts: (function() { const o = {}; cbSlotList().forEach(n => { o[n] = generatedPack.shorts[n] ? generatedPack.shorts[n].fields : {}; }); return o; })() },
                 pack: {
@@ -7099,9 +7271,9 @@ Caption: ${fields.caption || '(not provided)'}
 
             btn.addEventListener('click', function() {
                 const url = input.value.trim();
-                if (!url) { alert('Please paste a video URL first.'); return; }
+                if (!url) { showToast('Paste a video URL first.', 'error'); return; }
                 const parsed = parseVideoUrl(url);
-                if (!parsed) { alert('Unsupported video URL. Please use YouTube, Vimeo, or Dailymotion.'); return; }
+                if (!parsed) { showToast('Unsupported video URL. Please use YouTube, Vimeo, or Dailymotion.', 'error'); return; }
                 iframe.src = parsed.embedUrl;
                 container.style.display = 'block';
                 btn.textContent = 'Update Video';
